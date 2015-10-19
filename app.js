@@ -7,7 +7,8 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var usersAPI = require('./routes/userAPI');
-var registerAPI = require('./routes/registerAPI');
+var signup = require('./routes/signinAPI');
+var publicPage = require('./routes/publicPage');
 
 var app = express();
 
@@ -25,8 +26,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
+app.use('/up', publicPage);
 app.use('/va', usersAPI);
-app.use('/ua', registerAPI);
+app.use('/ua', signup);
+
 
 console.log('The Node.js version is', process.version);
 // catch 404 and forward to error handler

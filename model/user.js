@@ -28,4 +28,4 @@ UserSchema.plugin(plugins.documentDate);
 UserSchema.index({lawyerId: 1},{unique: true});
 UserSchema.index({email: 1}, {unique: true});
 UserSchema.index({phoneNumber: 1}, {unique: true});
-UserSchema.index({identityNumber: 1}, {unique: true});;
+UserSchema.index({identityNumber: 1}, {unique: true});
