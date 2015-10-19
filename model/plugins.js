@@ -12,3 +12,21 @@ exports.hiddenFields = function (schema) {
 		return json;
 	};
 };
+
+exports.documentDate = function(schema, options){
+	schema.pre('save', function (next) {
+		if (!this._doc.createdAt) this._doc.createdAt = this._doc.updatedAt = new Date;
+		next();
+	});
+
+	schema.pre('update', function (next) {
+		this._doc.updatedAt = new Date();
+		next();
+	});
+
+	schema.pre('findOneAndUpdate', function (next) {
+		this._doc.updatedAt = new Date();
+		this._doc.updatedAt = new Date();
+		next();
+	});
+};
