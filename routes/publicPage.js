@@ -1,8 +1,4 @@
 /**
- * Created by Daniels on 10/19/15.
- */
-
-/**
  * Created by Daniels on 2015/10/17.
  */
 var express = require('express');
