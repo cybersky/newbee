@@ -69,7 +69,7 @@ var userRegister = function(req, res, next){
 };
 
 
-router.post('/user/register', middleware.uploader(['lawyerIdImage', 'identityImage']) , userRegister);
+router.post('/user/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , userRegister);
 
 
 module.exports = router;

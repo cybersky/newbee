@@ -4,7 +4,11 @@
 var express = require('express');
 var router = express.Router();
 
-var signup = (req, res, next) => {return res.render('signup');};
+var signup = (req, res, next) => {
+    return res.render('signup', {
+        options: {target: 'signup', action:'none'}
+    });
+};
 router.get('/signup', signup);
 
 
