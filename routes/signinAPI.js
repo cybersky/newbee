@@ -25,9 +25,9 @@ var userLogin = (req, res, next) => {
             User.getUserByCondition({email: email}, cb);
         },
         (docs, cb) => {
-            if(!docs) return cb({rtn: 1, message: 'The Email you typed do not matched'});
+            if(!docs) return cb({rtn: 1, notice:'emailNotice' ,message: 'The Email you typed do not matched'});
             if(secure.sha1(pass, 'utf-8') != docs.password) {
-                return cb({rtn: 1, message: 'The password you typed do not matched, Please try again'});
+                return cb({rtn: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
             }
             cb(null, docs);
         }

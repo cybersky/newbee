@@ -125,6 +125,7 @@ $(function(){
                 var self = this;
                 var nc = new this.model({email: email, password: pass});
                 nc.authenticate(function(result){
+                    if(result.rtn != 0) return deliverMessageToNotice(result.notice, result.message, 1000 * 5);
                     if(result.refer) return self.redirect(result.refer);
                     self.redirect('/');
                 });
