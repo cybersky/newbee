@@ -3,7 +3,7 @@
  */
 
 
-exports.applicationPort = 8080;
+exports.applicationPort = 80;
 
 exports.uploadPath = __dirname + '/public/upload';
 
