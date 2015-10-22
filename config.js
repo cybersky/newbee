@@ -7,12 +7,12 @@ exports.applicationPort = 8080;
 
 exports.uploadPath = __dirname + '/public/upload';
 
-exports.mongodb = {host: '192.168.10.106', port: 27017, dbName: 'devsite'};
+exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'devsite'};
 exports.getMongoUri = () => {
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
 
-exports.redis = {host: 'localhost', port: 6379};
+exports.redis = {host: '10.128.130.213', port: 6379};
 
 exports.cookieConfig = {
 	name: 'nbToken',
