@@ -8,7 +8,11 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var usersAPI = require('./routes/userAPI');
 var signup = require('./routes/signupAPI');
-var publicPage = require('./routes/publicPage');
+var signin = require('./routes/signinAPI');
+var indexPage = require('./routes/indexPage');
+var session = require('./middleware/session');
+var setHeaders = require('./middleware/setHeaders');
+var signout = require('./routes/signoutAPI');
 
 var app = express();
 
@@ -23,12 +27,20 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+	setHeaders: (res, path) => {
+		res.set("x-powered-by", "NewBee");
+		//res.set('Content-Encoding', 'gzip');
+	}
+}));
+
+app.use(setHeaders);
+app.use(session.storeSessionToRedis());
 
 app.use('/', routes);
-app.use('/up', publicPage);
+app.use('/up', indexPage);
 app.use('/va', usersAPI);
-app.use('/ua', signup);
+app.use('/ua', [signup, signin, signout]);
 
 
 console.log('The Node.js version is', process.version);

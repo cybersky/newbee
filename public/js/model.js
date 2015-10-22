@@ -88,5 +88,9 @@ var Model = function(defs){
         }
     };
 
+    ModelConstructor.prototype.authenticate = function(callback ,ecb){
+        ModelConstructor.auth(this.dataValue, callback, ecb);
+    };
+
     return ModelConstructor;
 };

@@ -11,7 +11,7 @@ var secure	= require('../tools/secure');
 var middleware = require('../middleware/uploader');
 
 
-var userRegister = function(req, res, next){
+var userRegister = (req, res, next) => {
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({code: 1 , message: 'Missing lawyer id image'});
     if(!files['identityImage']) return res.send({code: 1 , message: 'Missing identity image'});
@@ -41,28 +41,28 @@ var userRegister = function(req, res, next){
 
 
     async.waterfall([
-        function(cb){
+        (cb) => {
             //auth post data
             User.getUserByCondition({email: user.email}, cb);
         },
-        function(docs, cb){
+        (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'email already exists'});
             User.getUserByCondition({phoneNumber: user.phoneNumber}, cb);
         },
-        function(docs, cb){
+        (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'phoneNumber already exists'});
             User.getUserByCondition({identityNumber: user.identityNumber}, cb);
         },
-        function(docs, cb){
+        (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'identityNumber already exists'});
             User.getUserByCondition({lawyerId: user.lawyerId}, cb);
         },
-        function(docs, cb){
+        (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'lawyer Id already exists'});
             user.password = secure.sha1(user.password, 'utf-8');
             User.createUser(user, cb);
         }
-    ], function(err, docs){
+    ], (err, docs) => {
         if(err) return res.send(err);
         res.send({rtn: 0, message:'Create user successful', data: docs});
     });

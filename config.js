@@ -8,12 +8,24 @@ exports.applicationPort = 8080;
 exports.uploadPath = __dirname + '/public/upload';
 
 exports.mongodb = {host: '192.168.10.106', port: 27017, dbName: 'devsite'};
-exports.getMongoUri = function(){
+exports.getMongoUri = () => {
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
 
+exports.redis = {host: 'localhost', port: 6379};
+
+exports.cookieConfig = {
+	name: 'nbToken',
+	privateKey: '123_[newBeeToken]-!@#',
+	options: {
+		path: '/', expires: Date.now() + 1000 * 60 * 60 * 24 * 30,
+		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
+	}
+};
+
+exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
-(function () {
+(() =>{
 	var overrideLocation = __dirname + '/override.js';
 	var fs = require('fs');
 	var override = {};

@@ -5,11 +5,13 @@
 
 
 var SignUp = {create: 'POST /ua/user/signup'};
+var SignIn = {auth: 'POST /ua/user/signin'};
 
-
-var SignUpModel = Model(SignUp);
+var SignUpModel = new Model(SignUp);
+var SignInModel = new Model(SignIn);
 var dataModel = {
-    'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/user/signup'}
+    'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/user/signup'},
+    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/user/signin'}
 };
 
 
@@ -34,6 +36,7 @@ $(function(){
             }
         }
         var dialog = encaseDialog({title: '提示', message: ''});
+        if(msg.rtn) msg.code = msg.rtn;
         if ((msg.code && msg.code != 0) || (msg.err && msg.err != 0)) {
             dialog.setMessage(msg.message || '未知错误[Unknown error]');
             dialog.setType(BootstrapDialog.TYPE_DANGER);
@@ -50,6 +53,14 @@ $(function(){
             //force refresh
             if (forceRefresh) window.location.href = window.location.href;
         }, timeout);
+    };
+
+    var deliverMessageToNotice = function(elementId, message, timeout){
+        var el = document.getElementById(elementId);
+        el.innerHTML = message || '';
+        setTimeout(function(){
+            el.innerHTML = '';
+        }, timeout || 1000 * 3);
     };
 
     var target = window.options.target || '';
@@ -97,6 +108,27 @@ $(function(){
                 }, function (xhr) {
                     errorTip(xhr.responseText);
                 });*/
+            },
+            onSign_in : function(){
+                var email = $('#inputEmail').val();
+                if(!email) {
+                    return deliverMessageToNotice('emailNotice', '邮箱地址不能为空', 1000 * 5);
+                }
+                if(!validator.isEmail(email)) {
+                    return deliverMessageToNotice('emailNotice', '邮箱格式错误', 1000 * 5);
+                }
+                var pass  = $('#inputPassword').val();
+                if(!pass){
+                    return deliverMessageToNotice('passwordNotice', '密码不能为空', 1000 * 5);
+                }
+
+                var self = this;
+                var nc = new this.model({email: email, password: pass});
+                nc.authenticate(function(result){
+                    if(result.refer) return self.redirect(result.refer);
+                    self.redirect('/');
+                });
+
             },
             onSign_up : function () {
                 var formData = new FormData();

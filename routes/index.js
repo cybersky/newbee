@@ -4,13 +4,12 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../odm/user');
+var middleware = require('../middleware/auth');
 
-
-var root = (req, res, next) => {return res.render('index');};
+var root = (req, res, next) => {
+    return res.render('index', {
+        userInfo: req.session.userInfo
+    });
+};
 router.get('/', root);
-
-
-var signin = (req, res, next) => {return res.render('signin');};
-router.get('/signin', signin);
-
 module.exports = router;
