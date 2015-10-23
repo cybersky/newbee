@@ -21,4 +21,12 @@ var signin = (req, res, next) => {return res.render('signin',
 )};
 router.get('/signin', signin);
 
+var manager = (req, res, next) => {
+    return res.render('manager', {
+        options: {target: 'manager'},
+        userInfo: req.session.userInfo
+    });
+};
+router.get('/manager', manager);
+
 module.exports = router;

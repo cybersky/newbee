@@ -7,11 +7,21 @@
 var SignUp = {create: 'POST /ua/user/signup'};
 var SignIn = {auth: 'POST /ua/user/signin'};
 
+var Manager = {
+    findAll: 'GET /va/user?start={start}&rows={rows}',
+    findOne: 'GET /va/user/{id}',
+    update:  'PUT /va/user/{id}',
+    destroy: 'DELETE /va/user/{id}'
+};
+
 var SignUpModel = new Model(SignUp);
 var SignInModel = new Model(SignIn);
+var ManagerModel= new Model(Manager);
+
 var dataModel = {
     'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/user/signup'},
-    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/user/signin'}
+    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/user/signin'},
+    'manager':{model: ManagerModel,view: '#managerDiv'}
 };
 
 
@@ -95,7 +105,7 @@ $(function(){
                         params[key] = options[key];
                     }
                 }
-                /*
+
                 this.model.findAll(params, function (result) {
                     var cm   = [];
                     var list = result.data;
@@ -107,7 +117,7 @@ $(function(){
                     self.page     = page;
                 }, function (xhr) {
                     errorTip(xhr.responseText);
-                });*/
+                });
             },
             onSign_in : function(){
                 var email = $('#inputEmail').val();
@@ -250,6 +260,6 @@ $(function(){
     });
 
 
-    //if(window.options.action === 'none') return;
-    //return profile.vue.refreshModel();
+    if(window.options.action === 'none') return;
+    return profile.vue.refreshModel();
 });

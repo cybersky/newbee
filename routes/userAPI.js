@@ -10,10 +10,20 @@ var getUsers   = function(req, res, next){
 	var start = req.query['start'] || 0;
 	var rows = req.query['rows'] || 10;
 
-	User.getUsers(start, rows, function(err, docs){
+	var ct = '';
+	async.waterfall([
+		(cb) => {
+			User.userCount(cb);
+		},
+		(count, cb) => {
+			ct = count;
+			User.getUsers(start, rows, cb);
+		}
+	], (err, docs) => {
 		if(err) return res.send(err);
-		res.send({rtn: 0, message: '', data: docs});
+		res.send({rtn: 0, message: '', total: ct, data: docs});
 	});
+
 };
 var getOneUser = function(req, res, next){
 	var userId = _.trim(req.params['userId']) || '';
