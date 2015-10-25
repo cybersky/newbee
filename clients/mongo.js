@@ -2,7 +2,7 @@
  * Created by Daniels on 2015/10/17.
  */
 var mongoose = require('mongoose');
-var config = require('../config');
+var config = require('../profile/config');
 var UserSchema = require('../model/user').UserSchema;
 
 var uri = config.getMongoUri();

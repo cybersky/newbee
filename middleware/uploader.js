@@ -1,7 +1,7 @@
 /**
  * Created by Daniels on 2015/10/17.
  */
-var config = require('../config');
+var config = require('../profile/config');
 var multer = require('multer');
 
 

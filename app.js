@@ -1,9 +1,11 @@
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
+//var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var compression = require('compression');
+
 
 var routes = require('./routes/index');
 var usersAPI = require('./routes/userAPI');
@@ -13,26 +15,28 @@ var indexPage = require('./routes/indexPage');
 var session = require('./middleware/session');
 var setHeaders = require('./middleware/setHeaders');
 var signout = require('./routes/signoutAPI');
+//var weixinRoutes = require('./routes/weixinRoutes');
 
 var app = express();
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.set('x-powered-by', false);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+//app.use(favicon());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public'), {
 	setHeaders: (res, path) => {
 		res.set("x-powered-by", "NewBee");
-		//res.set('Content-Encoding', 'gzip');
 	}
 }));
+app.use(compression());
 
 app.use(setHeaders);
 app.use(session.storeSessionToRedis());
@@ -42,6 +46,7 @@ app.use('/up', indexPage);
 app.use('/va', usersAPI);
 app.use('/ua', [signup, signin, signout]);
 
+//app.use('/wx', weixinRoutes);
 
 console.log('The Node.js version is', process.version);
 // catch 404 and forward to error handler

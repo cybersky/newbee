@@ -3,7 +3,7 @@
  */
 var express = require('express');
 var router = express.Router();
-var config  = require('../config');
+var config  = require('../profile/config');
 
 var logout = (req, res, next) => {
     res.clearCookie(config.cookieConfig.name, {path: config.cookieConfig.options.path});

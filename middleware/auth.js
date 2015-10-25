@@ -3,7 +3,7 @@
  */
 
 
-var config = require('../config');
+var config = require('../profile/config');
 var secure = require('../tools/secure');
 
 exports.checkStatus = (req, res, next) => {

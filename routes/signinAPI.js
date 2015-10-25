@@ -9,7 +9,7 @@ var _		= require('lodash');
 var validator=require('validator');
 var secure	= require('../tools/secure');
 var middleware = require('../middleware/uploader');
-var config  = require('../config');
+var config  = require('../profile/config');
 
 
 var userLogin = (req, res, next) => {
