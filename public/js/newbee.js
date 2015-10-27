@@ -26,6 +26,12 @@ var dataModel = {
 
 
 $(function(){
+    validator.authId = function(id){
+        if(!id) return false;
+        var re = new RegExp(/^[1-9]\d{16}[\d|x|X]$/g);
+        return re.test(id);
+    };
+
     var encaseDialog = function (opts) {
         // Using init options
         return new BootstrapDialog(opts);
@@ -152,10 +158,14 @@ $(function(){
                 var phone = $('#phoneNumber').val();
                 if(!validator.isMobilePhone(phone, 'zh-CN')) return errorTip({code: 1, message: '手机号码格式错误'});
 
+                var id = $('#identityNumber').val();
+                if(!id) return errorTip({code: 1, message: '身份证号码不能为空'});
+                if(!validator.authId(id)) return errorTip({code: 1, message: '身份证号码格式错误'});
+
                 var data = {
                     username : $('#username').val(), password: password, email: email,
                     phoneNumber:phone ,
-                    identityNumber:  $('#identityNumber').val(),
+                    identityNumber:  id,
                     identityImage : document.getElementById('identityImage').files[0],
                     lawyerId: $('#lawyerId').val(),
                     lawyerLocation: $('#lawyerLocation').val(),

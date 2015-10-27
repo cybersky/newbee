@@ -4,7 +4,7 @@ var User	= require('../odm/user');
 var async	= require('async');
 var _		= require('lodash');
 var validator=require('validator');
-var secure	= require('../tools/secure');
+var secure	= require('../tools/secret');
 
 var getUsers   = function(req, res, next){
 	var start = req.query['start'] || 0;

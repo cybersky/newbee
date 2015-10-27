@@ -30,7 +30,21 @@
 				<td><img v-attr="src:c.lawyerIdFilename" style="width: 40px; height: 40px;"></td>
 				<td v-show="c.authentication == false">未认证</td>
 				<td v-show="c.authentication == true"> 已认证</td>
-				<td></td>
+				<td>
+					<!-- Single button -->
+					<div class="btn-group">
+						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							 <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
+							<li><a href="#">通过</a></li>
+							<li><a href="#">驳回</a></li>
+							<li><a href="#">删除</a></li>
+							<!--li role="separator" class="divider"></li>
+							<li><a href="#">Separated link</a></li-->
+						</ul>
+					</div>
+				</td>
 			</tr>
 		</table>
 	</div>

@@ -4,7 +4,7 @@
 
 
 var config = require('../config');
-var secure = require('../tools/secure');
+var secure = require('../tools/secret');
 
 exports.checkStatus = (req, res, next) => {
     var cookie = req.cookies[config.cookieConfig.name];

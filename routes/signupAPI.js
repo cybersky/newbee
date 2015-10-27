@@ -7,9 +7,15 @@ var User	= require('../odm/user');
 var async	= require('async');
 var _		= require('lodash');
 var validator=require('validator');
-var secure	= require('../tools/secure');
+var secure	= require('../tools/secret');
 var middleware = require('../middleware/uploader');
 
+
+validator.authId = function(id){
+    if(!id) return false;
+    var re = new RegExp(/^[1-9]\d{16}[\d|x|X]$/g);
+    return re.test(id);
+};
 
 var userRegister = (req, res, next) => {
     var files = req.files || {};
@@ -21,8 +27,8 @@ var userRegister = (req, res, next) => {
     user.email	  		= _.trim(req.body['email'])				|| '';
     user.phoneNumber	= _.trim(req.body['phoneNumber'])       || '';
     user.identityNumber = _.trim(req.body['identityNumber'])    || '';
-    user.identityFilename = files.identityImage[0].filename;
-    user.lawyerIdFilename = files.lawyerIdImage[0].filename;
+    user.identityFilename = '/upload/' + files.identityImage[0].filename;
+    user.lawyerIdFilename = '/upload/' + files.lawyerIdImage[0].filename;
     user.lawyerId       = _.trim(req.body['lawyerId'])          || '';
     user.lawyerLocation = _.trim(req.body['lawyerLocation']);
     user.lawServiceArea = _.trim(req.body['lawServiceArea']);
@@ -36,7 +42,8 @@ var userRegister = (req, res, next) => {
     if(!user.phoneNumber)err		= 'Phone number can not be empty';
     if(!validator.isMobilePhone(user.phoneNumber, 'zh-CN')) err = 'Phone number error';
     if(!user.lawyerId) err          = 'Lawyer id can not be empty';
-    if(!user.identityNumber)err	= 'Identical Number can not be empty';
+    if(!user.identityNumber)err	    = 'Identical Number can not be empty';
+    if(!validator.authId(user.identityNumber)) err = 'Identical Number format error';
     if(err) return res.send({rtn: 1, message: err});
 
 
