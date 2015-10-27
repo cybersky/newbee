@@ -1,7 +1,7 @@
 /**
  * Created by Daniels on 2015/10/17.
  */
-var User  = require('../clients/mongo').User;
+var User  = require('../model/user').User;
 
 
 exports.createUser = (userInfo, callback) => {

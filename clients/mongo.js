@@ -3,7 +3,6 @@
  */
 var mongoose = require('mongoose');
 var config = require('../profile/config');
-var UserSchema = require('../model/user').UserSchema;
 
 var uri = config.getMongoUri();
 mongoose.connect(uri, function(err){
@@ -25,4 +24,3 @@ mongoose.connection.on('close', function(){
 	console.log('Mongodb connection is closed');
 });
 
-exports.User = mongoose.model('Users', UserSchema);

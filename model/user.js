@@ -5,6 +5,9 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var plugins	= require('./plugins');
 
+//TODO: #1 Let's use singular mode model name #2 change UserSchame -> LawyerSchema, and add one more UserSchame...
+
+
 
 var UserSchema = exports.UserSchema = new Schema({
 	username: { type: String },
@@ -29,3 +32,6 @@ UserSchema.index({lawyerId: 1},{unique: true});
 UserSchema.index({email: 1}, {unique: true});
 UserSchema.index({phoneNumber: 1}, {unique: true});
 UserSchema.index({identityNumber: 1}, {unique: true});
+
+
+exports.User = mongoose.model('User', UserSchema);
