@@ -5,7 +5,7 @@
 
 exports.applicationPort = 80;
 
-exports.uploadPath = __dirname + '/public/upload';
+exports.uploadPath = __dirname + '/../public/upload';
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
 
@@ -27,7 +27,7 @@ exports.cookieConfig = {
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
 (() =>{
-	var overrideLocation = __dirname + '/override.js';
+	var overrideLocation = __dirname + '/../override.js';
 	var fs = require('fs');
 	var override = {};
 
