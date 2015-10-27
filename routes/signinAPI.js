@@ -39,6 +39,11 @@ var userLogin = (req, res, next) => {
         var token = secure.md5(email+config.cookieConfig.privateKey);
         res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
         if(docs.password) delete docs._doc.password;
+
+        docs._doc.is_admin = false;
+        if(config.superUser.email.indexOf(docs.email) >= 0){
+            docs._doc.is_admin = true;
+        }
         req.session.userInfo = docs;
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });

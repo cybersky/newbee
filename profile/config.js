@@ -2,19 +2,17 @@
  * Created by Daniels on 2015/9/26.
  */
 
+exports.superUser = {email: 'daniels.sun@runmit.com, hailong.zhao@runmit.com'};
 
 exports.applicationPort = 80;
-
 exports.uploadPath = __dirname + '/../public/upload';
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
-
 exports.getMongoUri = () => {
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
 
 exports.redis = {host: '10.128.130.213', port: 6379};
-
 exports.cookieConfig = {
 	name: 'nbToken',
 	privateKey: '123_[newBeeToken]-!@#',

@@ -21,3 +21,14 @@ exports.authCookie = (req, res, next) => {
 
     return next();
 };
+
+
+exports.authSuperUser = (req, res, next) => {
+    if(!req.session.userInfo.email){
+        return res.send('Request Forbidden').status(404);
+    }
+    if(config.superUser.email.indexOf(req.session.userInfo.email) < 0){
+        return res.send('Request Forbidden').status(404);
+    }
+    next();
+};

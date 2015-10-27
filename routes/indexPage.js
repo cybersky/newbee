@@ -3,6 +3,7 @@
  */
 var express = require('express');
 var router = express.Router();
+var auth    = require('../middleware/auth');
 
 var signup = (req, res, next) => {
     return res.render('signup', {
@@ -27,6 +28,6 @@ var manager = (req, res, next) => {
         userInfo: req.session.userInfo
     });
 };
-router.get('/manager', manager);
+router.get('/manager', auth.authSuperUser, manager);
 
 module.exports = router;
