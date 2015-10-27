@@ -7,7 +7,8 @@ exports.applicationPort = 80;
 
 exports.uploadPath = __dirname + '/public/upload';
 
-exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'devsite'};
+exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
+
 exports.getMongoUri = () => {
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
@@ -35,7 +36,7 @@ exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 		override = require(overrideLocation);
 	} else if (fs.existsSync('profile/override.js')) {
 		console.log('Using local override configuration.');
-		override = require('./override');
+		override = require('./override.js');
 	}
 
 	for (var key in override) {

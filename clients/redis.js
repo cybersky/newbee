@@ -2,7 +2,7 @@
  * Created by Daniels on 10/22/15.
  */
 var redis = require('redis');
-var config = require('../config');
+var config = require('../profile/config');
 
 var client = redis.createClient(config.redis);
 

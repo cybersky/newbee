@@ -1,9 +1,7 @@
 /**
  * Created by Daniels on 10/22/15.
  */
-
-
-var config = require('../config');
+var config = require('../profile/config');
 var secure = require('../tools/secret');
 
 exports.checkStatus = (req, res, next) => {
