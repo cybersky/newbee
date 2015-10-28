@@ -1,9 +1,6 @@
 /**
  * Created by Daniels on 2015/9/26.
  */
-
-exports.superUser = {email: 'daniels.sun@runmit.com, hailong.zhao@runmit.com'};
-
 exports.applicationPort = 80;
 exports.uploadPath = __dirname + '/../public/upload';
 

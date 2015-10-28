@@ -3,7 +3,7 @@
  */
 var express = require('express');
 var router = express.Router();
-var User = require('../odm/user');
+var Lawyer = require('../odm/lawyer');
 var middleware = require('../middleware/auth');
 
 var root = (req, res, next) => {

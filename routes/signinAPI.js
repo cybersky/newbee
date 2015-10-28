@@ -3,7 +3,7 @@
  */
 var express = require('express');
 var router = express.Router();
-var User	= require('../odm/user');
+var Lawyer	= require('../odm/lawyer');
 var async	= require('async');
 var _		= require('lodash');
 var validator=require('validator');
@@ -12,7 +12,7 @@ var middleware = require('../middleware/uploader');
 var config  = require('../profile/config');
 
 
-var userLogin = (req, res, next) => {
+var LawyerLogin = (req, res, next) => {
     var email = req.body['email'] || '';
     var pass  = req.body['password'] || '';
 
@@ -22,7 +22,7 @@ var userLogin = (req, res, next) => {
 
     async.waterfall([
         (cb) => {
-            User.getUserByCondition({email: email}, cb);
+            Lawyer.getLawyerByCondition({email: email}, cb);
         },
         (docs, cb) => {
             if(!docs) return cb({rtn: 1, notice:'emailNotice' ,message: 'The Email you typed do not matched'});
@@ -40,17 +40,13 @@ var userLogin = (req, res, next) => {
         res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
         if(docs.password) delete docs._doc.password;
 
-        docs._doc.is_admin = false;
-        if(config.superUser.email.indexOf(docs.email) >= 0){
-            docs._doc.is_admin = true;
-        }
         req.session.userInfo = docs;
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });
 
 };
 
-router.post('/user/signin', userLogin);
+router.post('/lawyer/signin', LawyerLogin);
 
 
 module.exports = router;

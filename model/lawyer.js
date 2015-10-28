@@ -9,7 +9,7 @@ var plugins	= require('./plugins');
 
 
 
-var UserSchema = exports.UserSchema = new Schema({
+var lawyerSchema = exports.LawyerSchema = new Schema({
 	username: { type: String },
 	password: { type: String },
 	email: { type: String },
@@ -25,13 +25,13 @@ var UserSchema = exports.UserSchema = new Schema({
 	authentication: {type: Boolean, default: false }
 });
 
-UserSchema.plugin(plugins.hiddenFields);
-UserSchema.plugin(plugins.documentDate);
+lawyerSchema.plugin(plugins.hiddenFields);
+lawyerSchema.plugin(plugins.documentDate);
 
-UserSchema.index({lawyerId: 1},{unique: true});
-UserSchema.index({email: 1}, {unique: true});
-UserSchema.index({phoneNumber: 1}, {unique: true});
-UserSchema.index({identityNumber: 1}, {unique: true});
+lawyerSchema.index({lawyerId: 1},{unique: true});
+lawyerSchema.index({email: 1}, {unique: true});
+lawyerSchema.index({phoneNumber: 1}, {unique: true});
+lawyerSchema.index({identityNumber: 1}, {unique: true});
 
 
-exports.User = mongoose.model('User', UserSchema);
+exports.Lawyer = mongoose.model('Lawyer', lawyerSchema);

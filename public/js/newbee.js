@@ -4,14 +4,14 @@
 
 
 
-var SignUp = {create: 'POST /ua/user/signup'};
-var SignIn = {auth: 'POST /ua/user/signin'};
+var SignUp = {create: 'POST /ua/lawyer/signup'};
+var SignIn = {auth: 'POST /ua/lawyer/signin'};
 
 var Manager = {
-    findAll: 'GET /va/user?start={start}&rows={rows}',
-    findOne: 'GET /va/user/{id}',
-    update:  'PUT /va/user/{id}',
-    destroy: 'DELETE /va/user/{id}'
+    findAll: 'GET /va/lawyer?start={start}&rows={rows}',
+    findOne: 'GET /va/lawyer/{id}',
+    update:  'PUT /va/lawyer/{id}',
+    destroy: 'DELETE /va/lawyer/{id}'
 };
 
 var SignUpModel = new Model(SignUp);
@@ -19,8 +19,8 @@ var SignInModel = new Model(SignIn);
 var ManagerModel= new Model(Manager);
 
 var dataModel = {
-    'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/user/signup'},
-    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/user/signin'},
+    'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/lawyer/signup'},
+    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/lawyer/signin'},
     'manager':{model: ManagerModel,view: '#managerDiv'}
 };
 
@@ -146,62 +146,6 @@ $(function(){
                     self.redirect('/');
                 });
 
-            },
-            onSign_up : function () {
-                var formData = new FormData();
-                var email = $('#email').val();
-                if(!validator.isEmail(email)) return errorTip({code: 1, message: '邮箱格式错误'});
-                var password = $('#password').val();
-                var c_password = $('#cpassword').val();
-                if(password != c_password) return errorTip({code: 1 , message: '两次密码不一致'});
-
-                var phone = $('#phoneNumber').val();
-                if(!validator.isMobilePhone(phone, 'zh-CN')) return errorTip({code: 1, message: '手机号码格式错误'});
-
-                var id = $('#identityNumber').val();
-                if(!id) return errorTip({code: 1, message: '身份证号码不能为空'});
-                if(!validator.authId(id)) return errorTip({code: 1, message: '身份证号码格式错误'});
-
-                var data = {
-                    username : $('#username').val(), password: password, email: email,
-                    phoneNumber:phone ,
-                    identityNumber:  id,
-                    identityImage : document.getElementById('identityImage').files[0],
-                    lawyerId: $('#lawyerId').val(),
-                    lawyerLocation: $('#lawyerLocation').val(),
-                    lawServiceArea: $('#lawServiceArea').val(),
-                    lawyerIdImage: document.getElementById('lawyerIdImage').files[0]
-                };
-
-                for (var key in data) {
-                    if (!data[key]) return errorTip({code: 1, message: 'Params error'});
-                    formData.append(key, data[key]);
-                }
-
-                var self   = this;
-                var xhr    = new XMLHttpRequest();
-                xhr.open("POST", profile.post, true);
-                xhr.onload = function () {
-
-                    try {
-                        var res = typeof this.responseText === 'string' ? JSON.parse(this.responseText) : this.responseText;
-                    } catch (e) {
-                        return errorTip({code: 1, message: e});
-                    }
-
-                    var err = res.code && res.code > 0 ? true : false;
-                    err     = res.err && res.err > 0 ? true : false;
-
-                    if (this.status == 200 && !err) {
-
-                        $('#createForm').hide();
-                        self.refreshModel();
-                        return successTip({code: 0, message: '注册成功'}, 1000 * 2, true);
-                        //return self.clearInput(['title', 'description', 'image', 'start', 'end']);
-                    }
-                    return errorTip(this.responseXML || this.responseText);
-                };
-                xhr.send(formData);
             },
             clearInput       : function (ids) {
                 if (!ids) return false;

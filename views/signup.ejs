@@ -88,7 +88,7 @@
 					<input type="file" accept="image/*" id="lawyerIdImage" name="lawyerIdImage">
 				</div>
 				<div class="col-sm-4">
-					<button type="submit" class="btn btn-info" v-on="click:onSign_up">提交</button>
+					<button type="submit" class="btn btn-info" onclick="postLawyerData()">提交</button>
 				</div>
 			</div>
 		</div>
@@ -97,7 +97,114 @@
 
 </div>
 </body>
-<script type="application/javascript" src="/js/vue.min.js"></script>
-<script type="application/javascript" src="/js/model.js"></script>
-<script type="application/javascript" src="/js/newbee.js"></script>
+<script>
+
+	validator.authId = function(id){
+		if(!id) return false;
+		var re = new RegExp(/^[1-9]\d{16}[\d|x|X]$/g);
+		return re.test(id);
+	};
+
+	var encaseDialog = function (opts) {
+		// Using init options
+		return new BootstrapDialog(opts);
+	};
+
+	var successTip = errorTip = function (message, timeout, forceRefresh) {
+		forceRefresh = forceRefresh || false;
+		timeout = timeout || (5 * 1000);
+		var msg = {code: 0};
+		if (message) {//success
+			try {
+				msg = message;
+				if (!_.isObject(message)) {
+					msg = JSON.parse(message);
+				}
+			} catch (error) {
+				msg = {code: 0, message: message};
+			}
+		}
+		var dialog = encaseDialog({title: '提示', message: ''});
+		if(msg.rtn) msg.code = msg.rtn;
+		if ((msg.code && msg.code != 0) || (msg.err && msg.err != 0)) {
+			dialog.setMessage(msg.message || '未知错误[Unknown error]');
+			dialog.setType(BootstrapDialog.TYPE_DANGER);
+			dialog.open();
+		} else {
+			dialog.setMessage(msg.message || '成功!');
+			dialog.setType(BootstrapDialog.TYPE_SUCCESS);
+			dialog.open();
+		}
+		setTimeout(function () {
+			//closing tip window
+			dialog.close();
+
+			//force refresh
+			if (forceRefresh) window.location.href = window.location.href;
+		}, timeout);
+	};
+
+	var deliverMessageToNotice = function(elementId, message, timeout){
+		var el = document.getElementById(elementId);
+		el.innerHTML = message || '';
+		setTimeout(function(){
+			el.innerHTML = '';
+		}, timeout || 1000 * 3);
+	};
+
+	function postLawyerData() {
+		var formData = new FormData();
+		var email = $('#email').val();
+		if (!validator.isEmail(email)) return errorTip({code: 1, message: '邮箱格式错误'});
+		var password = $('#password').val();
+		var c_password = $('#cpassword').val();
+		if (password != c_password) return errorTip({code: 1, message: '两次密码不一致'});
+
+		var phone = $('#phoneNumber').val();
+		if (!validator.isMobilePhone(phone, 'zh-CN')) return errorTip({code: 1, message: '手机号码格式错误'});
+
+		var id = $('#identityNumber').val();
+		if (!id) return errorTip({code: 1, message: '身份证号码不能为空'});
+		if (!validator.authId(id)) return errorTip({code: 1, message: '身份证号码格式错误'});
+
+		var data = {
+			username: $('#username').val(), password: password, email: email,
+			phoneNumber: phone,
+			identityNumber: id,
+			identityImage: document.getElementById('identityImage').files[0],
+			lawyerId: $('#lawyerId').val(),
+			lawyerLocation: $('#lawyerLocation').val(),
+			lawServiceArea: $('#lawServiceArea').val(),
+			lawyerIdImage: document.getElementById('lawyerIdImage').files[0]
+		};
+
+		for (var key in data) {
+			if (!data[key]) return errorTip({code: 1, message: 'Params error'});
+			formData.append(key, data[key]);
+		}
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", '/ua/lawyer/signup', true);
+		xhr.onload = function () {
+
+			try {
+				var res = typeof this.responseText === 'string' ? JSON.parse(this.responseText) : this.responseText;
+			} catch (e) {
+				return errorTip({code: 1, message: e});
+			}
+
+			var err;
+			err = res.code && res.code > 0 ? true : false;
+			err = res.err && res.err > 0 ? true : false;
+			err = res.rtn && res.rtn > 0 ? true : false;
+
+			if (this.status == 200 && !err) {
+				return successTip({code: 0, message: '注册成功'}, 1000 * 2, true);
+				//return self.clearInput(['title', 'description', 'image', 'start', 'end']);
+			}
+			return errorTip(this.responseXML || this.responseText);
+		};
+		xhr.send(formData);
+	}
+</script>
 </html>

@@ -8,7 +8,7 @@ var compression = require('compression');
 var mongo	= require('./clients/mongo');
 
 var routes = require('./routes/index');
-var usersAPI = require('./routes/userAPI');
+var lawyerAPI = require('./routes/lawyerAPI');
 var signup = require('./routes/signupAPI');
 var signin = require('./routes/signinAPI');
 var indexPage = require('./routes/indexPage');
@@ -43,8 +43,10 @@ app.use(session.storeSessionToRedis());
 
 app.use('/', routes);
 app.use('/up', indexPage);
-app.use('/va', usersAPI);
-app.use('/ua', [signup, signin, signout]);
+app.use('/va', lawyerAPI);
+app.use('/ua', signup);
+app.use('/ua', signin);
+app.use('/ua', signout);
 
 //app.use('/wx', weixinRoutes);
 

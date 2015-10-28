@@ -28,6 +28,6 @@ var manager = (req, res, next) => {
         userInfo: req.session.userInfo
     });
 };
-router.get('/manager', auth.authSuperUser, manager);
+router.get('/manager', manager);
 
 module.exports = router;

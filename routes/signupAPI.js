@@ -3,7 +3,7 @@
  */
 var express = require('express');
 var router = express.Router();
-var User	= require('../odm/user');
+var Lawyer	= require('../odm/lawyer');
 var async	= require('async');
 var _		= require('lodash');
 var validator=require('validator');
@@ -17,66 +17,66 @@ validator.authId = function(id){
     return re.test(id);
 };
 
-var userRegister = (req, res, next) => {
+var LawyerRegister = (req, res, next) => {
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({code: 1 , message: 'Missing lawyer id image'});
     if(!files['identityImage']) return res.send({code: 1 , message: 'Missing identity image'});
-    var user = {};
-    user.username 		= _.trim(req.body['username'])  		|| '';
-    user.password 		= _.trim(req.body['password'])  		|| '';
-    user.email	  		= _.trim(req.body['email'])				|| '';
-    user.phoneNumber	= _.trim(req.body['phoneNumber'])       || '';
-    user.identityNumber = _.trim(req.body['identityNumber'])    || '';
-    user.identityFilename = '/upload/' + files.identityImage[0].filename;
-    user.lawyerIdFilename = '/upload/' + files.lawyerIdImage[0].filename;
-    user.lawyerId       = _.trim(req.body['lawyerId'])          || '';
-    user.lawyerLocation = _.trim(req.body['lawyerLocation']);
-    user.lawServiceArea = _.trim(req.body['lawServiceArea']);
+    var lawyer = {};
+    lawyer.username 		= _.trim(req.body['username'])  		|| '';
+    lawyer.password 		= _.trim(req.body['password'])  		|| '';
+    lawyer.email	  		= _.trim(req.body['email'])				|| '';
+    lawyer.phoneNumber	= _.trim(req.body['phoneNumber'])       || '';
+    lawyer.identityNumber = _.trim(req.body['identityNumber'])    || '';
+    lawyer.identityFilename = '/upload/' + files.identityImage[0].filename;
+    lawyer.lawyerIdFilename = '/upload/' + files.lawyerIdImage[0].filename;
+    lawyer.lawyerId       = _.trim(req.body['lawyerId'])          || '';
+    lawyer.lawyerLocation = _.trim(req.body['lawyerLocation']);
+    lawyer.lawServiceArea = _.trim(req.body['lawServiceArea']);
 
 
     var err = '';
-    if(!user.username) err			= 'User name can not be empty';
-    if(!user.password) err			= 'Password can not be empty';
-    if(!user.email)	   err			= 'Email can not be empty';
-    if(!validator.isEmail(user.email)) err = 'Email format error';
-    if(!user.phoneNumber)err		= 'Phone number can not be empty';
-    if(!validator.isMobilePhone(user.phoneNumber, 'zh-CN')) err = 'Phone number error';
-    if(!user.lawyerId) err          = 'Lawyer id can not be empty';
-    if(!user.identityNumber)err	    = 'Identical Number can not be empty';
-    if(!validator.authId(user.identityNumber)) err = 'Identical Number format error';
+    if(!lawyer.username) err			= 'User name can not be empty';
+    if(!lawyer.password) err			= 'Password can not be empty';
+    if(!lawyer.email)	   err			= 'Email can not be empty';
+    if(!validator.isEmail(lawyer.email)) err = 'Email format error';
+    if(!lawyer.phoneNumber)err		= 'Phone number can not be empty';
+    if(!validator.isMobilePhone(lawyer.phoneNumber, 'zh-CN')) err = 'Phone number error';
+    if(!lawyer.lawyerId) err          = 'Lawyer id can not be empty';
+    if(!lawyer.identityNumber)err	    = 'Identical Number can not be empty';
+    if(!validator.authId(lawyer.identityNumber)) err = 'Identical Number format error';
     if(err) return res.send({rtn: 1, message: err});
 
 
     async.waterfall([
         (cb) => {
             //auth post data
-            User.getUserByCondition({email: user.email}, cb);
+            Lawyer.getLawyerByCondition({email: lawyer.email}, cb);
         },
         (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'email already exists'});
-            User.getUserByCondition({phoneNumber: user.phoneNumber}, cb);
+            Lawyer.getLawyerByCondition({phoneNumber: lawyer.phoneNumber}, cb);
         },
         (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'phoneNumber already exists'});
-            User.getUserByCondition({identityNumber: user.identityNumber}, cb);
+            Lawyer.getLawyerByCondition({identityNumber: lawyer.identityNumber}, cb);
         },
         (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'identityNumber already exists'});
-            User.getUserByCondition({lawyerId: user.lawyerId}, cb);
+            Lawyer.getLawyerByCondition({lawyerId: lawyer.lawyerId}, cb);
         },
         (docs, cb) => {
             if(docs) return cb({rtn: 1, message:'lawyer Id already exists'});
-            user.password = secure.sha1(user.password, 'utf-8');
-            User.createUser(user, cb);
+            lawyer.password = secure.sha1(lawyer.password, 'utf-8');
+            Lawyer.createLawyer(lawyer, cb);
         }
     ], (err, docs) => {
         if(err) return res.send(err);
-        res.send({rtn: 0, message:'Create user successful', data: docs});
+        res.send({rtn: 0, message:'Create Lawyer successful', data: docs});
     });
 };
 
 
-router.post('/user/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , userRegister);
+router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , LawyerRegister);
 
 
 module.exports = router;
