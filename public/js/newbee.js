@@ -2,9 +2,6 @@
  * Created by Daniels on 10/19/15.
  */
 
-
-
-var SignUp = {create: 'POST /ua/lawyer/signup'};
 var SignIn = {auth: 'POST /ua/lawyer/signin'};
 
 var Manager = {
@@ -14,12 +11,10 @@ var Manager = {
     destroy: 'DELETE /va/lawyer/{id}'
 };
 
-var SignUpModel = new Model(SignUp);
 var SignInModel = new Model(SignIn);
 var ManagerModel= new Model(Manager);
 
 var dataModel = {
-    'signup': {model: SignUpModel, view: '#signupDiv', post: '/ua/lawyer/signup'},
     'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/lawyer/signin'},
     'manager':{model: ManagerModel,view: '#managerDiv'}
 };
