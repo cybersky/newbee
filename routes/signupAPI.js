@@ -19,8 +19,8 @@ validator.authId = function(id){
 
 var LawyerRegister = (req, res, next) => {
     var files = req.files || {};
-    if(!files['lawyerIdImage']) return res.send({code: 1 , message: 'Missing lawyer id image'});
-    if(!files['identityImage']) return res.send({code: 1 , message: 'Missing identity image'});
+    if(!files['lawyerIdImage']) return res.send({rtn: 1, code: 1 , message: 'Missing lawyer id image'});
+    if(!files['identityImage']) return res.send({rtn: 1, code: 1 , message: 'Missing identity image'});
     var lawyer = {};
     lawyer.username 		= _.trim(req.body['username'])  		|| '';
     lawyer.password 		= _.trim(req.body['password'])  		|| '';
@@ -35,16 +35,16 @@ var LawyerRegister = (req, res, next) => {
 
 
     var err = '';
-    if(!lawyer.username) err			= 'User name can not be empty';
-    if(!lawyer.password) err			= 'Password can not be empty';
-    if(!lawyer.email)	   err			= 'Email can not be empty';
-    if(!validator.isEmail(lawyer.email)) err = 'Email format error';
-    if(!lawyer.phoneNumber)err		= 'Phone number can not be empty';
-    if(!validator.isMobilePhone(lawyer.phoneNumber, 'zh-CN')) err = 'Phone number error';
-    if(!lawyer.lawyerId) err          = 'Lawyer id can not be empty';
-    if(!lawyer.identityNumber)err	    = 'Identical Number can not be empty';
-    if(!validator.authId(lawyer.identityNumber)) err = 'Identical Number format error';
-    if(err) return res.send({rtn: 1, message: err});
+    if(!lawyer.username) err			= '用户名不能为空';
+    if(!lawyer.password) err			= '密码不能为空';
+    if(!lawyer.email)	   err			= '邮箱不能为空';
+    if(!validator.isEmail(lawyer.email)) err = '邮箱格式错误';
+    if(!lawyer.phoneNumber)err		    = '手机号码不能为空';
+    if(!validator.isMobilePhone(lawyer.phoneNumber, 'zh-CN')) err = '手机号码格式错误';
+    if(!lawyer.lawyerId) err            = '律师ID不能为空';
+    if(!lawyer.identityNumber)err	    = '身份证号码不能为空';
+    if(!validator.authId(lawyer.identityNumber)) err = '身份证号码格式错误';
+    if(err) return res.send({rtn: 1, code: 1, message: err});
 
 
     async.waterfall([
@@ -53,25 +53,25 @@ var LawyerRegister = (req, res, next) => {
             Lawyer.getLawyerByCondition({email: lawyer.email}, cb);
         },
         (docs, cb) => {
-            if(docs) return cb({rtn: 1, message:'email already exists'});
+            if(docs) return cb({rtn: 1, message:'邮箱已经被注册'});
             Lawyer.getLawyerByCondition({phoneNumber: lawyer.phoneNumber}, cb);
         },
         (docs, cb) => {
-            if(docs) return cb({rtn: 1, message:'phoneNumber already exists'});
+            if(docs) return cb({rtn: 1, message:'手机号码已经被注册'});
             Lawyer.getLawyerByCondition({identityNumber: lawyer.identityNumber}, cb);
         },
         (docs, cb) => {
-            if(docs) return cb({rtn: 1, message:'identityNumber already exists'});
+            if(docs) return cb({rtn: 1, message:'身份证号码已经被注册'});
             Lawyer.getLawyerByCondition({lawyerId: lawyer.lawyerId}, cb);
         },
         (docs, cb) => {
-            if(docs) return cb({rtn: 1, message:'lawyer Id already exists'});
+            if(docs) return cb({rtn: 1, message:'律师执业证号已经被注册'});
             lawyer.password = secure.sha1(lawyer.password, 'utf-8');
             Lawyer.createLawyer(lawyer, cb);
         }
     ], (err, docs) => {
         if(err) return res.send(err);
-        res.send({rtn: 0, message:'Create Lawyer successful', data: docs});
+        res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });
 };
 

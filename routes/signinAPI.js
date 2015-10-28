@@ -40,7 +40,8 @@ var LawyerLogin = (req, res, next) => {
         res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
         if(docs.password) delete docs._doc.password;
 
-        req.session.userInfo = docs;
+        req.session.userInfo    = docs;
+        req.session.lawyerInfo  = docs;
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });
 

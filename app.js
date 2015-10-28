@@ -15,6 +15,8 @@ var indexPage = require('./routes/indexPage');
 var session = require('./middleware/session');
 var setHeaders = require('./middleware/setHeaders');
 var signout = require('./routes/signoutAPI');
+var adminAPI= require('./routes/adminAPI');
+var adminPage = require('./routes/adminPage');
 //var weixinRoutes = require('./routes/weixinRoutes');
 
 var app = express();
@@ -44,9 +46,9 @@ app.use(session.storeSessionToRedis());
 app.use('/', routes);
 app.use('/up', indexPage);
 app.use('/va', lawyerAPI);
-app.use('/ua', signup);
-app.use('/ua', signin);
-app.use('/ua', signout);
+app.use('/ua', [signup, signin, signout]);
+app.use('/ap', adminPage);
+app.use('/aa', adminAPI);
 
 //app.use('/wx', weixinRoutes);
 
