@@ -32,3 +32,8 @@ exports.authSuperUser = (req, res, next) => {
     }
     next();
 };
+
+exports.authOperatorCookie = (req, res, next) => {
+    if(!req.cookies[config.operatorCookie.name]) return res.redirect('/ap/login');
+    next();
+};

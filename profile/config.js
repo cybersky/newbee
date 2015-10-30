@@ -18,6 +18,14 @@ exports.cookieConfig = {
 		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
 	}
 };
+exports.operatorCookie = {
+	name: 'opToken',
+	privateKey: '!@#_{operatorToken}-=321',
+	options: {
+		path: '/', expires: Date.now() + 1000 * 60 * 60 * 24 * 30,
+		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
+	}
+};
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
