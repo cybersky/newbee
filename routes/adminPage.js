@@ -6,15 +6,15 @@ var router = express.Router();
 var auth    = require('../middleware/auth');
 var config  = require('../profile/config');
 
-var index = (req, res, next) => {
-    return res.send('I am index');
+
+var root = (req, res, next) => {
+	return res.redirect('/ap/manager');
 };
-router.get('/', auth.authOperatorCookie, index);
+
 
 var login = (req, res, next) => {
     return res.render('admin/signin', {options:{}, adminInfo: req.session.adminInfo});
 };
-router.get('/login', login);
 
 var manager = (req, res, next) => {
     return res.render('admin/manager', {
@@ -22,6 +22,10 @@ var manager = (req, res, next) => {
         adminInfo: req.session.adminInfo
     });
 };
-router.get('/manager', manager);
+
+router.get('/', root);
+router.get('/signin', auth.authAdminSignIn, login);
+router.get('/manager', auth.authOperatorCookie,  manager);
+
 
 module.exports = router;

@@ -27,6 +27,7 @@
     "utility": "^1.5.0",
     "validator": "^4.1.0",
     "vhost": "^3.0.2",
-    "weixin-service": "^1.0.5"
+    "weixin-service": "^1.0.5",
+    "node-uuid": "~1.4.3"
   }
 }

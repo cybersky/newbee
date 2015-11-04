@@ -5,12 +5,19 @@ var express = require('express');
 var router = express.Router();
 var config  = require('../profile/config');
 
-var logout = (req, res, next) => {
+var lawyerSignOut = (req, res, next) => {
     res.clearCookie(config.cookieConfig.name, {path: config.cookieConfig.options.path});
     req.session.destroy();
     return res.redirect('/');
 };
-router.get('/user/signout', logout);
+
+var adminSignOut = (req, res, next) => {
+	res.clearCookie(config.operatorCookie.name, {path: config.operatorCookie.options.path});
+	req.session.destroy();
+	return res.redirect('/ap/signin');
+};
+router.get('/user/signout', lawyerSignOut);
+router.get('/admin/signout', adminSignOut);
 
 
 module.exports = router;

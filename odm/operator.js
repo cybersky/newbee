@@ -14,10 +14,22 @@ exports.createOperator = (operatorInfo, callback) => {
     });
 };
 
-exports.getOperator = () => {};
-exports.getOperatorById = () => {};
-exports.getOperatorByCondition = () => {};
-exports.operatorCount = () => {};
-exports.getOperators= () => {};
+exports.getOperators= (start, rows, callback) => {
+	start = start || 0;
+	rows  = rows  || 10;
+	return Operator.find().skip(start).limit(rows).exec(callback);
+};
+exports.getOperatorById = (operatorId, callback) => {
+	if(!operatorId) return callback({code: 1, message: 'The operator id can not be found'});
+	var condition = {'_id': operatorId};
+	return Operator.findOne(condition, callback);
+};
+exports.getOperatorByCondition = (query, callback) => {
+	query = query || {};
+	return Operator.findOne(query, callback);
+};
+exports.operatorCount = (callback) => {
+	return Operator.count(callback);
+};
 exports.deleteOperator = () => {};
 exports.updateOperator = () => {};

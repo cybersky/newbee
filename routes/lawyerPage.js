@@ -5,21 +5,28 @@ var express = require('express');
 var router = express.Router();
 var auth    = require('../middleware/auth');
 
+var root = (req, res, next) => {
+	return res.render('index', {
+		options: {target: 'signup', action:'none'},
+		userInfo: req.session.userInfo
+	});
+};
+
 var signup = (req, res, next) => {
-    return res.render('signup', {
+    return res.render('lawyer/signup', {
         options: {target: 'signup', action:'none'},
         userInfo: req.session.userInfo
     });
 };
-router.get('/signup', signup);
 
-
-var signin = (req, res, next) => {return res.render('signin',
-    {
+var signin = (req, res, next) => {
+	return res.render('lawyer/signin', {
         options: {target: 'signin', action:'none'},
         userInfo: req.session.userInfo
     }
 )};
-router.get('/signin', signin);
+router.get('/', auth.authCookie, root);
+router.get('/signup', signup);
+router.get('/signin', auth.authLawyerSignIn, signin);
 
 module.exports = router;
