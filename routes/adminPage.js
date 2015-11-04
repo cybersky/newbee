@@ -12,8 +12,16 @@ var index = (req, res, next) => {
 router.get('/', auth.authOperatorCookie, index);
 
 var login = (req, res, next) => {
-    return res.send('I am login page');
+    return res.render('admin/signin', {options:{}, adminInfo: req.session.adminInfo});
 };
 router.get('/login', login);
+
+var manager = (req, res, next) => {
+    return res.render('admin/manager', {
+        options: {target: 'manager'},
+        adminInfo: req.session.adminInfo
+    });
+};
+router.get('/manager', manager);
 
 module.exports = router;
