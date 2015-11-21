@@ -18,6 +18,8 @@ var signout = require('./routes/signoutAPI');
 var adminAPI= require('./routes/adminAPI');
 var adminPage = require('./routes/adminPage');
 //var weixinRoutes = require('./routes/weixinRoutes');
+var vhost = require('vhost');
+
 
 var app = express();
 
@@ -86,4 +88,7 @@ app.use(function(err, req, res, next) {
 });
 
 
-module.exports = app;
+var appmain = express();
+appmain.use(vhost('www.newbee.com'), app);
+
+module.exports = appmain;

@@ -40,6 +40,7 @@ var CaseBidSchema = exports.CaseBidSchema = new Schema({
     price:{ type:Number},
     percent:{type:Number}
 });
+
 CaseBidSchema.plugin(plugins.hiddenFields);
 CaseBidSchema.plugin(plugins.documentDate);
 
