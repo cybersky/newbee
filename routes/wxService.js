@@ -1,8 +1,6 @@
 /**
  * Created by hailongzhao on 10/25/15.
  */
-
-
 var options = {
     appid:               "wx9255a6db434d4445",
     appsecret:           "your app_secret",
@@ -21,12 +19,14 @@ var noticeHandle = function(req, res, next){
 };
 
 var eventHandle = function(req, res, next){
-    res.message('hello');
+    console.log('body', req.body);
+
+    res.text('hello, world');
 };
 
 
-router.post('/notice', wxs.noticeHandle(noticeHandle));
-router.post('/event', wxs.eventHandle(eventHandle));
+//router.post('/notice', wxs.noticeHandle(noticeHandle));
+router.post('/notice', wxs.eventHandle(eventHandle));
 router.get('/notice', wxs.enable());
 
 

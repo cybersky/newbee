@@ -9,6 +9,7 @@ mongoose.connect(uri, function(err){
 	if(err) {
 		console.log(err);
 	}
+	console.log('mongodb is connected to', uri);
 });
 
 
