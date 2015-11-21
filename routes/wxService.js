@@ -16,7 +16,7 @@ var router = express.Router();
 
 var eventHandle = function(req, res, next){
     console.log('body', req.body);
-    res.text('echo', req.body.Content);
+    res.text('echo' + req.body['Content']);
 };
 
 
