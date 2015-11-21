@@ -17,6 +17,8 @@ var CaseSchema = exports.CaseSchema = new Schema({
     target:{type:String},//诉求描述
     tag:[{type:String}],//案件类型，用tag来标记
 
+    type:
+
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     askType:{type:String},//奖赏类别 'price' or 'percent'
     price:{ type:Number},//固定金额

@@ -1,0 +1,123 @@
+an auction-bid system. 案件投标竞标系统
+
+**** business concept *****
+
+*case status
+raw|online|bid|cancel|target|process|close
+/*
+	raw: 案件处于初始状态，需要后台人员整理归类审核才可上线
+	online:案件经过了运营人员审核，上线招标
+	bid:已有律师投标
+	cancel:客户取消案件
+	target:客户已经选择了投标律师
+	process:案件开始受理案件，进展中
+	close:案件关闭 
+	*prepaid:
+	*postpaid
+	*/
+
+***** technical concept ****
+
+*URL type:
+/ia/ == internal api (require internal auth logic)
+/ua/ == public api (no auth required)
+/va/ == private api (require private auth logic, eg. userId&userToken) 
+
+/ip/ == internal html page
+/up/ == public html page
+/vp/ == private html page
+
+* general api header:
+-wxOpenId
+-userToken?
+
+* case price pattern: 
+per:60(表示支付案件获得金额的60%，后面追加0-100的数字) or rmb:300(表示支付RMB绝对金额)
+
+1.用户创建案件API
+
+POST /va/cases
+{
+	desc:'这是一个案件的描述',
+	type:'居住类|交通类|婚姻家庭类|*',
+	subtype:'是否详细分类？',
+	lat:'xxx',
+	lon:'yyy',
+	/*  */
+	price:'此案件用户出价'	,
+	wxOpenId:'theOpenIdOfWeixin',
+	userId:'userId'
+}
+
+2.运营人员整理案件API
+
+POST /ia/case/:caseId
+{
+	status:'raw|online|bid|cancel|target|process|close'
+	<desc>:'经过运营人员修改的案件描述',
+	<type>:'分类整理',
+	<subtype>:'子分类整理',
+	price:'price pattern',
+	opId:'operator ID'
+}
+
+3. 获取所有正在招标的案件
+
+GET /va/cases?sort=[location|price|bids|default]
+
+
+4. 律师竞标案件API
+
+POST /va/bid/:caseId
+
+{
+	lawyerId:'lawyer id',
+	priceType:'number|percent',
+	price:'此案件律师投标价, price pattern',
+	comment:'投标描述'
+}
+
+5. 用户指定办案律师API
+
+POST /va/target/:caseId
+
+{
+	lawyerId:'lawyer id'
+}
+
+6. 评论案件API
+
+/* 只允许案件拥有者和律师评论案件 */
+POST /va/comment/:caseId
+
+{
+	comment:'this is the comment of case'
+}
+
+7. 获取案件评论API
+
+GET /va/comment/:caseId
+
+8. 律师获取案件API
+
+/*获取我竞标的案件(type=bid), 获取我竞标成功的案件(type=target) */
+GET /va/lawyer/:lawyerId/cases?type=bid|target
+
+9. 用户获取案件API
+
+/* 获取我的案件状态，案件的所有竞标列表 */
+GET /va/user/:userId/cases
+
+10. 律师或者用户修改案件状态API
+
+POST /va/case/:caseId
+{
+	type:'process|cancel' /* 律师可以修改案件状态为process,close, 用户可以修改为cancel,close */
+}
+
+11. 律师或者用户在结案之后的互相评价API
+
+POST /va/comment/:caseId/lawyer/:lawyerId
+
+
+
