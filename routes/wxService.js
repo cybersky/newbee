@@ -14,19 +14,13 @@ var express = require('express');
 var router = express.Router();
 
 
-var noticeHandle = function(req, res, next){
-
-};
-
 var eventHandle = function(req, res, next){
     console.log('body', req.body);
-
-    res.text('hello, world');
+    res.text('echo', req.body.Content);
 };
 
 
-//router.post('/notice', wxs.noticeHandle(noticeHandle));
-router.post('/notice', wxs.eventHandle(eventHandle));
+router.post('/notice', wxs.bodyParserMiddlewares(), wxs.eventHandle(eventHandle));
 router.get('/notice', wxs.enable());
 
 
