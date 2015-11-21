@@ -18,14 +18,21 @@ raw|online|bid|cancel|target|process|close
 
 ***** technical concept ****
 
-*URL type:
-/ia/ == internal api (require internal auth logic)
-/ua/ == public api (no auth required)
-/va/ == private api (require private auth logic, eg. userId&userToken) 
+*URL type(different api required different authentication logic):
 
+/ia/ == internal api (require internal auth logic)
 /ip/ == internal html page
+
+/aa/ == admin api(for admin operators)
+/ap/ == admin page(for admin operators)
+
+/ua/ == public api (no auth required)
 /up/ == public html page
+
+/va/ == private api (require private auth logic, eg. userId&userToken)
 /vp/ == private html page
+
+/ws/ == service for weixin request
 
 * general api header:
 -wxOpenId
