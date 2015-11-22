@@ -192,7 +192,7 @@ var handleConfirmCode = function(req, res, next){
             console.log('mobile', mobile, 'verify ok');
 
             var user = mongo.db.collection('users');
-            user.update({mobile:mobile}, {openId:openId}, {upsert:true}, function(err){
+            user.update({mobile:mobile}, {$set:{openId:openId}}, {upsert:true}, function(err){
                 if(err) return next(err);
                 console.log('insert into user');
                 res.send({rtn:0});

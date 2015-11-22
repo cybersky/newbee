@@ -14,9 +14,9 @@ var userSchema = exports.UserSchema = new Schema({
 userSchema.plugin(plugins.hiddenFields);
 userSchema.plugin(plugins.documentDate);
 
-userSchema.index({email: 1}, {unique: true});
-userSchema.index({mobile: 1}, {unique: true});
-userSchema.index({openId: 1}, {unique: true});
+userSchema.index({email: 1}, {unique: true, sparse:true});
+userSchema.index({mobile: 1}, {unique: true, sparse:true});
+userSchema.index({openId: 1}, {unique: true, sparse:true});
 
 
 exports.User = mongoose.model('User', userSchema);
