@@ -47,11 +47,14 @@ router.get('/admin/signout', adminSignOut);
 router.get('/', auth.authCookie, root);
 router.get('/signup', signup);
 router.get('/signin', auth.authLawyerSignIn, signin);
-
-
-
 router.get('/user/signout', lawyerSignOut);
 
+
+var userSignin = function(req, res, next){
+    res.render('user/signin');
+};
+
+router.get('/u/signup', userSignin);
 
 
 module.exports = router;

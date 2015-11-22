@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link href="/css/signin.css" rel="stylesheet">
+    <title>user signin</title>
+</head>
+
+<script type="application/javascript">
+    $(function(){
+        $('#getVerifyCode').click(function(){
+            var mobile = $('#inputMobile').val();
+            if(!/\d{11}/.test(mobile)) return alert('请输入正确的手机号');
+            $.post('/ua/voicecode', {mobile:mobile, openId:'thetestopenid'}, function(data, status){
+
+            });
+        });
+    });
+
+    var submitMobile = function(){
+        var mobile = $('#inputMobile').val();
+        var code = $('#inputCode').val();
+        if(!/^\d{11}$/.test(mobile)){
+            alert('请输入正确的手机号');
+            return false;
+        }
+        if(!/^\d{4}$/.test(code)) {
+            alert('请输入正确的验证码');
+            return false;
+        }
+
+        $.post('/ua/confirmcode', {mobile:mobile, code:code, openId:'thetestopenid'}, function(data, status){
+            if(data && data.rtn == 0) alert('注册成功！');
+            else alert('验证码错误');
+        });
+        return false;
+    };
+
+</script>
+
+
+<body>
+
+    <div class="container">
+
+        <form class="form-signin" onsubmit="return submitMobile()">
+
+            <h2 class="form-signin-heading">输入手机号码登录</h2>
+
+            <input type="text" id="inputMobile" class="form-control up" placeholder="输入手机号码" required autofocus>
+
+            <div class="input-group" class="form-control">
+                <input type="text" class="form-control down" id="inputCode" placeholder="输入验证码">
+                <div class="input-group-btn green">
+                    <input class="btn btn-default form-control right" type="button" id="getVerifyCode" value="获取验证码"/>
+                </div>
+            </div>
+
+            <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+
+        </form>
+
+    </div> <!-- /container -->
+
+</body>
+</html>
+

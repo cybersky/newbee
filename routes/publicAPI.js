@@ -8,6 +8,11 @@ var _		= require('lodash');
 var validator=require('validator');
 var secure	= require('../tools/secret');
 var middleware = require('../middleware/uploader');
+var m = require('moment');
+var request = require('request');
+var redis = require('../clients/redis');
+var config = require('../profile/config');
+var mongo = require('../clients/mongo');
 
 
 validator.authId = function(id){
@@ -107,5 +112,108 @@ router.post('/admin/signin', adminLogin);
 
 router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , LawyerRegister);
 
+
+
+var handleVoiceCode = function(req, res, next){
+
+    var mobile = req.body.mobile;
+    var openId = req.body.openId;
+
+    if(!/^\d{11}$/.test(mobile)) return next({rtn:config.errorCode.paramError, message:'invalid mobile number'});
+
+    //APP ID
+    var appId = config.ytxConfig.appId;
+    //APP TOKEN
+    var appToken = config.ytxConfig.appToken;
+
+    //ACCOUNT SID：
+    var accountId = config.ytxConfig.accountId;
+    //AUTH TOKEN：
+    var authToken = config.ytxConfig.authToken;
+
+    var testHost = config.ytxConfig.testHost;
+    var prodHost = config.ytxConfig.prodHost;
+    var path = config.ytxConfig.path;
+
+    var ts = m().format('YYYYMMDDHHmmss');
+    var sig = secure.md5([accountId, authToken, ts].join(''), 'utf8', 'hex').toUpperCase();
+
+    path = path.replace('{accountId}', accountId);
+    path = path.replace('{sig}', sig);
+
+    var auth = new Buffer([accountId, ts].join(':'), 'utf8').toString('base64');
+
+    var verifyCode = String.prototype.substr.call(Math.random(), 2, 4);
+
+    var option = {
+        url:testHost + path,
+        json:{appId:appId, verifyCode:verifyCode, playTimes:'2', to:mobile, displayNum:'777'},
+        headers:{
+            Authorization:auth
+        }
+    };
+    request.post(option, function(err, resp, body){
+        if(err) return next(err);
+
+        if(body && body.statusCode == '000000' ){
+            console.log('yunxtong ok, sent', option.json);
+
+            var k = [config.redisPrefix.verifyCode, mobile].join(':');
+            redis.client.setex(k, 90, verifyCode, function(err){
+                if(err) return next(err);
+            });
+            res.send({rtn:0});
+        }
+        else{
+            return next('invalid response:'+body);
+        }
+
+    });
+};
+
+var handleSMSCode = function(req, res, next){
+
+};
+
+var handleConfirmCode = function(req, res, next){
+    var mobile = req.body.mobile;
+    var openId = req.body.openId;
+    var verifyCode = req.body.code;
+
+    if(!/^\d{11}$/.test(mobile)) return next({rtn:config.errorCode.paramError, message:'invalid mobile number'});
+    if(!/^\d{4}$/.test(verifyCode)) return next({rtn:config.errorCode.paramError, message:'invalid code'});
+
+    var k = [config.redisPrefix.verifyCode, mobile].join(':');
+
+    redis.client.get(k, function(err, code){
+        if(err) return next(err);
+
+        if(code && code == verifyCode){
+            console.log('mobile', mobile, 'verify ok');
+
+            var user = mongo.db.collection('users');
+            user.update({mobile:mobile}, {openId:openId}, {upsert:true}, function(err){
+                if(err) return next(err);
+                console.log('insert into user');
+                res.send({rtn:0});
+            });
+        }else{
+            res.send({rtn:config.errorCode.serviceError, message:'no such code'});
+        }
+    });
+};
+
+
+router.post('/smscode', handleSMSCode);
+router.post('/voicecode', handleVoiceCode);
+router.post('/confirmcode', handleConfirmCode);
+
+//the error handler
+router.use(function(err, req, res, next){
+    if(err){
+        console.error(err);
+        res.send({rtn:config.errorCode.unknownError, message:err});
+    }
+});
 
 module.exports = router;
