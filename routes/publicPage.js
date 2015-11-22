@@ -54,7 +54,7 @@ var userSignin = function(req, res, next){
     res.render('user/signin');
 };
 
-router.get('/u/signup', userSignin);
+router.get('/us', userSignin);
 
 
 module.exports = router;
