@@ -27,6 +27,9 @@ exports.operatorCookie = {
 	}
 };
 
+
+exports.cookieSecret = '98sdfasjljr#$#$@$#dfljd*osiudf';
+
 //云通讯 config http://www.yuntongxun.com/
 
 exports.ytxConfig = {
@@ -75,5 +78,4 @@ exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 	for (var key in override) {
 		if (key in exports) exports[key] = override[key];
 	}
-
 })();

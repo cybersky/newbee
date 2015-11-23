@@ -1,4 +1,5 @@
 var express = require('express');
+var config = require('./profile/config');
 var path = require('path');
 //var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -35,11 +36,11 @@ app.set('x-powered-by', false);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('default'));
+app.use(logger('combined'));
 //app.use(favicon());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(config.cookieSecret));
 app.use(express.static(path.join(__dirname, 'public'), {
 	setHeaders: (res, path) => {
 		res.set("x-powered-by", "NewBee");

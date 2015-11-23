@@ -187,19 +187,19 @@ var handleConfirmCode = function(req, res, next){
 
     redis.client.get(k, function(err, code){
         if(err) return next(err);
+        //if(code != verifyCode) res.send({rtn:config.errorCode.serviceError, message:'no such code'});
 
-        if(code && code == verifyCode){
-            console.log('mobile', mobile, 'verify ok');
+        console.log('mobile', mobile, 'verify ok');
+        var user = mongo.db.collection('users');
 
-            var user = mongo.db.collection('users');
-            user.update({mobile:mobile}, {$set:{openId:openId}}, {upsert:true}, function(err){
-                if(err) return next(err);
-                console.log('insert into user');
-                res.send({rtn:0});
-            });
-        }else{
-            res.send({rtn:config.errorCode.serviceError, message:'no such code'});
-        }
+        user.findAndModify({mobile:mobile}, [], {$set:{openId:openId}}, {new:true,upsert:true }, function(err, result){
+            if(err) return next(err);
+            console.log('insert into user', result);
+            var id = result.value._id.toString();
+            res.cookie('userId', id, {maxAge:3600*1000, signed:true});
+            res.send({rtn:0});
+        });
+
     });
 };
 

@@ -13,12 +13,13 @@
 </head>
 
 <script type="application/javascript">
+
     $(function(){
         $('#getVerifyCode').click(function(){
             var mobile = $('#inputMobile').val();
             if(!/\d{11}/.test(mobile)) return alert('请输入正确的手机号');
             $.post('/ua/voicecode', {mobile:mobile, openId:'thetestopenid'}, function(data, status){
-
+                if(data&& data.rtn > 0) alert('error'+data.message);
             });
         });
     });
@@ -36,7 +37,7 @@
         }
 
         $.post('/ua/confirmcode', {mobile:mobile, code:code, openId:'thetestopenid'}, function(data, status){
-            if(data && data.rtn == 0) alert('注册成功！');
+            if(data && data.rtn == 0) window.location = '/vp/u/us2';
             else alert('验证码错误');
         });
         return false;

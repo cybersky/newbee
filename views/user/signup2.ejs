@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link href="/css/signin.css" rel="stylesheet">
+    <title>user signin</title>
+</head>
+
+<script type="application/javascript">
+
+    $(function(){
+        $('form').on('submit', function(event){
+            var p1 = $('#InputPassword1').val();
+            var p2 = $('#InputPassword2').val();
+            if(p1!=p2){
+                event.preventDefault();
+                alert('请确认密码相同');
+                return false;
+            }
+        });
+    });
+
+</script>
+
+
+<body>
+
+<div class="container">
+
+    <form method="post" action="/vp/u/us2" class="form-signin">
+
+        <h2 class="form-signin-heading">请完善用户信息</h2>
+
+        <div class="form-group">
+            <input type="text" class="form-control" name="username" id="InputUsername" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+            <input type="email" class="form-control" name="email" id="InputEmail1" placeholder="请输入邮件地址">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control up" name="pass" id="InputPassword1" placeholder="请设置密码">
+            <input type="password" class="form-control down" id="InputPassword2" placeholder="请确认密码">
+        </div>
+
+
+        <button type="submit" class="btn btn-lg btn-primary">确认提交</button>
+    </form>
+
+
+</div> <!-- /container -->
+
+</body>
+</html>
+

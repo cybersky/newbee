@@ -3,6 +3,22 @@
  */
 var config = require('../profile/config');
 var secure = require('../tools/secret');
+var mongo = require('../clients/mongo');
+var ObjectID = require('mongodb').ObjectID;
+var _ = require('underscore');
+
+exports.authUser = function(req, res, next){
+    var id = req.signedCookies.userId;
+    if(!id) return res.redirect('/up/us');//to phase 1 page, mobile number
+
+    var user = mongo.user();
+    user.findOne({_id:new ObjectID(id)}, function(err, user){
+        if(err) return res.status(404).send('Invalid UserId '+id);
+        req.user = _.pick(user, ['mobile', 'openId', 'email', 'username']);
+        req.user.id = user._id.toString();
+        next();
+    })
+};
 
 
 exports.authCookie = (req, res, next) => {
@@ -17,7 +33,6 @@ exports.authCookie = (req, res, next) => {
         res.clearCookie(config.cookieConfig.name);
         return res.redirect('/up/signin');
     }
-
     return next();
 };
 
