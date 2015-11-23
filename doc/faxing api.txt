@@ -14,7 +14,11 @@ raw|online|bid|cancel|target|process|close
 	close:案件关闭 
 	*prepaid:
 	*postpaid
-	*/
+*/
+
+*case type
+housing|traffic|marriage
+
 
 ***** technical concept ****
 
@@ -43,8 +47,7 @@ POST /va/cases
 	subtype:'是否详细分类？',
 	lat:'xxx',
 	lon:'yyy',
-	/*  */
-	price:'此案件用户出价'	,
+	price:'此案件用户出价(price pattern)'	,
 	wxOpenId:'theOpenIdOfWeixin',
 	userId:'userId'
 }
@@ -63,7 +66,7 @@ POST /ia/case/:caseId
 
 3. 获取所有正在招标的案件
 
-GET /va/cases?sort=[location|price|bids|default]
+GET /va/cases?sort=[location|type|price|bids|default]
 
 
 4. 律师竞标案件API
@@ -87,7 +90,7 @@ POST /va/target/:caseId
 
 6. 评论案件API
 
-/* 只允许案件拥有者和律师评论案件 */
+/* 只允许案件拥有者和竞标律师可以评论案件 */
 POST /va/comment/:caseId
 
 {
@@ -115,9 +118,22 @@ POST /va/case/:caseId
 	type:'process|cancel' /* 律师可以修改案件状态为process,close, 用户可以修改为cancel,close */
 }
 
-11. 律师或者用户在结案之后的互相评价API
+11. 用户在结案之后评价律师API
 
 POST /va/comment/:caseId/lawyer/:lawyerId
+
+{
+	comment:'the comment to lawyer',
+	rating:'5'//from 1-5
+}
+
+12. 律师在结案之后评价用户API
+
+POST /va/comment/:caseId/user/:userId
+{
+	comment:'the comment to user'
+}
+
 
 
 
