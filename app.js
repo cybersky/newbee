@@ -5,19 +5,26 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compression = require('compression');
-var mongo	= require('./clients/mongo');
 
 var routes = require('./routes/index');
-var lawyerAPI = require('./routes/lawyerAPI');
-var signup = require('./routes/signupAPI');
-var signin = require('./routes/signinAPI');
-var lawyerPage = require('./routes/lawyerPage');
-var session = require('./middleware/session');
-var setHeaders = require('./middleware/setHeaders');
-var signout = require('./routes/signoutAPI');
+
+var privateAPI = require('./routes/privateAPI');
+var publicAPI = require('./routes/publicAPI');
+
 var adminAPI= require('./routes/adminAPI');
 var adminPage = require('./routes/adminPage');
-//var weixinRoutes = require('./routes/weixinRoutes');
+
+var publicPage = require('./routes/publicPage');
+var privatePage = require('./routes/privatePage');
+
+var wxService = require('./routes/wxService');
+
+var session = require('./middleware/session');
+var setHeaders = require('./middleware/setHeaders');
+
+
+var vhost = require('vhost');
+
 
 var app = express();
 
@@ -28,7 +35,7 @@ app.set('x-powered-by', false);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+app.use(logger('default'));
 //app.use(favicon());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -38,20 +45,24 @@ app.use(express.static(path.join(__dirname, 'public'), {
 		res.set("x-powered-by", "NewBee");
 	}
 }));
-app.use(compression());
 
+app.use(compression());
 app.use(setHeaders);
 app.use(session.storeSessionToRedis());
 
 
 app.use('/', routes);
-app.use('/up', lawyerPage);
-app.use('/va', lawyerAPI);
-app.use('/ua', [signup, signin, signout]);
-app.use('/ap', adminPage);
-app.use('/aa', [adminAPI, signin, signout]);
 
-//app.use('/wx', weixinRoutes);
+app.use('/up', publicPage);
+app.use('/ua', publicAPI);
+
+app.use('/vp', privatePage);
+app.use('/va', privateAPI);
+
+app.use('/ap', adminPage);
+app.use('/aa', adminAPI);
+
+app.use('/wx', wxService);
 
 console.log('The Node.js version is', process.version);
 // catch 404 and forward to error handler
@@ -85,5 +96,10 @@ app.use(function(err, req, res, next) {
 	});
 });
 
+/*
+var appmain = express();
+appmain.use(vhost('www.newbee.com'), app);
+module.exports = appmain;
+*/
 
 module.exports = app;
