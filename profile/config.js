@@ -72,6 +72,13 @@ exports.optionsUser = {
     encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
 };
 
+exports.optionsTest = {
+    appid: "wxc043f1e0885f8645",
+    appsecret:"53fe394b2f5f4e57109dd7535dbc423d",
+    token:"tobeabetterman123",
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+};
+
 exports.errorCode = {
 	unknownError:'100',
 	paramError:'101',

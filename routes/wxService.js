@@ -14,6 +14,11 @@ var handleLawyerNotice = function(req, res, next){
     res.text('lawyer:' + req.body['Content']);
 };
 
+var handleTestNotice = function(req, res, next){
+    console.log('body test:', req.body);
+    res.text('test account:' + req.body['Content']);
+};
+
 [
     {
         option:config.optionsLawyer,
@@ -22,6 +27,10 @@ var handleLawyerNotice = function(req, res, next){
     {
         option:config.optionsUser,
         handler:handleUserNotice
+    },
+    {
+        option:config.optionsTest,
+        handler:handleTestNotice
     }
 ].forEach(function(options){
         var option = options.option;
