@@ -12,6 +12,8 @@ router.use('/user/*', auth.oauthWXOpenId(config.optionsUser));
 
 router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer));
 
+router.use('/test/*', auth.oauthWXOpenId(config.optionsTest));
+
 router.get('/user/home', function(req, res, next){
     res.send('hello from home user');
 });
@@ -20,6 +22,9 @@ router.get('/ly/home', function(req, res, next){
     res.send('hello from home lawyer');
 });
 
+router.get('/test/home', function(req, res, next){
+    res.send('hello from home test');
+});
 
 
 module.exports = router;
