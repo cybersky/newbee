@@ -19,8 +19,6 @@ exports.oauthWXOpenId = function(option){
 
         if(req.query.code){
 
-            var result;
-
             return async.waterfall([
                 function(cb){
 
@@ -45,6 +43,14 @@ exports.oauthWXOpenId = function(option){
                      }
 
                      */
+                    if(typeof body == 'string'){
+                        try{
+                            body = JSON.parse(body);
+                        }catch(err){
+                            return cb('invalid response body: '+ body);
+                        }
+                    }
+
                     console.log('response', body);
 
                     var accessToken = body['access_token'];
@@ -54,8 +60,8 @@ exports.oauthWXOpenId = function(option){
                     var scope = body['scope'];
                     var expiresIn = body['expires_in'];
 
-                    result = body;
 
+                    req.wxOpenId = openId;
                     if( scope == config.wxScopeBase ) return cb(null, null, null);
 
                     var url = utils.createURL(config.wxUserInfoURL, {
@@ -65,8 +71,19 @@ exports.oauthWXOpenId = function(option){
 
                     console.log('request', url);
                     request(url, cb);
+
                 }, function(resp, body, cb){
+
+                    if(typeof body == 'string'){
+                        try{
+                            body = JSON.parse(body);
+                        }catch(err){
+                            return cb('invalid response body: '+ body);
+                        }
+                    }
+
                     console.log('response', body);
+                    req.wxUserInfo = body;
                     cb();
                 }
 
@@ -76,8 +93,8 @@ exports.oauthWXOpenId = function(option){
 
         var url = utils.createURL(config.wxOauthURL, {
             appId:option.appid,
-            //scope:config.wxScopeInfo,
-            scope:config.wxScopeBase,
+            scope:config.wxScopeInfo,
+            //scope:config.wxScopeBase,
             state:'init',
             redirectUrl:encodeURIComponent(config.wxPageHost + req.originalUrl)
         });
