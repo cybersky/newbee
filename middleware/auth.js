@@ -62,28 +62,30 @@ exports.oauthWXOpenId = function(option){
 
 
                     req.wxOpenId = openId;
-                    if( scope == config.wxScopeBase ) return cb(null, null, null);
+                    if( scope == config.wxScopeInfo ){
+                        var url = utils.createURL(config.wxUserInfoURL, {
+                            accessToken:accessToken,
+                            openId:openId
+                        });
 
-                    var url = utils.createURL(config.wxUserInfoURL, {
-                        accessToken:accessToken,
-                        openId:openId
-                    });
+                        console.log('request', url);
+                        return request(url, cb);
+                    }
 
-                    console.log('request', url);
-                    request(url, cb);
+                    cb();
 
                 }, function(resp, body, cb){
 
-                    if(typeof body == 'string'){
+                    if(body && typeof body == 'string'){
                         try{
                             body = JSON.parse(body);
                         }catch(err){
                             return cb('invalid response body: '+ body);
                         }
+                        console.log('response', body);
+                        req.wxUserInfo = body;
                     }
 
-                    console.log('response', body);
-                    req.wxUserInfo = body;
                     cb();
                 }
 
