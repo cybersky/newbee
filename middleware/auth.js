@@ -76,7 +76,7 @@ exports.oauthWXOpenId = function(option){
             appId:option.appid,
             scope:config.wxScopeInfo,
             state:'init',
-            redirectUrl:config.wxPageHost + req.originalUrl
+            redirectUrl:encodeURI(config.wxPageHost + req.originalUrl)
         });
 
         console.log('redirect to', url);
