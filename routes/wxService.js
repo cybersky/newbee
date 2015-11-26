@@ -1,27 +1,36 @@
-/**
- * Created by hailongzhao on 10/25/15.
- */
-var options = {
-    appid:               "wx9255a6db434d4445",
-    appsecret:           "your app_secret",
-    token:               "tobeabetterman123",
-    encrypt_key:         "CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
-};
-
-var weixinService = require('weixin-service');
-var wxs = new weixinService(options);
 var express = require('express');
 var router = express.Router();
+var weixinService = require('weixin-service');
+var utils = require('../tools/utils');
+var config = require('../profile/config');
 
-
-var eventHandle = function(req, res, next){
+var handleUserNotice = function(req, res, next){
     console.log('body', req.body);
-    res.text('echo' + req.body['Content']);
+    res.text('user:' + req.body['Content']);
 };
 
+var handleLawyerNotice = function(req, res, next){
+    console.log('body', req.body);
+    res.text('lawyer:' + req.body['Content']);
+};
 
-router.post('/notice', wxs.bodyParserMiddlewares(), wxs.eventHandle(eventHandle));
-router.get('/notice', wxs.enable());
+[
+    {
+        option:config.optionsLawyer,
+        handler:handleLawyerNotice
+    },
+    {
+        option:config.optionsUser,
+        handler:handleUserNotice
+    }
+].forEach(function(options){
+        var option = options.option;
+        var handler = options.handler;
+
+    var wxs = new weixinService(option);
+    router.post('/'+option.appid+'/notice', wxs.bodyParserMiddlewares(), wxs.eventHandle(handler));
+    router.get('/'+option.appid+'/notice', wxs.enable());
+});
 
 
 module.exports = router;

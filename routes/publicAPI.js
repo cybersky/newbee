@@ -187,7 +187,8 @@ var handleConfirmCode = function(req, res, next){
 
     redis.client.get(k, function(err, code){
         if(err) return next(err);
-        //if(code != verifyCode) res.send({rtn:config.errorCode.serviceError, message:'no such code'});
+
+        if(!config.skipConfirmCode && code != verifyCode) return res.send({rtn:config.errorCode.serviceError, message:'no such code'});
 
         console.log('mobile', mobile, 'verify ok');
         var user = mongo.db.collection('users');
@@ -199,14 +200,13 @@ var handleConfirmCode = function(req, res, next){
             res.cookie('userId', id, {maxAge:3600*1000, signed:true});
             res.send({rtn:0});
         });
-
     });
 };
-
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
 router.post('/confirmcode', handleConfirmCode);
+
 
 //the error handler
 router.use(function(err, req, res, next){

@@ -46,6 +46,31 @@ exports.ytxConfig = {
 	path : '/2013-12-26/Accounts/{accountId}/Calls/VoiceVerify?sig={sig}'
 };
 
+exports.wxPageHost = 'http://live7.cn';
+
+exports.wxScopeBase = 'snsapi_base';
+exports.wxScopeInfo = 'snsapi_userinfo';
+
+exports.wxOauthURL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid={{appId}}&redirect_uri={{redirectUrl}}&response_type=code&scope={{scope}}&state={{state}}#wechat_redirect";
+exports.wxTokenURL = "https://api.weixin.qq.com/sns/oauth2/access_token?appid={{appId}}&secret={{appSecret}}&code={{code}}&grant_type=authorization_code";
+exports.wxRefreshTokenURL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={{appId}}&grant_type=refresh_token&refresh_token={{refreshToken}}";
+exports.wxUserInfoURL = "https://api.weixin.qq.com/sns/userinfo?access_token={{accessToken}}&openid={{openId}}&lang=zh_CN";
+
+
+exports.optionsLawyer = {
+    appid:"wx9255a6db434d4445",
+    appsecret:"7b722b1387a11f074152ae5b6bb62019",
+    token:"tobeabetterman123",
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+};
+
+
+exports.optionsUser = {
+    appid: "wx64802809beca7462",
+    appsecret:"278963cb69ffe134838fede139a3b2be",
+    token:"tobeabetterman123",
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+};
 
 exports.errorCode = {
 	unknownError:'100',
@@ -58,6 +83,8 @@ exports.redisPrefix = {
 	verifyCode: 'verifyCode'
 };
 
+
+exports.skipConfirmCode = true;
 
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;

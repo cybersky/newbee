@@ -6,6 +6,85 @@ var secure = require('../tools/secret');
 var mongo = require('../clients/mongo');
 var ObjectID = require('mongodb').ObjectID;
 var _ = require('underscore');
+var request = require('request');
+var async = require('async');
+var utils = require('../tools/utils');
+
+
+exports.oauthWXOpenId = function(option){
+
+    return function(req, res, next){
+        var openId = req.signedCookies.openId;
+        if(openId) return next();
+
+        if(req.query.code){
+
+            var result;
+
+            return async.waterfall([
+                function(cb){
+
+                    var url = utils.createURL(config.wxTokenURL, {
+                        appId:option.appid,
+                        appSecret:option.appsecret,
+                        code:req.query.code
+                    });
+
+                    console.log('request', url);
+                    request(url, cb);
+                }, function(resp, body, cb){
+                    /*
+
+                     {
+                     "access_token":"ACCESS_TOKEN",
+                     "expires_in":7200,
+                     "refresh_token":"REFRESH_TOKEN",
+                     "openid":"OPENID",
+                     "scope":"SCOPE",
+                     "unionid": "o6_bmasdasdsad6_2sgVt7hMZOPfL"
+                     }
+
+                     */
+                    console.log('response', body);
+
+                    var accessToken = body['access_token'];
+                    var openId = body['openid'];
+                    var unionId = body['unionid'];
+                    var refreshToken = body['refresh_token'];
+                    var scope = body['scope'];
+                    var expiresIn = body['expires_in'];
+
+                    result = body;
+
+                    var url = utils.createURL(config.wxUserInfoURL, {
+                        accessToken:accessToken,
+                        openId:openId
+                    });
+
+                    console.log('request', url);
+                    request(url, cb);
+                }, function(resp, body, cb){
+                    console.log('response', body);
+                    cb();
+                }
+
+            ], next);
+
+        }
+
+        var url = utils.createURL(config.wxOauthURL, {
+            appId:option.appid,
+            scope:config.wxScopeInfo,
+            state:'init',
+            redirectUrl:config.wxPageHost + req.originalUrl
+        });
+
+        console.log('redirect to', url);
+        return res.redirect(url);
+    };
+
+};
+
 
 exports.authUser = function(req, res, next){
     var id = req.signedCookies.userId;

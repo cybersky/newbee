@@ -19,6 +19,7 @@ var publicPage = require('./routes/publicPage');
 var privatePage = require('./routes/privatePage');
 
 var wxService = require('./routes/wxService');
+var wxPage = require('./routes/wxPage');
 
 var session = require('./middleware/session');
 var setHeaders = require('./middleware/setHeaders');
@@ -63,7 +64,8 @@ app.use('/va', privateAPI);
 app.use('/ap', adminPage);
 app.use('/aa', adminAPI);
 
-app.use('/wx', wxService);
+app.use('/ws', wxService);
+app.use('/wp', wxPage);
 
 console.log('The Node.js version is', process.version);
 // catch 404 and forward to error handler
