@@ -56,6 +56,8 @@ exports.oauthWXOpenId = function(option){
 
                     result = body;
 
+                    if( scope == config.wxScopeBase ) return cb(null, null, null);
+
                     var url = utils.createURL(config.wxUserInfoURL, {
                         accessToken:accessToken,
                         openId:openId
@@ -74,7 +76,8 @@ exports.oauthWXOpenId = function(option){
 
         var url = utils.createURL(config.wxOauthURL, {
             appId:option.appid,
-            scope:config.wxScopeInfo,
+            //scope:config.wxScopeInfo,
+            scope:config.wxScopeBase,
             state:'init',
             redirectUrl:encodeURIComponent(config.wxPageHost + req.originalUrl)
         });
