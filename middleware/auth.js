@@ -17,95 +17,111 @@ exports.oauthWXOpenId = function(option){
         var openId = req.signedCookies.openId;
         if(openId) return next();
 
-        if(req.query.code){
+        if(!req.query.code){
+            var url = utils.createURL(config.wxOauthURL, {
+                appId:option.appid,
+                scope:config.wxScopeInfo,
+                //scope:config.wxScopeBase,
+                state:'init',
+                redirectUrl:encodeURIComponent(config.wxPageHost + req.originalUrl)
+            });
 
-            return async.waterfall([
-                function(cb){
+            console.log('redirect to', url);
+            return res.redirect(url);
+        }
 
-                    var url = utils.createURL(config.wxTokenURL, {
-                        appId:option.appid,
-                        appSecret:option.appsecret,
-                        code:req.query.code
+        async.waterfall([
+            function(cb){
+
+                var url = utils.createURL(config.wxTokenURL, {
+                    appId:option.appid,
+                    appSecret:option.appsecret,
+                    code:req.query.code
+                });
+
+                console.log('request', url);
+                request(url, cb);
+            }, function(resp, body, cb){
+                /*
+
+                 {
+                 "access_token":"ACCESS_TOKEN",
+                 "expires_in":7200,
+                 "refresh_token":"REFRESH_TOKEN",
+                 "openid":"OPENID",
+                 "scope":"SCOPE",
+                 "unionid": "o6_bmasdasdsad6_2sgVt7hMZOPfL"
+                 }
+
+                 */
+                if(typeof body == 'string'){
+                    try{
+                        body = JSON.parse(body);
+                    }catch(err){
+                        return cb('invalid response body: '+ body);
+                    }
+                }
+
+                console.log('response', body);
+
+                var accessToken = body['access_token'];
+                var openId = body['openid'];
+                var unionId = body['unionid'];
+                var refreshToken = body['refresh_token'];
+                var scope = body['scope'];
+                var expiresIn = body['expires_in'];
+
+
+                req.wxOpenId = openId;
+                req.roleCollection = option.roleCollection;
+
+                res.cookie('openId', openId, {maxAge:365*24*3600*1000, secure:true});
+
+                if( scope == config.wxScopeInfo ){
+                    var url = utils.createURL(config.wxUserInfoURL, {
+                        accessToken:accessToken,
+                        openId:openId
                     });
 
                     console.log('request', url);
-                    request(url, cb);
-                }, function(resp, body, cb){
-                    /*
-
-                     {
-                     "access_token":"ACCESS_TOKEN",
-                     "expires_in":7200,
-                     "refresh_token":"REFRESH_TOKEN",
-                     "openid":"OPENID",
-                     "scope":"SCOPE",
-                     "unionid": "o6_bmasdasdsad6_2sgVt7hMZOPfL"
-                     }
-
-                     */
-                    if(typeof body == 'string'){
-                        try{
-                            body = JSON.parse(body);
-                        }catch(err){
-                            return cb('invalid response body: '+ body);
-                        }
-                    }
-
-                    console.log('response', body);
-
-                    var accessToken = body['access_token'];
-                    var openId = body['openid'];
-                    var unionId = body['unionid'];
-                    var refreshToken = body['refresh_token'];
-                    var scope = body['scope'];
-                    var expiresIn = body['expires_in'];
-
-
-                    req.wxOpenId = openId;
-                    if( scope == config.wxScopeInfo ){
-                        var url = utils.createURL(config.wxUserInfoURL, {
-                            accessToken:accessToken,
-                            openId:openId
-                        });
-
-                        console.log('request', url);
-                        return request(url, cb);
-                    }
-
-                    cb();
-
-                }, function(resp, body, cb){
-
-                    if(body && typeof body == 'string'){
-                        try{
-                            body = JSON.parse(body);
-                        }catch(err){
-                            return cb('invalid response body: '+ body);
-                        }
-                        console.log('response', body);
-                        req.wxUserInfo = body;
-                    }
-
-                    cb();
+                    return request(url, cb);
                 }
 
-            ], next);
+                cb(null, null, null);
 
-        }
+            }, function(resp, body, cb){
 
-        var url = utils.createURL(config.wxOauthURL, {
-            appId:option.appid,
-            scope:config.wxScopeInfo,
-            //scope:config.wxScopeBase,
-            state:'init',
-            redirectUrl:encodeURIComponent(config.wxPageHost + req.originalUrl)
-        });
-
-        console.log('redirect to', url);
-        return res.redirect(url);
-    };
-
+                if(body && typeof body == 'string'){
+                    try{
+                        body = JSON.parse(body);
+                    }catch(err){
+                        return cb('invalid response body: '+ body);
+                    }
+                    console.log('response', body);
+                    req.wxUserInfo = body;
+                }
+                cb();
+            }
+        ], next);
+    }
 };
+
+exports.authWXPage = function(options){
+
+    return function(req, res, next){
+
+        if(!req.roleCollection || !res.wxOpenId) return next('invalid roleCollection or wxOpenId');
+        var col = mongo.collection(req.roleCollection);
+
+        col.findAndModify({openId:req.wxOpenId}, [], {$set:{lastAccess:new Date(), openInfo:req.wxUserInfo}, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
+            if(err) return next(err);
+            req.current = result;
+            if(config.requireMobileSignIn && !req.current.mobile) return res.redirect('/up/us');
+            next();
+        });
+    };
+};
+
 
 
 exports.authUser = function(req, res, next){

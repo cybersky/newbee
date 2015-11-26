@@ -8,14 +8,14 @@ var auth = require('../middleware/auth');
 
 
 
-router.use('/user/*', auth.oauthWXOpenId(config.optionsUser));
+router.use('/user/*', auth.oauthWXOpenId(config.optionsUser), auth.authWXPage());
 
-router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer));
+router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXPage());
 
-router.use('/test/*', auth.oauthWXOpenId(config.optionsTest));
+router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXPage());
 
 router.get('/user/home', function(req, res, next){
-    res.send('hello from home user');
+    res.send('hello from home user', req.current);
 });
 
 router.get('/ly/home', function(req, res, next){

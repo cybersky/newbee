@@ -28,11 +28,24 @@ var MongoClient = require('mongodb').MongoClient, newbeeDB;
 MongoClient.connect(uri, function(err, db) {
 	if(err) return console.error('error connect mongodb', err);
 	console.log('connected to mongodb', uri);
+
+    newbeeDB.collection(name).ensureIndex('openId', {unique:true, background:true, sparse:true});
+    newbeeDB.collection(name).ensureIndex('mobile', {unique:true, background:true, sparse:true});
+
 	exports.db = newbeeDB = db;
 });
 
+
+exports.collection = function(name){
+    return newbeeDB.collection(name);
+};
+
 exports.user = function(){
     return newbeeDB.collection('users');
+};
+
+exports.lawyer = function(){
+    return newbeeDB.collection('lawyers');
 };
 
 exports.case = function(){

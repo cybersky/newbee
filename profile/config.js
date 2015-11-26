@@ -61,7 +61,8 @@ exports.optionsLawyer = {
     appid:"wx9255a6db434d4445",
     appsecret:"7b722b1387a11f074152ae5b6bb62019",
     token:"tobeabetterman123",
-    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy",
+    roleCollection:'lawyers'
 };
 
 
@@ -69,14 +70,16 @@ exports.optionsUser = {
     appid: "wx64802809beca7462",
     appsecret:"278963cb69ffe134838fede139a3b2be",
     token:"tobeabetterman123",
-    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy",
+    roleCollection:'users'
 };
 
 exports.optionsTest = {
     appid: "wxc043f1e0885f8645",
     appsecret:"53fe394b2f5f4e57109dd7535dbc423d",
     token:"tobeabetterman123",
-    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy"
+    encrypt_key:"CNqS9x3rlZIB8DXasI4tPceB0MgiqoZ1QzRXkC2pRdy",
+    roleCollection:'testers'
 };
 
 exports.errorCode = {
@@ -90,7 +93,7 @@ exports.redisPrefix = {
 	verifyCode: 'verifyCode'
 };
 
-
+exports.requireMobileSignIn = false;
 exports.skipConfirmCode = true;
 
 
