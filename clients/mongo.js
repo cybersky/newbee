@@ -28,11 +28,9 @@ var MongoClient = require('mongodb').MongoClient, newbeeDB;
 MongoClient.connect(uri, function(err, db) {
 	if(err) return console.error('error connect mongodb', err);
 	console.log('connected to mongodb', uri);
-
+	exports.db = newbeeDB = db;
     newbeeDB.collection(name).ensureIndex('openId', {unique:true, background:true, sparse:true});
     newbeeDB.collection(name).ensureIndex('mobile', {unique:true, background:true, sparse:true});
-
-	exports.db = newbeeDB = db;
 });
 
 
