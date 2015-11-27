@@ -106,35 +106,27 @@ exports.oauthWXOpenId = function(option){
     }
 };
 
-exports.authWXPage = function(options){
+exports.authWXUser = function(options){
 
     return function(req, res, next){
 
-        if(!req.roleCollection || !res.wxOpenId) return next('invalid roleCollection or wxOpenId');
-        var col = mongo.collection(req.roleCollection);
+        if(!req.roleCollection || !req.wxOpenId) return next('invalid roleCollection or wxOpenId');
 
-        col.findAndModify({openId:req.wxOpenId}, [], {$set:{lastAccess:new Date(), openInfo:req.wxUserInfo}, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
+        var queryDoc = {openId:req.wxOpenId};
+        var updateDoc = {lastAccess:new Date()};
+        if(req.wxUserInfo && req.wxUserInfo.openid == req.wxOpenId ){
+            updateDoc = {openInfo:req.wxUserInfo};
+        }
+
+        var col = mongo.collection(req.roleCollection);
+        col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
             if(err) return next(err);
-            req.current = result;
-            if(config.requireMobileSignIn && !req.current.mobile) return res.redirect('/up/us');
+            req.currentUser = result;
+            if(config.requireMobileSignIn && !req.current.mobile) return res.redirect('/wp/user/signup');
             next();
         });
+
     };
-};
-
-
-
-exports.authUser = function(req, res, next){
-    var id = req.signedCookies.userId;
-    if(!id) return res.redirect('/up/us');//to phase 1 page, mobile number
-
-    var user = mongo.user();
-    user.findOne({_id:new ObjectID(id)}, function(err, user){
-        if(err) return res.status(404).send('Invalid UserId '+id);
-        req.user = _.pick(user, ['mobile', 'openId', 'email', 'username']);
-        req.user.id = user._id.toString();
-        next();
-    })
 };
 
 

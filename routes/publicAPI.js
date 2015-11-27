@@ -115,9 +115,10 @@ router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityIma
 
 
 var handleVoiceCode = function(req, res, next){
+    var openId = req.signedCookies.openId;
+    if( !openId ) return res.send({rtn:config.errorCode.serviceError, message:'require openId'});
 
     var mobile = req.body.mobile;
-    var openId = req.body.openId;
 
     if(!/^\d{11}$/.test(mobile)) return next({rtn:config.errorCode.paramError, message:'invalid mobile number'});
 
@@ -175,37 +176,11 @@ var handleSMSCode = function(req, res, next){
 
 };
 
-var handleConfirmCode = function(req, res, next){
-    var mobile = req.body.mobile;
-    var openId = req.body.openId;
-    var verifyCode = req.body.code;
-
-    if(!/^\d{11}$/.test(mobile)) return next({rtn:config.errorCode.paramError, message:'invalid mobile number'});
-    if(!/^\d{4}$/.test(verifyCode)) return next({rtn:config.errorCode.paramError, message:'invalid code'});
-
-    var k = [config.redisPrefix.verifyCode, mobile].join(':');
-
-    redis.client.get(k, function(err, code){
-        if(err) return next(err);
-
-        if(!config.skipConfirmCode && code != verifyCode) return res.send({rtn:config.errorCode.serviceError, message:'no such code'});
-
-        console.log('mobile', mobile, 'verify ok');
-        var user = mongo.db.collection('users');
-
-        user.findAndModify({mobile:mobile}, [], {$set:{openId:openId}}, {new:true,upsert:true }, function(err, result){
-            if(err) return next(err);
-            console.log('insert into user', result);
-            var id = result.value._id.toString();
-            res.cookie('userId', id, {maxAge:3600*1000, signed:true});
-            res.send({rtn:0});
-        });
-    });
-};
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
-router.post('/confirmcode', handleConfirmCode);
+
+
 
 
 //the error handler

@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-
+<html>
 <head>
-    <meta charset="utf-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
-    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <link href="/css/signin.css" rel="stylesheet">
-    <title>user signin</title>
+    <title>My Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 </head>
+<body>
 
 <script type="application/javascript">
 
@@ -18,7 +15,7 @@
         $('#getVerifyCode').click(function(){
             var mobile = $('#inputMobile').val();
             if(!/\d{11}/.test(mobile)) return alert('请输入正确的手机号');
-            $.post('/ua/voicecode', {mobile:mobile, openId:'thetestopenid'}, function(data, status){
+            $.post('/ua/voicecode', {mobile:mobile}, function(data, status){
                 if(data&& data.rtn > 0) alert('error'+data.message);
             });
         });
@@ -36,8 +33,8 @@
             return false;
         }
 
-        $.post('/ua/confirmcode', {mobile:mobile, code:code, openId:'thetestopenid'}, function(data, status){
-            if(data && data.rtn == 0) window.location = '/vp/u/us2';
+        $.post('/va/user/bindmobile', {mobile:mobile, code:code}, function(data, status){
+            if(data && data.rtn == 0) window.location = '/wp/user/home';
             else alert('验证码错误');
         });
         return false;
@@ -45,30 +42,39 @@
 
 </script>
 
+<div data-role="page" data-theme="a">
 
-<body>
+    <div data-role="header">
+        <h1>输入手机号码登录</h1>
+    </div>
 
-    <div class="container">
-
+    <div data-role="content">
         <form class="form-signin" onsubmit="return submitMobile()">
+            <label for="inputMobile">手机号码</label>
+            <input type="text" id="inputMobile" placeholder="输入手机号码" required autofocus>
 
-            <h2 class="form-signin-heading">输入手机号码登录</h2>
+            <label for="inputCode">验证码</label>
+            <input type="text" id="inputCode" placeholder="输入验证码">
 
-            <input type="text" id="inputMobile" class="form-control up" placeholder="输入手机号码" required autofocus>
-
-            <div class="input-group" class="form-control">
-                <input type="text" class="form-control down" id="inputCode" placeholder="输入验证码">
-                <div class="input-group-btn green">
-                    <input class="btn btn-default form-control right" type="button" id="getVerifyCode" value="获取验证码"/>
-                </div>
+            <div data-role="fieldcontain" class="ui-hide-label">
+                <fieldset data-role="controlgroup">
+                    <legend>Agree to the terms:</legend>
+                    <input type="checkbox" checked name="checkbox-agree" id="checkbox-agree" class="custom" />
+                    <label for="checkbox-agree">我同意服务条款</label>
+                </fieldset>
             </div>
 
-            <button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+            <div data-role="controlgroup" data-type="horizontal">
+                <button id="getVerifyCode" data-inline="true">获取验证码</button>
+                <button type="submit" data-inline="true">登录</button>
+            </div>
+
+
 
         </form>
+    </div><!-- /content -->
 
-    </div> <!-- /container -->
+</div><!-- /page -->
 
 </body>
 </html>
-

@@ -89,10 +89,5 @@ router.get('/signin', auth.authLawyerSignIn, signin);
 router.get('/user/signout', lawyerSignOut);
 
 
-var userSignup = function(req, res, next){
-    res.render('user/signup');
-};
-
-router.get('/us', userSignup);
 
 module.exports = router;

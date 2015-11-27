@@ -94,7 +94,7 @@ exports.redisPrefix = {
 };
 
 exports.requireMobileSignIn = false;
-exports.skipConfirmCode = true;
+exports.skipConfirmCode = false;
 
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;

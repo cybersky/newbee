@@ -6,16 +6,15 @@ var config = require('../profile/config');
 var auth = require('../middleware/auth');
 
 
+router.use('/user/*', auth.oauthWXOpenId(config.optionsUser), auth.authWXUser());
+router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXUser());
+router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXUser());
 
 
-router.use('/user/*', auth.oauthWXOpenId(config.optionsUser), auth.authWXPage());
 
-router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXPage());
 
-router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXPage());
-
-router.get('/user/home', function(req, res, next){
-    res.send('hello from home user', req.current);
+router.get('/user1/home', function(req, res, next){
+    res.render('weixin/user/home');
 });
 
 router.get('/ly/home', function(req, res, next){
@@ -25,6 +24,13 @@ router.get('/ly/home', function(req, res, next){
 router.get('/test/home', function(req, res, next){
     res.send('hello from home test');
 });
+
+
+var userSignup = function(req, res, next){
+    res.render('weixin/user/signup');
+};
+
+router.get('/user/signup', userSignup);
 
 
 module.exports = router;

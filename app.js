@@ -22,8 +22,6 @@ var wxService = require('./routes/wxService');
 var wxPage = require('./routes/wxPage');
 
 var session = require('./middleware/session');
-var setHeaders = require('./middleware/setHeaders');
-
 
 var vhost = require('vhost');
 
@@ -42,14 +40,12 @@ app.use(logger('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser(config.cookieSecret));
-app.use(express.static(path.join(__dirname, 'public'), {
-	setHeaders: (res, path) => {
-		res.set("x-powered-by", "NewBee");
-	}
-}));
+
 
 app.use(compression());
-app.use(setHeaders);
+app.use(express.static(path.join(__dirname, 'public'), {maxAge: '30d'} ));
+
+
 app.use(session.storeSessionToRedis());
 
 
