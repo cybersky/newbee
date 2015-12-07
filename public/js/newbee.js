@@ -5,10 +5,10 @@
 var SignIn = {auth: 'POST /ua/lawyer/signin'};
 
 var Manager = {
-    findAll: 'GET /va/lawyer?start={start}&rows={rows}',
-    findOne: 'GET /va/lawyer/{id}',
-    update:  'PUT /va/lawyer/{id}',
-    destroy: 'DELETE /va/lawyer/{id}'
+    findAll: 'GET /ua/lawyer?start={start}&rows={rows}',
+    findOne: 'GET /ua/lawyer/{id}',
+    update:  'PUT /ua/lawyer/{id}',
+    destroy: 'DELETE /ua/lawyer/{id}'
 };
 
 var SignInModel = new Model(SignIn);

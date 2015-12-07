@@ -16,28 +16,20 @@ var root = (req, res, next) => {
     });
 };
 
-var signup = (req, res, next) => {
+var LawyerSignup = (req, res, next) => {
     return res.render('lawyer/signup', {
         options: {target: 'signup', action:'none'},
         userInfo: req.session.userInfo
     });
 };
 
-var signin = (req, res, next) => {
+var LawyerSignin = (req, res, next) => {
     return res.render('lawyer/signin', {
             options: {target: 'signin', action:'none'},
             userInfo: req.session.userInfo
         }
-    )};
-
-
-var adminSignOut = (req, res, next) => {
-    res.clearCookie(config.operatorCookie.name, {path: config.operatorCookie.options.path});
-    req.session.destroy();
-    return res.redirect('/ap/signin');
+    )
 };
-
-
 
 var lawyerSignOut = (req, res, next) => {
     res.clearCookie(config.cookieConfig.name, {path: config.cookieConfig.options.path});
@@ -81,12 +73,11 @@ var LawyerLogin = (req, res, next) => {
 
 
 
+router.get('/signup', LawyerSignup);
+router.get('/signin', auth.authLawyerSignIn, LawyerSignin);
 router.post('/lawyer/signin', LawyerLogin);
-router.get('/admin/signout', adminSignOut);
+router.get('/lawyer/signout', lawyerSignOut);
 router.get('/', auth.authCookie, root);
-router.get('/signup', signup);
-router.get('/signin', auth.authLawyerSignIn, signin);
-router.get('/user/signout', lawyerSignOut);
 
 
 

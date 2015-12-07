@@ -4,22 +4,17 @@
 </script>
 <div class="form-signin" id="signinDiv">
 	<h2 class="form-signin-heading">请输入登陆信息</h2>
-	<br>
 	<label for="inputEmail" class="sr-only">邮件地址</label>
 	<input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
 	<p id="emailNotice" style="color: red;"></p>
-	<br>
 	<label for="inputPassword" class="sr-only">密码</label>
 	<input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
 	<p id="passwordNotice" style="color: red;"></p>
-	<br>
-
 	<div class="checkbox">
 		<label>
 			<input type="checkbox" value="remember-me"> 记住登陆状态
 		</label>
 	</div>
-	<br>
 	<button class="btn btn-lg btn-primary btn-block" type="submit" id="postAdminData">登陆</button>
 </div>
 
@@ -47,7 +42,7 @@
 				window.location.href = '/';
 			}
 		};
-		$.ajax('/aa/admin/signin', settings);
+		$.ajax('/aa/signin', settings);
 	});
 </script>
 </html>
