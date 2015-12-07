@@ -14,6 +14,9 @@ var utils = require('../tools/utils');
 exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
+
+        console.log('request cookie', req.cookies, 'signed cookie', req.signedCookies);
+
         var openId = req.signedCookies.openId;
         if(openId) {
             req.wxOpenId = openId;
