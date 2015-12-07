@@ -15,7 +15,10 @@ exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
         var openId = req.signedCookies.openId;
-        if(openId) return next();
+        if(openId) {
+            req.wxOpenId = openId;
+            return next();
+        }
 
         if(!req.query.code){
             var url = utils.createURL(config.wxOauthURL, {
