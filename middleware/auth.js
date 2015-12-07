@@ -15,10 +15,10 @@ exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
 
-        console.log('request cookie', req.cookies, 'signed cookie', req.signedCookies);
-
+        req.roleCollection = option.roleCollection;
         var openId = req.signedCookies.openId;
         if(openId) {
+            console.log('found openId', openId);
             req.wxOpenId = openId;
             return next();
         }
@@ -83,8 +83,6 @@ exports.oauthWXOpenId = function(option){
 
 
                 req.wxOpenId = openId;
-                req.roleCollection = option.roleCollection;
-
                 res.cookie('openId', openId, {maxAge:365*24*3600*1000, signed:true});
 
                 if( scope == config.wxScopeInfo ){
