@@ -25,12 +25,9 @@ router.get('/test/home', function(req, res, next){
     res.send('hello from home test');
 });
 
-
-var userSignup = function(req, res, next){
-    res.render('weixin/user/signup');
-};
-
-router.get('/user/signup', userSignup);
+router.get('/user/signup', function(req, res, next){
+    res.render('weixin/user/signup', {info:req.currentUser});
+});
 
 
 module.exports = router;

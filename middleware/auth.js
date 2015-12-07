@@ -126,8 +126,13 @@ exports.authWXUser = function(options){
 
         col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
             if(err) return next(err);
-            req.currentUser = result;
-            console.log('mongo found', req.currentUser);
+
+            var value = result.value;
+            var lastErrorObject = result.lastErrorObject; // {updatedExsiting:true, "n":1}
+            var ok = result.ok;
+
+            req.currentUser = value;
+            console.log('mongo found', value);
             if(config.requireMobileSignIn && !req.current.mobile){
                 console.log('no mobile number found, redirect to compete user info page');
                 return res.redirect('/wp/user/signup');
