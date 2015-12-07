@@ -23,7 +23,16 @@ var manager = (req, res, next) => {
     });
 };
 
+
+var signOut = (req, res, next) => {
+    res.clearCookie(config.operatorCookie.name, {path: config.operatorCookie.options.path});
+    req.session.destroy();
+    return res.redirect('/ap/signin');
+};
+
+
 router.get('/', root);
+router.get('/signout', signOut);
 router.get('/signin', auth.authAdminSignIn, login);
 router.get('/manager', auth.authOperatorCookie,  manager);
 
