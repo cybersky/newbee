@@ -85,7 +85,7 @@ exports.oauthWXOpenId = function(option){
                 req.wxOpenId = openId;
                 req.roleCollection = option.roleCollection;
 
-                res.cookie('openId', openId, {maxAge:365*24*3600*1000, secure:true});
+                res.cookie('openId', openId, {maxAge:365*24*3600*1000, signed:true});
 
                 if( scope == config.wxScopeInfo ){
                     var url = utils.createURL(config.wxUserInfoURL, {
