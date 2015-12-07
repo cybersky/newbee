@@ -181,8 +181,6 @@ router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
 
 
-
-
 //the error handler
 router.use(function(err, req, res, next){
     if(err){

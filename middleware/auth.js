@@ -62,7 +62,11 @@ exports.oauthWXOpenId = function(option){
                     }
                 }
 
-                console.log('response', body);
+                console.log('code response', body);
+
+                if(body['errcode']){
+                    return cb(new Error(body['errmsg']));
+                }
 
                 var accessToken = body['access_token'];
                 var openId = body['openid'];
@@ -97,7 +101,7 @@ exports.oauthWXOpenId = function(option){
                     }catch(err){
                         return cb('invalid response body: '+ body);
                     }
-                    console.log('response', body);
+                    console.log('info response', body);
                     req.wxUserInfo = body;
                 }
                 cb();
@@ -115,10 +119,11 @@ exports.authWXUser = function(options){
         var queryDoc = {openId:req.wxOpenId};
         var updateDoc = {lastAccess:new Date()};
         if(req.wxUserInfo && req.wxUserInfo.openid == req.wxOpenId ){
-            updateDoc = {openInfo:req.wxUserInfo};
+            updateDoc.openInfo = req.wxUserInfo;
         }
 
         var col = mongo.collection(req.roleCollection);
+
         col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
             if(err) return next(err);
             req.currentUser = result;

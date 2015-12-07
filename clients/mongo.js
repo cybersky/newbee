@@ -26,7 +26,11 @@ mongoose.connection.on('close', function(){
 var MongoClient = require('mongodb').MongoClient, newbeeDB;
 
 MongoClient.connect(uri, function(err, db) {
-	if(err) return console.error('error connect mongodb', err);
+	if(err){
+        console.error('error connect mongodb', err);
+        return process.exit(1);
+    }
+
 	console.log('connected to mongodb', uri);
 	exports.db = newbeeDB = db;
 
