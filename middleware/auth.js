@@ -137,7 +137,9 @@ exports.authWXUser = function(options){
 
             req.currentUser = value;
             console.log('mongo found', value);
-            if(config.requireMobileSignIn && !req.currentUser.mobile && req.path.indexOf('/user/signup') < 0  ){
+
+
+            if(config.requireMobileSignIn && !req.currentUser.mobile && req.originalUrl.indexOf('/wp/user/signup') < 0  ){
                 console.log('no mobile number found, redirect to compete user info page');
                 return res.redirect('/wp/user/signup');
             }
