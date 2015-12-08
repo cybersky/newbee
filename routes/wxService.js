@@ -10,7 +10,7 @@ var redis = require('../clients/redis.js');
 var handleMessage = function(req, res, type){
 
     var obj = req.body;
-    console.log('message', obj);
+    console.log('message type', obj.MsgType);
 
     switch(obj.MsgType){
 
@@ -56,12 +56,14 @@ var handleMessage = function(req, res, type){
 };
 
 
-var handleEvent = function(obj){
-
+var handleEvent = function(obj, type){
+    var event = obj.Event;
     var eventKey = obj.EventKey;
     var openId = obj.FromUserName;
 
-    switch (obj.Event){
+    console.log('event', event);
+
+    switch (event){
         case 'subscribe':
             break;
         case 'unsubscribe':
