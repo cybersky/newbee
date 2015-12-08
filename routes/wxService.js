@@ -10,7 +10,7 @@ var redis = require('../clients/redis.js');
 var handleMessage = function(req, res, type){
 
     var obj = req.body;
-    console.log('message type', obj.MsgType);
+    //console.log('message type', obj.MsgType);
 
     switch(obj.MsgType){
 
@@ -61,7 +61,7 @@ var handleEvent = function(obj, type){
     var eventKey = obj.EventKey;
     var openId = obj.FromUserName;
 
-    console.log('event', event);
+    console.log('event', event, 'key', eventKey);
 
     switch (event){
         case 'subscribe':
@@ -76,9 +76,9 @@ var handleEvent = function(obj, type){
             var p = obj.Precision;
 
             var rk = ['location', type, 'openId'].join(":");
-            console.log('update', openId, 'location', lat, lon, p);
+            //console.log('update', openId, 'location', lat, lon, p);
             redis.client.set(rk, {lat:lat, lon:lon, p:p}, function(err, result){
-                if(!err) console.log('update', openId, 'location', lat, lon, p);
+                console.log('update', openId, 'location', lat, lon, p, err, result);
             });
             break;
         case 'CLICK':
