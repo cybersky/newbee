@@ -99,17 +99,21 @@ exports.skipConfirmCode = false;
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
+
+var overrideDefault = '/opt/config/newbee/override.js';
+
 (() =>{
-	var overrideLocation = __dirname + '/../override.js';
-	var fs = require('fs');
+    var fs = require('fs');
+	var overrideLocation;
 	var override = {};
 
-	if (fs.existsSync(overrideLocation)) {
+    if ( (overrideLocation = overrideDefault) && fs.existsSync(overrideLocation)) {
+        console.log('Using override configuration', overrideLocation);
+        override = require(overrideLocation);
+    }
+	else if ( (overrideLocation = __dirname+'/override.js') && fs.existsSync(overrideLocation)) {
 		console.log('Using override configuration', overrideLocation);
 		override = require(overrideLocation);
-	} else if (fs.existsSync('profile/override.js')) {
-		console.log('Using local override configuration.');
-		override = require('./override.js');
 	}
 
 	for (var key in override) {
