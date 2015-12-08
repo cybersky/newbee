@@ -93,7 +93,7 @@ exports.redisPrefix = {
 	verifyCode: 'verifyCode'
 };
 
-exports.requireMobileSignIn = false;
+exports.requireMobileSignIn = true;
 exports.skipConfirmCode = false;
 
 

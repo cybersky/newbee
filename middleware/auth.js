@@ -14,8 +14,14 @@ var utils = require('../tools/utils');
 exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
+
+        req.roleCollection = option.roleCollection;
         var openId = req.signedCookies.openId;
-        if(openId) return next();
+        if(openId) {
+            console.log('found openId', openId);
+            req.wxOpenId = openId;
+            return next();
+        }
 
         if(!req.query.code){
             var url = utils.createURL(config.wxOauthURL, {
@@ -62,7 +68,11 @@ exports.oauthWXOpenId = function(option){
                     }
                 }
 
-                console.log('response', body);
+                console.log('code response', body);
+
+                if(body['errcode']){
+                    return cb(new Error(body['errmsg']));
+                }
 
                 var accessToken = body['access_token'];
                 var openId = body['openid'];
@@ -73,9 +83,7 @@ exports.oauthWXOpenId = function(option){
 
 
                 req.wxOpenId = openId;
-                req.roleCollection = option.roleCollection;
-
-                res.cookie('openId', openId, {maxAge:365*24*3600*1000, secure:true});
+                res.cookie('openId', openId, {maxAge:365*24*3600*1000, signed:true});
 
                 if( scope == config.wxScopeInfo ){
                     var url = utils.createURL(config.wxUserInfoURL, {
@@ -97,7 +105,7 @@ exports.oauthWXOpenId = function(option){
                     }catch(err){
                         return cb('invalid response body: '+ body);
                     }
-                    console.log('response', body);
+                    console.log('info response', body);
                     req.wxUserInfo = body;
                 }
                 cb();
@@ -115,14 +123,24 @@ exports.authWXUser = function(options){
         var queryDoc = {openId:req.wxOpenId};
         var updateDoc = {lastAccess:new Date()};
         if(req.wxUserInfo && req.wxUserInfo.openid == req.wxOpenId ){
-            updateDoc = {openInfo:req.wxUserInfo};
+            updateDoc.openInfo = req.wxUserInfo;
         }
 
         var col = mongo.collection(req.roleCollection);
+
         col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
             if(err) return next(err);
-            req.currentUser = result;
-            if(config.requireMobileSignIn && !req.current.mobile) return res.redirect('/wp/user/signup');
+
+            var value = result.value;
+            var lastErrorObject = result.lastErrorObject; // {updatedExsiting:true, "n":1}
+            var ok = result.ok;
+
+            req.currentUser = value;
+            console.log('mongo found', value);
+            if(config.requireMobileSignIn && !req.currentUser.mobile){
+                console.log('no mobile number found, redirect to compete user info page');
+                return res.redirect('/wp/user/signup');
+            }
             next();
         });
 
