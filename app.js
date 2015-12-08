@@ -35,9 +35,12 @@ app.set('x-powered-by', false);
 
 app.use(function(req, res, next){
     //reject spider
-    if(req.get('Referrer').toLowerCase().indexOf('spider') >0){
-        res.send('no thanks', 200);
+    var agent = req.get('user-agent');
+    console.log('User-Agent', agent);
+    if(agent && agent.toLowerCase().indexOf('spider') >0){
+        return res.send('no thanks', 200);
     }
+    next();
 });
 
 // uncomment after placing your favicon in /public
