@@ -6,7 +6,7 @@ var config = require('../profile/config');
 var auth = require('../middleware/auth');
 
 
-router.use('/user/home', auth.oauthWXOpenId(config.optionsUser), auth.authWXUser());
+router.use('/user/*', auth.oauthWXOpenId(config.optionsUser), auth.authWXUser());
 router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXUser());
 router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXUser());
 

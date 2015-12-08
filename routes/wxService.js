@@ -73,7 +73,9 @@ var handleEvent = function(obj){
             var p = obj.Precision;
 
             var rk = ['location', type, 'openId'].join(":");
-            redis.client.set(rk, {lat:lat, lon:lon, p:p});
+            redis.client.set(rk, {lat:lat, lon:lon, p:p}, function(err, result){
+                if(!err) console.log('update', openId, 'location', lat, lon, p);
+            });
             break;
         case 'CLICK':
             break;
