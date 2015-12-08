@@ -33,6 +33,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.set('x-powered-by', false);
 
+app.use(function(req, res, next){
+    //reject spider
+    if(req.get('Referrer').toLowerCase().indexOf('spider') >0){
+        res.send('no thanks', 200);
+    }
+});
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('combined'));
