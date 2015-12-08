@@ -3,20 +3,96 @@ var router = express.Router();
 var weixinService = require('weixin-service');
 var utils = require('../tools/utils');
 var config = require('../profile/config');
+var redis = require('../clients/redis.js');
+
+
+
+var handleMessage = function(req, res, type){
+
+    var obj = req.body;
+
+    switch(obj.MsgType){
+
+        case 'text':
+            return res.text('user:' + obj.Content);
+            break;
+        case 'image':
+            //PicUrl
+            //MediaId
+            console.log('MediaId', obj.MediaId, 'Format', obj.Format);
+            break;
+        case 'voice':
+            //MediaId
+            //Format
+            //Recognition
+            break;
+        case 'video':
+            //MediaId
+            //ThumbMediaId
+            break;
+        case 'shortvideo':
+            //MediaId
+            //ThumbMediaId
+            break;
+        case 'location':
+            //Location_X
+            //Location_Y
+            //Scale
+            //Label
+            break;
+        case 'link':
+            //Title
+            //Description
+            //Url
+            break;
+
+        case 'event':
+            handleEvent(obj, type);
+            break;
+    }
+
+    res.send('');
+};
+
+
+var handleEvent = function(obj){
+
+    var eventKey = obj.EventKey;
+    var openId = obj.FromUserName;
+
+    switch (obj.Event){
+        case 'subscribe':
+            break;
+        case 'unsubscribe':
+            break;
+        case 'SCAN':
+            break;
+        case 'LOCATION':
+            var lat = obj.Latitude;
+            var lon = obj.Longitude;
+            var p = obj.Precision;
+
+            var rk = ['location', type, 'openId'].join(":");
+            redis.client.set(rk, {lat:lat, lon:lon, p:p});
+            break;
+        case 'CLICK':
+            break;
+        case 'VIEW':
+            break;
+    }
+};
+
 
 var handleUserNotice = function(req, res, next){
-    console.log('body', req.body);
-    res.text('user:' + req.body['Content']);
+    handleMessage(req, res, 'user');
 };
 
 var handleLawyerNotice = function(req, res, next){
-    console.log('body', req.body);
-    res.text('lawyer:' + req.body['Content']);
+    handleMessage(req, res, 'lawyer');
 };
 
 var handleTestNotice = function(req, res, next){
-    console.log('body test:', req.body);
-    res.text('test account:' + req.body['Content']);
+    handleMessage(req, res, 'test');
 };
 
 [
@@ -33,10 +109,10 @@ var handleTestNotice = function(req, res, next){
         handler:handleTestNotice
     }
 ].forEach(function(options){
-        var option = options.option;
-        var handler = options.handler;
-
+    var option = options.option;
+    var handler = options.handler;
     var wxs = new weixinService(option);
+
     router.post('/'+option.appid+'/notice', wxs.bodyParserMiddlewares(), wxs.eventHandle(handler));
     router.get('/'+option.appid+'/notice', wxs.enable());
 });

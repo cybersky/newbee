@@ -11,8 +11,6 @@ router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXUser())
 router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXUser());
 
 
-
-
 router.get('/user/home', function(req, res, next){
     res.render('weixin/user/showinfo', {info:req.currentUser});
 });
