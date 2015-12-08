@@ -6,8 +6,6 @@ var store   = require('connect-redis')(session);
 var config  = require('../profile/config');
 var redis   = require('../clients/redis');
 var uuid 	= require('node-uuid');
-var Operator= require('../odm/operator');
-var Lawyer	= require('../odm/lawyer');
 
 var redisStore = new store({client: redis.client});
 
