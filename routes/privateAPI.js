@@ -29,12 +29,15 @@ var bindUserMobile = function(req, res, next){
     redis.client.get(k, function(err, code){
         if(err) return next(err);
 
-        if(!config.skipConfirmCode && code != verifyCode) return res.send({rtn:config.errorCode.serviceError, message:'no such code'});
+        if(!config.skipConfirmCode && code != verifyCode) return res.send({rtn:config.errorCode.serviceError, message:'错误的验证码'});
 
         console.log('mobile', mobile, 'verify ok');
         var user = mongo.db.collection('users');
 
         user.findAndModify({openId:openId}, [], {$set:{mobile:mobile}}, {new:true,upsert:true }, function(err, result){
+            if(err && err.code == '11000'){
+                return res.send({rtn:1, message:'此手机号码已经被占用'});
+            }
             if(err) return next(err);
             console.log('insert into user', result);
             var id = result.value._id.toString();

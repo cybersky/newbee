@@ -12,7 +12,7 @@ router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXUser())
 
 
 router.get('/user/home', function(req, res, next){
-    res.render('weixin/user/showinfo', {info:req.currentUser});
+    res.render('weixin/user/home', {info:req.currentUser});
 });
 
 router.get('/ly/home', function(req, res, next){

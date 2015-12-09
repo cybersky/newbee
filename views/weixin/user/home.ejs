@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Page</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/css/jquery.mobile-1.4.5.min.css" />
-    <script src="/js/jquery-1.11.1.min.js"></script>
-    <script src="/js/jquery.mobile-1.4.5.min.js"></script>
+    <title></title>
+    <link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <!-- <link rel="stylesheet" href="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile.theme-1.4.5.min.css" /> -->
+    <script src="http://apps.bdimg.com/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- <script src="http://apps.bdimg.com/libs/jquery/1.11.1/jquery.min.map"></script> -->
+    <script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <!-- <script src="http://apps.bdimg.com/libs/jquerymobile/1.4.5/jquery.mobile-1.4.5.min.map"></script> -->
+    <script src="/js/signup.js"></script>
+    <link rel="stylesheet" href="/stylesheets/common.css">
 </head>
 <body>
 
@@ -22,31 +28,24 @@
     <div data-role="content">
         <form action="" method="post">
 
-            <div class="ui-field-contain">
-                    <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
-                            <legend>案件类型</legend>
-                            <input type="radio" name="radio-choice-hh-1" id="radio-choice-hh-1a" value="on" checked="checked">
-                            <label for="radio-choice-hh-1a">居住</label>
-                            <input type="radio" name="radio-choice-hh-1" id="radio-choice-hh-1b" value="off">
-                            <label for="radio-choice-hh-1b">交通</label>
-                            <input type="radio" name="radio-choice-hh-1" id="radio-choice-hh-1c" value="other">
-                            <label for="radio-choice-hh-1c">婚姻</label>
-                            <input type="radio" name="radio-choice-hh-1" id="radio-choice-hh-1d" value="other">
-                            <label for="radio-choice-hh-1d">其他</label>
-                        </fieldset>
-            </div>
+            <label for="select-native-4" class="ui-hidden-accessible">案件类型</label>
+            <select name="select-native-4" id="select-native-4">
+                <option value="small">刑事辩护</option>
+                <option value="small">离婚纠纷</option>
+                <option value="small">房屋买卖拆迁纠纷</option>
+                <option value="small">交通事故纠纷</option>
+                <option value="small">劳动工伤纠纷</option>
+                <option value="small">合同纠纷</option>
+                <option value="small">债权债务纠纷以及公司法务纠纷</option>
+            </select>
 
-            <div class="ui-field-contain">
-                    <fieldset data-role="controlgroup" data-type="horizontal">
-                            <legend>服务形式</legend>
-                            <input type="radio" name="radio-choice-h-1" id="radio-choice-h-1a" value="on" checked="checked">
-                            <label for="radio-choice-h-1a">电话咨询</label>
-                            <input type="radio" name="radio-choice-h-1" id="radio-choice-h-1b" value="off">
-                            <label for="radio-choice-h-1b">线下服务</label>
-                            <input type="radio" name="radio-choice-h-1" id="radio-choice-h-1c" value="other">
-                            <label for="radio-choice-h-1c">越快越好</label>
-                        </fieldset>
-            </div>
+
+            <label for="select-native-4" class="ui-hidden-accessible">服务类型</label>
+            <select name="select-native-4" id="select-native-4">
+                <option value="small">免费电话咨询</option>
+                <option value="small">付费电话咨询</option>
+                <option value="small">线下实体服务</option>
+            </select>
 
             <div class="ui-field-contain">
                     <label for="textarea-1">案件描述</label>
@@ -58,15 +57,13 @@
                     <textarea cols="40" rows="8" name="textarea-2" id="textarea-2">我的诉求</textarea>
             </div>
 
-            <div class="ui-field-contain">
-                <fieldset data-role="controlgroup" data-type="horizontal">
-                        <legend>悬赏方式</legend>
-                        <input type="radio" name="radio-choice-hhh-1" id="radio-choice-hhh-1a" value="on" checked="checked">
-                        <label for="radio-choice-hhh-1a">按追讨比例</label>
-                        <input type="radio" name="radio-choice-hhh-1" id="radio-choice-hhh-1b" value="off">
-                        <label for="radio-choice-hhh-1b">按金额</label>
-                    </fieldset>
-            </div>
+
+            <label for="select-native-4" class="ui-hidden-accessible">悬赏方式</label>
+            <select name="select-native-4" id="select-native-4">
+                <option value="small">按追讨金额比例</option>
+                <option value="small">按具体金额</option>
+            </select>
+
 
             <div class="ui-field-contain">
                     <label for="textinput-5">悬赏金额</label>

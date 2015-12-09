@@ -15,6 +15,14 @@ exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
 
+        //skip test
+        if(req.query.hellomytest){
+            req.wxOpenId = 'hellomytest';
+            res.cookie('openId', "hellomytest", {maxAge:365*24*3600*1000, signed:true});
+            return next();
+        }
+
+
         req.roleCollection = option.roleCollection;
         var openId = req.signedCookies.openId;
         if(openId) {
@@ -118,6 +126,30 @@ exports.authWXUser = function(options){
 
     return function(req, res, next){
 
+        if(req.query.hellomytest){
+            req.wxOpenId = 'hellomytest';
+
+            req.currentUser = {
+                "openId" : "o3afuvwfrJbvP4j-EjswXz4ko3rg",
+                "lastAccess" : new Date("2015-12-08T14:24:01.463Z"),
+                "openInfo" : {
+                    "openid" : "hellomytest",
+                    "nickname" : "hellomytest",
+                    "sex" : 1,
+                    "language" : "zh_CN",
+                    "city" : "海淀",
+                    "province" : "北京",
+                    "country" : "中国",
+                    "headimgurl" : "http://wx.qlogo.cn/mmopen/ccvPic0PMFqLM9ibzZWJLsTwuzTMc1nGbjwpZmOgOaPdfQAIRduhWXndtgwDZRuZusCTTPnToqVibibZmZWfzQoy6hcibgicDJbKVl/0",
+                    "privilege" : [ ],
+                    "unionid" : "op3Elt65DCYlvfpwiBk8zJJuwSXk"
+                },
+                "createdAt" : new Date("2015-12-07T09:48:42.770Z")
+            };
+
+            return next();
+        }
+
         if(!req.roleCollection || !req.wxOpenId) return next('invalid roleCollection or wxOpenId');
 
         var queryDoc = {openId:req.wxOpenId};
@@ -137,7 +169,6 @@ exports.authWXUser = function(options){
 
             req.currentUser = value;
             console.log('mongo found', value);
-
 
             if(config.requireMobileSignIn && !req.currentUser.mobile && req.originalUrl.indexOf('/wp/user/signup') < 0  ){
                 console.log('no mobile number found, redirect to compete user info page');
