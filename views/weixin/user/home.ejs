@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
     <meta charset="utf-8">
@@ -15,73 +16,101 @@
 </head>
 <body>
 
-<script type="application/javascript">
+<div data-role="page" id="page0">
+    <div data-role="header">
+        <div data-role="navbar"><ul>
+                <li><a href="#page0" class="ui-btn-active">One</a></li>
+                <li><a href="#page1" data-ajax="false">Two</a></li>
+                <li><a href="#page2">three</a></li>
+            </ul>
+        </div>
+    </div>
+    <div data-role="content">
+        <h1>page 0</h1>
+    </div>
 
-</script>
+</div>
+
 
 <div data-role="page" id="page1">
 
     <div data-role="header">
         <h1>请提供案件详情</h1>
+        <div data-role="navbar"><ul>
+                <li><a href="#page0" class="ui-btn-active">One</a></li>
+                <li><a href="#page1" data-ajax="false">Two</a></li>
+                <li><a href="#page2">three</a></li>
+            </ul>
+        </div>
     </div>
 
     <div data-role="content">
-        <form action="" method="post">
+        <form action="/wp/user/cases" method="post">
 
-            <label for="select-native-4" class="ui-hidden-accessible">案件类型</label>
-            <select name="select-native-4" id="select-native-4">
-                <option value="small">刑事辩护</option>
-                <option value="small">离婚纠纷</option>
-                <option value="small">房屋买卖拆迁纠纷</option>
-                <option value="small">交通事故纠纷</option>
-                <option value="small">劳动工伤纠纷</option>
-                <option value="small">合同纠纷</option>
-                <option value="small">债权债务纠纷以及公司法务纠纷</option>
+            <label for="caseType" class="ui-hidden-accessible">案件类型</label>
+            <select name="caseType" id="caseType">
+                <%caseType.forEach(function(type){%>
+                <option value="<%=type.name%>"><%=type.label%></option>
+                <%})%>
             </select>
 
-
-            <label for="select-native-4" class="ui-hidden-accessible">服务类型</label>
-            <select name="select-native-4" id="select-native-4">
-                <option value="small">免费电话咨询</option>
-                <option value="small">付费电话咨询</option>
-                <option value="small">线下实体服务</option>
+            <label for="serviceType" class="ui-hidden-accessible">服务类型</label>
+            <select name="serviceType" id="serviceType">
+                <%serviceType.forEach(function(type){%>
+                <option value="<%=type.name%>"><%=type.label%></option>
+                <%})%>
             </select>
 
             <div class="ui-field-contain">
-                    <label for="textarea-1">案件描述</label>
-                    <textarea cols="40" rows="8" name="textarea-1" id="textarea-1">案件描述</textarea>
+                    <label for="caseDesc" class="ui-hidden-accessible">案件描述</label>
+                    <textarea cols="40" rows="8" name="caseDesc" id="caseDesc">案件描述</textarea>
             </div>
 
             <div class="ui-field-contain">
-                    <label for="textarea-2">我的诉求</label>
-                    <textarea cols="40" rows="8" name="textarea-2" id="textarea-2">我的诉求</textarea>
-            </div>
-
-
-            <label for="select-native-4" class="ui-hidden-accessible">悬赏方式</label>
-            <select name="select-native-4" id="select-native-4">
-                <option value="small">按追讨金额比例</option>
-                <option value="small">按具体金额</option>
-            </select>
-
-
-            <div class="ui-field-contain">
-                    <label for="textinput-5">悬赏金额</label>
-                    <input type="text" name="textinput-5" id="textinput-5" placeholder="Text input" value="" data-mini="true">
+                    <label for="caseTarget" class="ui-hidden-accessible">我的诉求</label>
+                    <textarea cols="40" rows="8" name="caseTarget" id="caseTarget">我的诉求</textarea>
             </div>
 
             <div class="ui-field-contain">
-                    <label for="slider-1">悬赏比例</label>
-                    <input type="range" name="slider-1" id="slider-1" value="10" min="0" max="100" data-highlight="true">
+                <div data-role="tabs" id="tabs">
+                    <p>悬赏方式</p>
+
+                    <div data-role="navbar">
+                        <ul>
+                            <li><a href="#one" data-ajax="false">按照金额</a></li>
+                            <li><a href="#two" data-ajax="false">按照比例</a></li>
+                        </ul>
+                          
+                    </div>
+                    <div id="one" class="ui-body-d ui-content">
+                        <!-- <h3 class="ui-bar ui-bar-a ui-corner-all">Heading</h3> -->
+                        <div class="ui-body ui-body-a ui-corner-all">
+                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)"
+                                   value=""><span></span>
+
+                            <p style="font-size: 0.8em;color: dimgrey">您可以通过悬赏一个固定的金额总数来悬赏招募律师</p>
+                        </div>
+                    </div>
+                    <div id="two" class="ui-body-d ui-content">
+                            
+                        <div class="ui-body ui-body-a ui-corner-all">
+                            <label for="price2">悬赏比例(%)</label>
+                            <input type="range" name="price2" id="price2" value="10" min="0" max="100"
+                                   data-highlight="true">
+
+                            <p style="font-size: 0.8em;color: dimgrey">
+                                一些案件可能追讨的金额有一个范围，比如一些债务纠纷案件，这时候您可以通过悬赏所追讨金额的一定比例来招募所需要的律师，追讨回的金额越多，律师所获取的报酬也越多。</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-
-            <a href="#page2" data-role="button" type="submit">倾诉完毕，立即悬赏</a>
-
+            <a data-role="button" type="submit">倾诉完毕，立即悬赏</a>
         </form>
-    </div><!-- /content -->
+    </div>
+    <!-- /content -->
 
-</div><!-- /page -->
+</div>
+<!-- /page -->
 
 <div data-role="page" id="page2">
 
@@ -91,9 +120,11 @@
 
     <div data-role="content">
         <h2>ppage content of anohter page</h2>
-    </div><!-- /content -->
+    </div>
+    <!-- /content -->
 
-</div><!-- /page -->
+</div>
+<!-- /page -->
 
 </body>
 </html>

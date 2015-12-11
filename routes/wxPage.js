@@ -5,14 +5,12 @@ var utils = require('../tools/utils');
 var config = require('../profile/config');
 var auth = require('../middleware/auth');
 
-
 router.use('/user/*', auth.oauthWXOpenId(config.optionsUser), auth.authWXUser());
 router.use('/ly/*', auth.oauthWXOpenId(config.optionsLawyer), auth.authWXUser());
 router.use('/test/*', auth.oauthWXOpenId(config.optionsTest), auth.authWXUser());
 
-
 router.get('/user/home', function(req, res, next){
-    res.render('weixin/user/home', {info:req.currentUser});
+    res.render('weixin/user/home', {info:req.currentUser, caseType:config.userCaseType, serviceType:config.userServiceType});
 });
 
 router.get('/ly/home', function(req, res, next){
@@ -27,5 +25,10 @@ router.get('/user/signup', function(req, res, next){
     res.render('weixin/user/signup', {info:req.currentUser});
 });
 
+router.post('/user/cases', function(req, res, next){
+    console.log(res.body);
+
+    res.render();
+});
 
 module.exports = router;

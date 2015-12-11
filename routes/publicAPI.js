@@ -198,7 +198,7 @@ var handleVoiceCode = function(req, res, next){
             console.log('yunxtong ok, sent', option.json);
 
             var k = [config.redisPrefix.verifyCode, mobile].join(':');
-            redis.client.setex(k, 90, verifyCode, function(err){
+            redis.client.setex(k, 600, verifyCode, function(err){
                 if(err) return next(err);
             });
             res.send({rtn:0});

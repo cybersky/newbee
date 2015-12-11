@@ -37,6 +37,10 @@ MongoClient.connect(uri, function(err, db) {
     var users = newbeeDB.collection('users');
     users.ensureIndex('openId', {unique:true, background:true, sparse:true});
     users.ensureIndex('mobile', {unique:true, background:true, sparse:true});
+
+    var lawyers = newbeeDB.collection('lawyers');
+    users.ensureIndex('openId', {unique:true, background:true, sparse:true});
+    users.ensureIndex('mobile', {unique:true, background:true, sparse:true});
 });
 
 

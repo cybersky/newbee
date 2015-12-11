@@ -28,6 +28,8 @@ exports.operatorCookie = {
 };
 
 
+exports.backDoorOpenId = 'thetestopenid777';
+
 exports.cookieSecret = '98sdfasjljr#$#$@$#dfljd*osiudf';
 
 //云通讯 config http://www.yuntongxun.com/
@@ -95,6 +97,35 @@ exports.redisPrefix = {
 
 exports.requireMobileSignIn = true;
 exports.skipConfirmCode = false;
+
+
+exports.userCaseType = [
+    {name:'xsbh', label:'刑事辩护'},
+    {name:'lhjf', label:'离婚纠纷'},
+    {name:'fwjf', label:'房屋租赁,买卖,拆迁纠纷'},
+    {name:'jtsg', label:'交通事故纠纷'},
+    {name:'ldgs', label:'劳动工伤纠纷'},
+    {name:'htjf', label:'合同纠纷'},
+    {name:'zqzw', label:'债权债务纠纷'},
+    {name:'gsfw', label:'公司法务纠纷'}
+];
+
+exports.userServiceType = [
+    {name:'xxfw', label:'线下实体服务'},
+    {name:'ffzx', label:'付费咨询'},
+    {name:'mfzx', label:'免费咨询'}
+];
+
+
+exports.caseStatus = {
+    RAW:{key:'raw', desc:'案件处于初始状态，需要后台人员整理归类审核才可上线'},
+    ONLINE:{key:'online', desc:'案件经过了运营人员审核，上线招标'},
+    BID:{key:'bid', desc:'已有律师投标'},
+    CANCEL:{key:'cancel', desc:'客户取消案件'},
+    TARGET:{key:'target', desc:'客户已经选择了投标律师'},
+    PROCESS:{key:'process', desc:'案件开始受理案件，进展中'},
+    CLOSE:{key:'close', desc:'案件关闭'}
+};
 
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -21,8 +20,9 @@
 <div data-role="page" id="home">
 
     <div data-role="header">
-        <h1><b><%=info.openInfo.nickname%></b>, 欢迎使用律蜂</h1>
-    </div><!-- /header -->
+        <h1><b><%= info.openInfo.nickname %></b>, 欢迎使用律蜂</h1>
+    </div>
+    <!-- /header -->
 
     <div role="main" class="ui-content">
         <form onsubmit="return submitMobile()">
@@ -37,26 +37,32 @@
             <button data-theme="b" type="submit">登录</button>
 
         </form>
-    </div><!-- /content -->
+    </div>
+    <!-- /content -->
 
-    <div data-role="footer"  data-position="fixed">
+    <div data-role="footer" data-position="fixed">
         <div data-role="controlgroup" data-type="horizontal" style="text-align:center">
             <!-- <a href="#service">律蜂服务条款</a> -->
 
             <label for="checkbox-agree">
-            <input type="checkbox" checked name="checkbox-agree" id="checkbox-agree">我同意服务条款
+                <input type="checkbox" checked name="checkbox-agree" id="checkbox-agree">我同意服务条款
 
         </div>
     </div>
 
-</div><!-- /page -->
+</div>
+<!-- /page -->
 
 
 <div data-role="page" id="service">
 
     <div data-role="header">
-        <a href="#home" data-role="button" class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext"></a> <h3>律蜂服务条款</h3>
-    </div><!-- /header -->
+        <a href="#home" data-role="button"
+           class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-l ui-btn-icon-notext"></a>
+
+        <h3>律蜂服务条款</h3>
+    </div>
+    <!-- /header -->
 
     <div data-role="content">
 
@@ -67,7 +73,8 @@
 
             模板（Templates）
 
-            模板是您用HTML和CSS编写的文件，展现应用的视图。 您可给HTML添加新的元素、属性标记，作为AngularJS编译器的指令。 AngularJS编译器是完全可扩展的，这意味着通过AngularJS您可以在HTML中构建您自己的HTML标记！
+            模板是您用HTML和CSS编写的文件，展现应用的视图。 您可给HTML添加新的元素、属性标记，作为AngularJS编译器的指令。
+            AngularJS编译器是完全可扩展的，这意味着通过AngularJS您可以在HTML中构建您自己的HTML标记！
 
             应用程序逻辑（Logic）和行为（Behavior）
 

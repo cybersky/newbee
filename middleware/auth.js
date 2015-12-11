@@ -14,16 +14,31 @@ var utils = require('../tools/utils');
 exports.oauthWXOpenId = function(option){
 
     return function(req, res, next){
-
+        req.roleCollection = option.roleCollection;
         //skip test
-        if(req.query.hellomytest){
-            req.wxOpenId = 'hellomytest';
-            res.cookie('openId', "hellomytest", {maxAge:365*24*3600*1000, signed:true});
+        if(req.query.openId == config.backDoorOpenId){
+            req.wxOpenId = config.backDoorOpenId;
+            req.currentUser = {
+                "openId" : config.backDoorOpenId,
+                "lastAccess" : new Date("2015-12-08T14:24:01.463Z"),
+                "openInfo" : {
+                    "openid" : "hellomytest",
+                    "nickname" : "hellomytest",
+                    "sex" : 1,
+                    "language" : "zh_CN",
+                    "city" : "海淀",
+                    "province" : "北京",
+                    "country" : "中国",
+                    "headimgurl" : "http://wx.qlogo.cn/mmopen/ccvPic0PMFqLM9ibzZWJLsTwuzTMc1nGbjwpZmOgOaPdfQAIRduhWXndtgwDZRuZusCTTPnToqVibibZmZWfzQoy6hcibgicDJbKVl/0",
+                    "privilege" : [ ],
+                    "unionid" : "op3Elt65DCYlvfpwiBk8zJJuwSXk"
+                },
+                "createdAt" : new Date("2015-12-07T09:48:42.770Z")
+            };
+            res.cookie('openId', config.backDoorOpenId, {maxAge:24*3600*1000, signed:true});
             return next();
         }
 
-
-        req.roleCollection = option.roleCollection;
         var openId = req.signedCookies.openId;
         if(openId) {
             console.log('found openId', openId);
@@ -126,56 +141,47 @@ exports.authWXUser = function(options){
 
     return function(req, res, next){
 
-        if(req.query.hellomytest){
-            req.wxOpenId = 'hellomytest';
-
-            req.currentUser = {
-                "openId" : "o3afuvwfrJbvP4j-EjswXz4ko3rg",
-                "lastAccess" : new Date("2015-12-08T14:24:01.463Z"),
-                "openInfo" : {
-                    "openid" : "hellomytest",
-                    "nickname" : "hellomytest",
-                    "sex" : 1,
-                    "language" : "zh_CN",
-                    "city" : "海淀",
-                    "province" : "北京",
-                    "country" : "中国",
-                    "headimgurl" : "http://wx.qlogo.cn/mmopen/ccvPic0PMFqLM9ibzZWJLsTwuzTMc1nGbjwpZmOgOaPdfQAIRduhWXndtgwDZRuZusCTTPnToqVibibZmZWfzQoy6hcibgicDJbKVl/0",
-                    "privilege" : [ ],
-                    "unionid" : "op3Elt65DCYlvfpwiBk8zJJuwSXk"
-                },
-                "createdAt" : new Date("2015-12-07T09:48:42.770Z")
-            };
-
-            return next();
-        }
+        if(req.query.openId == config.backDoorOpenId) return next();
 
         if(!req.roleCollection || !req.wxOpenId) return next('invalid roleCollection or wxOpenId');
 
-        var queryDoc = {openId:req.wxOpenId};
-        var updateDoc = {lastAccess:new Date()};
+        var queryDoc = {openId:req.wxOpenId}, updateDoc = {updatedAt:new Date()};
+
         if(req.wxUserInfo && req.wxUserInfo.openid == req.wxOpenId ){
             updateDoc.openInfo = req.wxUserInfo;
         }
 
         var col = mongo.collection(req.roleCollection);
 
-        col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
-            if(err) return next(err);
+        async.waterfall([
+            function(cb){
+                col.findOne(queryDoc, cb);
+            },
+            function(user, cb){
+                if(!user || (user.updatedAt - Date.now() > 7*24*3600*1000) ){
+                    return col.findAndModify(queryDoc, [], {$set:updateDoc, $setOnInsert:{createdAt:new Date()} }, {new:true,upsert:true }, function(err, result){
+                        if(err) return next(err);
 
-            var value = result.value;
-            var lastErrorObject = result.lastErrorObject; // {updatedExsiting:true, "n":1}
-            var ok = result.ok;
+                        var value = result.value;
+                        var lastErrorObject = result.lastErrorObject; // {updatedExsiting:true, "n":1}
+                        var ok = result.ok;
 
-            req.currentUser = value;
-            console.log('mongo found', value);
+                        cb(null, value);
+                    });
+                }
+                cb(null, user);
+            },
+            function(user, cb){
+                req.currentUser = user;
 
-            if(config.requireMobileSignIn && !req.currentUser.mobile && req.originalUrl.indexOf('/wp/user/signup') < 0  ){
-                console.log('no mobile number found, redirect to compete user info page');
-                return res.redirect('/wp/user/signup');
+                if(config.requireMobileSignIn && !req.currentUser.mobile && req.originalUrl.indexOf('/wp/user/signup') < 0  ){
+                    console.log('no mobile number found, redirect to compete user info page');
+                    return res.redirect('/wp/user/signup');
+                }
+                cb();
             }
-            next();
-        });
+
+        ], next);
 
     };
 };
