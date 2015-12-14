@@ -104,10 +104,37 @@ var createCase = function (req, res, next) {
 };
 
 var getUserCases = function(req, res, next){
+    var openId = req.wxOpenId;
+
+    var caseCollection = mongo.case();
+
+    caseCollection.find({userOpenId:openId}).sort({createdAt:-1, updatedAt:-1}).toArray(function(err, result){
+        if(err) return next(err);
+        res.send({rtn:0, data:result});
+    });
 
 };
 
 var updateCase = function(req, res, next){
+    var openId = req.wxOpenId;
+    var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
+
+    if(userCase.price1 && userCase.price1)
+        return next({rtn: config.errorCode.paramError, message: 'either price1 or price2'});
+
+    var updateDoc = {};
+    if(userCase.price1) updateDoc.price1 = userCase.price1;
+    if(userCase.price2) updateDoc.price2 = userCase.price2;
+    if(userCase.caseDesc) updateDoc.caseDesc = userCase.caseDesc;
+    if(userCase.caseTarget) updateDoc.caseTarget = userCase.caseTarget;
+
+    var caseCollection = mongo.case();
+    caseCollection.update({userOpenId:openId}, updateDoc, {}, function(err, result){
+        if(err) return next(err);
+        if(result && result.nModified == 1){
+            res.send({rtn:0});
+        }
+    });
 
 };
 
@@ -119,6 +146,8 @@ router.post('/user/cases', createCase);
 router.get('/user/cases', getUserCases);
 
 router.post('/user/cases/:caseId', updateCase);
+
+
 
 
 module.exports = router;
