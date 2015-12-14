@@ -1,6 +1,6 @@
 node_modules
 .idea
 logs
-profile/override.js
+*override.js
 test
 public/upload
