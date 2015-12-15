@@ -59,6 +59,8 @@ exports.wxRefreshTokenURL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?
 exports.wxUserInfoURL = "https://api.weixin.qq.com/sns/userinfo?access_token={{accessToken}}&openid={{openId}}&lang=zh_CN";
 
 
+exports.wxAccessTokenURL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={{APPID}}&secret={{APPSECRET}}";
+
 exports.optionsLawyer = {
     appid:"wx9255a6db434d4445",
     appsecret:"7b722b1387a11f074152ae5b6bb62019",
