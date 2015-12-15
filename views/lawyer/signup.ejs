@@ -57,7 +57,7 @@
 			<div class="form-group">
 				<label for="lawyerId" class="control-label col-sm-4">律师执业证号</label>
 				<div class="col-sm-4">
-					<input type="number" id="lawyerId" name="lawyerId" class="form-control">
+					<input type="text" id="lawyerId" name="lawyerId" class="form-control">
 				</div>
 			</div>
 
@@ -86,7 +86,7 @@
                 <div class="col-sm-4">
                     <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="请填写手机号码">
                     <fieldset>
-                        <input class="input-sm" type="text" id="inputCode" placeholder="输入验证码">
+                        <input id="verifyCode" class="input-sm" type="text" placeholder="输入验证码">
                         <button class="btn btn-default" type="button" id="getVerifyCode">获取验证码</button>
                     </fieldset>
 
@@ -109,7 +109,7 @@
         $('#getVerifyCode').click(function(){
             var mobile = $('#phoneNumber').val();
             if(!/\d{11}/.test(mobile)) return alert('请输入正确的手机号');
-            $.post('/ua/voicecode', {mobile:mobile}, function(data, status){
+            $.post('/ua/lawyer/voicecode', {mobile:mobile}, function(data, status){
                 if(data&& data.rtn > 0) alert('error'+data.message);
             });
         });
@@ -129,17 +129,18 @@
 		var c_password = $('#cpassword').val();
 		if (password != c_password) return errorTip({code: 1, message: '两次密码不一致'});
 
-		var phone = $('#phoneNumber').val();
-		if (!validator.isMobilePhone(phone, 'zh-CN')) return errorTip({code: 1, message: '手机号码格式错误'});
-
 		var id = $('#identityNumber').val();
 		if (!id) return errorTip({code: 1, message: '身份证号码不能为空'});
 		if (!validator.authId(id)) return errorTip({code: 1, message: '身份证号码格式错误'});
 
+        var phone = $('#phoneNumber').val();
+        if (!/\d{11}/.test(phone)) return errorTip({code: 1, message: '手机号码格式错误'});
+        var verifyCode = $('#verifyCode').val();
+        if (!verifyCode) return errorTip({code: 1, message: '验证码不能为空'});
+
 		var data = {
 			username: $('#username').val(), password: password, email: email,
-			phoneNumber: phone,
-			identityNumber: id,
+			phoneNumber: phone, verifyCode: verifyCode, identityNumber: id,
 			identityImage: document.getElementById('identityImage').files[0],
 			lawyerId: $('#lawyerId').val(),
 			lawyerLocation: $('#lawyerLocation').val(),
@@ -162,11 +163,7 @@
 				return errorTip({code: 1, message: e});
 			}
 
-			var err;
-			err = res.code && res.code > 0 ? true : false;
-			err = res.err && res.err > 0 ? true : false;
-			err = res.rtn && res.rtn > 0 ? true : false;
-
+			var err = (res.code || res.rtn) && (res.code > 0 || res.rtn > 0) ? true : false;
 			if (this.status == 200 && !err) {
 				return successTip({code: 0, message: '注册成功'}, 1000 * 2, true);
 				//return self.clearInput(['title', 'description', 'image', 'start', 'end']);

@@ -1,17 +1,17 @@
 
 
 var express = require('express');
-var router = express.Router();
-var Lawyer	= require('../odm/lawyer');
-var async	= require('async');
-var _		= require('lodash');
-var validator=require('validator');
-var secure	= require('../tools/secret');
-var middleware = require('../middleware/uploader');
-var m = require('moment');
+var router  = express.Router();
+var Lawyer  = require('../odm/lawyer');
+var async   = require('async');
+var _   = require('lodash');
+var validator   =require('validator');
+var secure  = require('../tools/secret');
+var middleware  = require('../middleware/uploader');
 var request = require('request');
-var redis = require('../clients/redis');
-var config = require('../profile/config');
+var redisClient   = require('../clients/redis').client;
+var config  = require('../profile/config');
+var utils   = require('../tools/utils');
 
 
 validator.authId = function(id){
@@ -24,17 +24,19 @@ var lawyerRegister = (req, res, next) => {
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({rtn: 1, code: 1 , message: 'Missing lawyer id image'});
     if(!files['identityImage']) return res.send({rtn: 1, code: 1 , message: 'Missing identity image'});
+
     var lawyer = {};
     lawyer.username 		= _.trim(req.body['username'])  		|| '';
     lawyer.password 		= _.trim(req.body['password'])  		|| '';
     lawyer.email	  		= _.trim(req.body['email'])				|| '';
-    lawyer.phoneNumber	= _.trim(req.body['phoneNumber'])       || '';
-    lawyer.identityNumber = _.trim(req.body['identityNumber'])    || '';
+    lawyer.phoneNumber	    = _.trim(req.body['phoneNumber'])       || '';
+    lawyer.verifyCode       = _.trim(req.body['verifyCode'])        || '';
+    lawyer.identityNumber   = _.trim(req.body['identityNumber'])    || '';
     lawyer.identityFilename = '/upload/' + files.identityImage[0].filename;
     lawyer.lawyerIdFilename = '/upload/' + files.lawyerIdImage[0].filename;
-    lawyer.lawyerId       = _.trim(req.body['lawyerId'])          || '';
-    lawyer.lawyerLocation = _.trim(req.body['lawyerLocation']);
-    lawyer.lawServiceArea = _.trim(req.body['lawServiceArea']);
+    lawyer.lawyerId         = _.trim(req.body['lawyerId'])          || '';
+    lawyer.lawyerLocation   = _.trim(req.body['lawyerLocation']);
+    lawyer.lawServiceArea   = _.trim(req.body['lawServiceArea']);
 
 
     var err = '';
@@ -43,7 +45,8 @@ var lawyerRegister = (req, res, next) => {
     if(!lawyer.email)	   err			= '邮箱不能为空';
     if(!validator.isEmail(lawyer.email)) err = '邮箱格式错误';
     if(!lawyer.phoneNumber)err		    = '手机号码不能为空';
-    if(!validator.isMobilePhone(lawyer.phoneNumber, 'zh-CN')) err = '手机号码格式错误';
+    if(!/\d{11}/.test(lawyer.phoneNumber)) err = '手机号码格式错误';
+    if(!lawyer.verifyCode) err          = '验证码不能为空';
     if(!lawyer.lawyerId) err            = '律师ID不能为空';
     if(!lawyer.identityNumber)err	    = '身份证号码不能为空';
     if(!validator.authId(lawyer.identityNumber)) err = '身份证号码格式错误';
@@ -51,6 +54,13 @@ var lawyerRegister = (req, res, next) => {
 
 
     async.waterfall([
+        (cb) => {
+            redisClient.get([config.redisPrefix.verifyCode, lawyer.phoneNumber].join(':'), (err, result) => {
+                if(err) return cb(err);
+                if(lawyer.verifyCode != result) return cb('验证码错误');
+                return cb(null);
+            });
+        },
         (cb) => {
             //auth post data
             Lawyer.getLawyerByCondition({email: lawyer.email}, cb);
@@ -73,7 +83,7 @@ var lawyerRegister = (req, res, next) => {
             Lawyer.createLawyer(lawyer, cb);
         }
     ], (err, docs) => {
-        if(err) return res.send(err);
+        if(err) return res.send({rtn: 1, message: err});
         res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });
 };
@@ -144,61 +154,20 @@ var LawyerLogin = (req, res, next) => {
 
 };
 
+var handleLawyerVoiceCode = function(req, res, next){
+    utils.handleMobileVoice(req.body.mobile, function(err){
+        if(err) return res.send({rtn: 1, message: err});
+        res.send({rtn:0});
+    });
+};
+
 var handleVoiceCode = function(req, res, next){
     var openId = req.signedCookies.openId;
     if( !openId ) return res.send({rtn:config.errorCode.serviceError, message:'require openId'});
 
-    var mobile = req.body.mobile;
-
-    if(!/^\d{11}$/.test(mobile)) return next({rtn:config.errorCode.paramError, message:'invalid mobile number'});
-
-    //APP ID
-    var appId = config.ytxConfig.appId;
-    //APP TOKEN
-    var appToken = config.ytxConfig.appToken;
-
-    //ACCOUNT SID：
-    var accountId = config.ytxConfig.accountId;
-    //AUTH TOKEN：
-    var authToken = config.ytxConfig.authToken;
-
-    var testHost = config.ytxConfig.testHost;
-    var prodHost = config.ytxConfig.prodHost;
-    var path = config.ytxConfig.path;
-
-    var ts = m().format('YYYYMMDDHHmmss');
-    var sig = secure.md5([accountId, authToken, ts].join(''), 'utf8', 'hex').toUpperCase();
-
-    path = path.replace('{accountId}', accountId);
-    path = path.replace('{sig}', sig);
-
-    var auth = new Buffer([accountId, ts].join(':'), 'utf8').toString('base64');
-
-    var verifyCode = String.prototype.substr.call(Math.random(), 2, 4);
-
-    var option = {
-        url:testHost + path,
-        json:{appId:appId, verifyCode:verifyCode, playTimes:'2', to:mobile, displayNum:'777'},
-        headers:{
-            Authorization:auth
-        }
-    };
-    request.post(option, function(err, resp, body){
-        if(err) return next(err);
-
-        if(body && body.statusCode == '000000' ){
-            console.log('yunxtong ok, sent', option.json);
-
-            var k = [config.redisPrefix.verifyCode, mobile].join(':');
-            redis.client.setex(k, 600, verifyCode, function(err){
-                if(err) return next(err);
-            });
-            res.send({rtn:0});
-        }
-        else{
-            return next('invalid response:'+body);
-        }
-
+    utils.handleMobileVoice(req.body.mobile, function(err){
+        if(err) return res.send({rtn: 1, message: err});
+        res.send({rtn:0});
     });
 };
 
@@ -210,11 +179,13 @@ var handleSMSCode = function(req, res, next){
 
 
 router.post('/login', LawyerLogin);
+
 router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
 router.put('/lawyer/:lawyerId', updateLawyer);
 router.delete('/lawyer/:lawyerId', deleteLawyer);
 router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
+router.post('/lawyer/voicecode', handleLawyerVoiceCode);
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
