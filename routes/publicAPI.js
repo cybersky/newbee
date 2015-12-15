@@ -143,12 +143,6 @@ var LawyerLogin = (req, res, next) => {
     });
 
 };
-router.post('/login', LawyerLogin);
-router.get('/lawyer', getLawyers);
-router.get('/lawyer/:lawyerId', getOneLawyer);
-router.put('/lawyer/update/:lawyerId', updateLawyer);
-router.delete('/lawyer/delete/:lawyerId', deleteLawyer);
-router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
 
 
 
@@ -214,6 +208,15 @@ var handleSMSCode = function(req, res, next){
 
 };
 
+
+
+
+router.post('/login', LawyerLogin);
+router.get('/lawyer', getLawyers);
+router.get('/lawyer/:lawyerId', getOneLawyer);
+router.put('/lawyer/update/:lawyerId', updateLawyer);
+router.delete('/lawyer/delete/:lawyerId', deleteLawyer);
+router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);

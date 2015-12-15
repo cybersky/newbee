@@ -147,6 +147,7 @@ router.get('/user/cases', getUserCases);
 
 router.post('/user/cases/:caseId', updateCase);
 
+router.get('/ly/')
 
 
 
