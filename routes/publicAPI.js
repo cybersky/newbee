@@ -209,8 +209,6 @@ var handleSMSCode = function(req, res, next){
 };
 
 
-
-
 router.post('/login', LawyerLogin);
 router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
