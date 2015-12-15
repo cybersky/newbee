@@ -146,8 +146,8 @@ var LawyerLogin = (req, res, next) => {
 router.post('/login', LawyerLogin);
 router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
-router.put('/lawyer/update/:lawyerId', updateLawyer);
-router.delete('/lawyer/delete/:lawyerId', deleteLawyer);
+router.put('/lawyer/:lawyerId', updateLawyer);
+router.delete('/lawyer/:lawyerId', deleteLawyer);
 router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
 
 
