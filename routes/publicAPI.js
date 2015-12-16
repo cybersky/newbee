@@ -158,10 +158,11 @@ var handleSMSCode = function(req, res, next){
 router.get('/lawyer/:lawyerId', getOneLawyer);
 router.put('/lawyer/:lawyerId', updateLawyer);
 router.delete('/lawyer/:lawyerId', deleteLawyer);
+router.post('/lawyer/voicecode', handleLawyerVoiceCode);
 
 router.post('/signin', lawyerSignin);
 router.post('/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
-router.post('/lawyer/voicecode', handleLawyerVoiceCode);
+
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
