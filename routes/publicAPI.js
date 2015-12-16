@@ -101,7 +101,7 @@ var updateLawyer = function(req, res, next){};
 var deleteLawyer = function(req, res, next){};
 
 
-var LawyerLogin = (req, res, next) => {
+var lawyerSignin = (req, res, next) => {
     var email = req.body['email'] || '';
     var pass  = req.body['password'] || '';
 
@@ -127,10 +127,6 @@ var LawyerLogin = (req, res, next) => {
         //String(Date.now())+':'+email+':'+docs._id+':'+token
         var token = secure.md5(email+config.cookieConfig.privateKey);
         res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
-        if(docs.password) delete docs._doc.password;
-
-        req.session.userInfo    = docs;
-        req.session.lawyerInfo  = docs;
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });
 
@@ -158,13 +154,13 @@ var handleSMSCode = function(req, res, next){
 };
 
 
-router.post('/login', LawyerLogin);
-
 //router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
 router.put('/lawyer/:lawyerId', updateLawyer);
 router.delete('/lawyer/:lawyerId', deleteLawyer);
-router.post('/lawyer/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
+
+router.post('/signin', lawyerSignin);
+router.post('/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) , lawyerRegister);
 router.post('/lawyer/voicecode', handleLawyerVoiceCode);
 
 router.post('/smscode', handleSMSCode);

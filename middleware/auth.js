@@ -8,6 +8,7 @@ var request = require('request');
 var async = require('async');
 var utils = require('../tools/utils');
 var Operator = require('../odm/admin/operator');
+var Lawyer = require('../odm/lawyer');
 
 
 exports.authAPIOpenId = function(option){
@@ -197,7 +198,7 @@ exports.authWXUser = function (options) {
 };
 
 
-exports.authCookie = (req, res, next) => {
+exports.authCookie = function(req, res, next){
     var cookie = req.cookies[config.cookieConfig.name];
     if(!cookie) return res.redirect(302, '/up/signin');
 
@@ -208,8 +209,20 @@ exports.authCookie = (req, res, next) => {
     }
     return next();
 };
+exports.prepareLawyerInfo = function(req, res, next){
+    var cookie = req.cookies[config.cookieConfig.name];
+    var str = cookie.split(':');
+    Lawyer.getOneLawyer(str[2], function(err, doc){
+        if(err) req.lawyerInfo = err || {};
+        if(doc._doc.password) delete doc._doc.password;
+        req.lawyerInfo = doc._doc;
+        return next();
+    });
 
-exports.authOperatorCookie = (req, res, next) => {
+};
+
+
+exports.authOperatorCookie = function(req, res, next){
 	var cookie = req.cookies[config.operatorCookie.name];
     if(!cookie) return res.redirect(302, '/ap/signin');
 

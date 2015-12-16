@@ -7,16 +7,16 @@ var router = express.Router();
 var config  = require('../profile/config');
 var auth    = require('../middleware/auth');
 
+var root = (req, res, next) => {
+    return res.render('index', {lawyerInfo: req.lawyerInfo});
+};
+
 var lawyerSignup = (req, res, next) => {
-    return res.render('lawyer/signup', {
-        options: {target: 'signup', action:'none'}
-    });
+    return res.render('lawyer/signup', {options: {}});
 };
 
 var lawyerSignin = (req, res, next) => {
-    return res.render('lawyer/signin', {
-        options: {target: 'signin', action:'none'}
-    });
+    return res.render('lawyer/signin', {options: {}});
 };
 
 var lawyerSignOut = (req, res, next) => {
@@ -34,8 +34,9 @@ router.get('/signin', function(req, res, next){
     return next();
 
 }, lawyerSignin);
-router.get('/logout', lawyerSignOut);
+router.get('/signout', lawyerSignOut);
 
 
+router.get('/', auth.authCookie, auth.prepareLawyerInfo, root);
 
 module.exports = router;

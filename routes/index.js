@@ -8,5 +8,5 @@ var auth = require('../middleware/auth');
 var root = (req, res, next) => {
     return res.render('index');
 };
-router.get('/', auth.authCookie, root);
+router.get('/', auth.authCookie, auth.prepareLawyerInfo, root);
 module.exports = router;
