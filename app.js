@@ -7,8 +7,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var compression = require('compression');
 
-var routes = require('./routes/index');
-
 var privateAPI = require('./routes/privateAPI');
 var publicAPI = require('./routes/publicAPI');
 
@@ -20,8 +18,6 @@ var privatePage = require('./routes/privatePage');
 
 var wxService = require('./routes/wxService');
 var wxPage = require('./routes/wxPage');
-
-var session = require('./middleware/session');
 
 var vhost = require('vhost');
 
@@ -54,10 +50,7 @@ app.use(compression());
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: '30d'} ));
 
 
-app.use(session.storeSessionToRedis());
-
-
-app.use('/', routes);
+app.use('/', publicPage);
 
 app.use('/up', publicPage);
 app.use('/ua', publicAPI);

@@ -2,20 +2,14 @@
  * Created by Daniels on 10/19/15.
  */
 
-var SignIn = {auth: 'POST /ua/lawyer/signin'};
-
 var Manager = {
-    findAll: 'GET /ua/lawyer?start={start}&rows={rows}',
-    findOne: 'GET /ua/lawyer/{id}',
-    update:  'PUT /ua/lawyer/{id}',
-    destroy: 'DELETE /ua/lawyer/{id}'
+    findAll: 'GET /aa/lawyer?start={start}&rows={rows}',
+    findOne: 'GET /aa/lawyer/{id}'
 };
 
-var SignInModel = new Model(SignIn);
 var ManagerModel= new Model(Manager);
 
 var dataModel = {
-    'signin': {model: SignInModel, view: '#signinDiv', post: '/ua/lawyer/signin'},
     'manager':{model: ManagerModel,view: '#managerDiv'}
 };
 
@@ -46,6 +40,21 @@ $(function(){
             selected : 0
         },
         methods : {
+            findOne: function(){
+
+                var id = options.id;
+                if(!id) return false;
+                var self = this;
+
+                this.model.findOne({id: id}, function(result){
+                    self.contents = result.data;
+                    console.log(JSON.stringify(result));
+                },function (xhr) {
+                    errorTip(xhr.responseText);
+                });
+
+
+            },
             refreshModel     : function (page) {
                 page = page || 0;
                 var self = this;
@@ -72,28 +81,6 @@ $(function(){
                 }, function (xhr) {
                     errorTip(xhr.responseText);
                 });
-            },
-            onSign_in : function(){
-                var email = $('#inputEmail').val();
-                if(!email) {
-                    return deliverMessageToNotice('emailNotice', '邮箱地址不能为空', 1000 * 5);
-                }
-                if(!validator.isEmail(email)) {
-                    return deliverMessageToNotice('emailNotice', '邮箱格式错误', 1000 * 5);
-                }
-                var pass  = $('#inputPassword').val();
-                if(!pass){
-                    return deliverMessageToNotice('passwordNotice', '密码不能为空', 1000 * 5);
-                }
-
-                var self = this;
-                var nc = new this.model({email: email, password: pass});
-                nc.authenticate(function(result){
-                    if(result.rtn != 0) return deliverMessageToNotice(result.notice, result.message, 1000 * 5);
-                    if(result.refer) return self.redirect(result.refer);
-                    self.redirect('/');
-                });
-
             },
             clearInput       : function (ids) {
                 if (!ids) return false;
@@ -163,5 +150,6 @@ $(function(){
 
 
     if(window.options.action === 'none') return;
+    if(window.options.action === 'findOne') return profile.vue.findOne();
     return profile.vue.refreshModel();
 });

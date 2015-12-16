@@ -3,56 +3,19 @@
 	var options = <%-JSON.stringify(options)%>;
 </script>
 
-<div class="panel panel-info" id="managerDiv">
-	<div class="panel-heading">
-		<h1 class="panel-title" style="font-size: 24px;">
-			<strong>审核认证</strong>
-		</h1>
-	</div>
-	<div class="panel-body">
-		<table class="table table-bordered">
-			<thead>
-				<tr style="text-align: center;">
-					<td style="color: #00B7FF;"><strong>邮箱</strong></td>
-					<td style="color: #00B7FF;"><strong>身份证号码</strong></td>
-					<td style="color: #00B7FF;"><strong>身份证照片</strong></td>
-					<td style="color: #00B7FF;"><strong>律师执证号码</strong></td>
-					<td style="color: #00B7FF;"><strong>律师执证照片</strong></td>
-					<td style="color: #00B7FF;"><strong>认证</strong></td>
-					<td style="color: #00B7FF;"><strong>操作</strong></td>
-				</tr>
-			</thead>
-			<tr v-repeat="c:contents" style="text-align: center;">
-				<td>{{c.email}}</td>
-				<td>{{c.identityNumber}}</td>
-				<td><img v-attr="src:c.identityFilename" style="width: 40px; height: 40px;"></td>
-				<td>{{c.lawyerId}}</td>
-				<td><img v-attr="src:c.lawyerIdFilename" style="width: 40px; height: 40px;"></td>
-				<td v-show="c.authentication == false">未认证</td>
-				<td v-show="c.authentication == true"> 已认证</td>
-				<td>
-					<!-- Single button -->
-					<div class="btn-group">
-						<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							 <span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu">
-							<li><a href="#">通过</a></li>
-							<li><a href="#">驳回</a></li>
-							<li><a href="#">删除</a></li>
-							<!--li role="separator" class="divider"></li>
-							<li><a href="#">Separated link</a></li-->
-						</ul>
-					</div>
-				</td>
-			</tr>
-		</table>
+
+<div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
+	<h1 class="page-header">注册律师信息</h1>
+
+	<div class="row placeholders panel-body">
+		<div class="col-xs-6 col-sm-3 placeholder" v-repeat="c:contents">
+			<img v-attr="src:c.identityFilename" style="width: 200px; height: 200px;" class="img-responsive" alt="Generic placeholder thumbnail">
+			<div class="text-justify" style="text-align: center;">
+				<h5><a href="/ap/detail/{{c._id}}">律师详细信息</a></h5>
+				<span class="text-muted">姓名: {{c.username}}</span><br>
+				<span class="text-muted">ID: {{c.identityNumber}}</span>
+			</div>
+		</div>
 	</div>
 </div>
-
-
-
-</div>
-</body>
-<script type="application/javascript" src="/js/newbee.js"></script>
-</html>
+<% include fragments/footer.ejs %>
