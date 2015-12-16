@@ -3,13 +3,10 @@
  */
 var express = require('express');
 var router = express.Router();
-var Lawyer = require('../odm/lawyer');
-var middleware = require('../middleware/auth');
+var auth = require('../middleware/auth');
 
 var root = (req, res, next) => {
-    return res.render('index', {
-        userInfo: req.session.userInfo
-    });
+    return res.render('index');
 };
-router.get('/', root);
+router.get('/', auth.authCookie, root);
 module.exports = router;

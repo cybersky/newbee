@@ -209,15 +209,6 @@ exports.authCookie = (req, res, next) => {
     return next();
 };
 
-exports.authLawyerSignIn = (req, res, next) => {
-    var cookie = req.cookies[config.cookieConfig.name];
-    if (cookie) return res.redirect('/');
-
-    return next();
-
-};
-
-
 exports.authOperatorCookie = (req, res, next) => {
 	var cookie = req.cookies[config.operatorCookie.name];
     if(!cookie) return res.redirect(302, '/ap/signin');
