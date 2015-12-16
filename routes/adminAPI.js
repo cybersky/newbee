@@ -7,9 +7,9 @@ var async	= require('async');
 var _		= require('lodash');
 var validator=require('validator');
 var secure	= require('../tools/secret');
-var Operator = require('../odm/operator');
+var Operator = require('../odm/admin/operator');
+var Lawyer = require('../odm/admin/lawyer');
 var config  = require('../profile/config');
-var Lawyer = require('../odm/lawyer');
 var auth   = require('../middleware/auth');
 
 

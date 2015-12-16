@@ -2,7 +2,7 @@
  * Created by Daniels on 10/28/15.
  */
 
-var Operator  = require('../model/operator').Operator;
+var Operator  = require('../../model/operator').Operator;
 
 
 exports.createOperator = function(operatorInfo, callback){

@@ -7,7 +7,7 @@ var mongo = require('../clients/mongo');
 var request = require('request');
 var async = require('async');
 var utils = require('../tools/utils');
-var Operator = require('../odm/operator');
+var Operator = require('../odm/admin/operator');
 
 
 exports.authAPIOpenId = function(option){
