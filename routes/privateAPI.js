@@ -6,17 +6,21 @@ var _ = require('lodash');
 var validator = require('validator');
 var secure = require('../tools/secret');
 var middleware = require('../middleware/uploader');
+var auth = require('../middleware/auth.js');
 var m = require('moment');
 var request = require('request');
 var redis = require('../clients/redis');
 var config = require('../profile/config');
 var mongo = require('../clients/mongo');
+var locale = require('../profile/locales.js');
+
+
+router.use(auth.authAPIOpenId());
 
 
 var bindUserMobile = function (req, res, next) {
 
     var openId = req.signedCookies.openId;
-    if (!openId) return res.send({rtn: config.errorCode.serviceError, message: 'require openId'});
 
     var mobile = req.body.mobile;
     var verifyCode = req.body.code;
@@ -59,25 +63,25 @@ var createCase = function (req, res, next) {
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
     if (_.pluck(config.userCaseType, 'name').indexOf(userCase.caseType) < 0)
-        return next({rtn: config.errorCode.paramError, message: 'unknown caseType'});
+        return next({rtn: config.errorCode.paramError, message: locale.unknowCaseType});
 
     if (_.pluck(config.userServiceType, 'name').indexOf(userCase.serviceType) < 0)
-        return next({rtn: config.errorCode.paramError, message: 'unknown serviceType'});
+        return next({rtn: config.errorCode.paramError, message: locale.unkownServiceType});
 
     if(!userCase.caseDesc || userCase.caseDesc.length < 20)
-        return next({rtn: config.errorCode.paramError, message: 'caseDesc too short'});
+        return next({rtn: config.errorCode.paramError, message: locale.tooShortDesc});
 
     if(!userCase.caseTarget || userCase.caseTarget.length < 20)
-        return next({rtn: config.errorCode.paramError, message: 'caseTarget too short'});
+        return next({rtn: config.errorCode.paramError, message: locale.tooShortTarget});
 
     if(userCase.price1 && userCase.price1)
-        return next({rtn: config.errorCode.paramError, message: 'either price1 or price2'});
+        return next({rtn: config.errorCode.paramError, message: locale.eitherPrice});
 
     if(isNaN(Number(userCase.price1)))
-        return next({rtn: config.errorCode.paramError, message: 'price1 should be number'});
+        return next({rtn: config.errorCode.paramError, message: locale.price1FormatError});
 
     if(isNaN(Number(userCase.price2)) || Number(userCase.price2) < 0 ||  Number(userCase.price2) > 100)
-        return next({rtn: config.errorCode.paramError, message: 'price2 should be (0-100)'});
+        return next({rtn: config.errorCode.paramError, message: locale.price2FormatError});
 
 
     userCase.status = config.caseStatus.RAW.key;
@@ -139,6 +143,11 @@ var updateCase = function(req, res, next){
 };
 
 
+var getLawyerCases = function(req, res, next){
+
+};
+
+
 router.post('/user/bindmobile', bindUserMobile);
 
 router.post('/user/cases', createCase);
@@ -147,8 +156,16 @@ router.get('/user/cases', getUserCases);
 
 router.post('/user/cases/:caseId', updateCase);
 
-router.get('/ly/')
+router.get('/ly/cases', getLawyerCases);
 
 
+//the error handler
+router.use(function(err, req, res, next){
+    if(err.rtn && err.message ){
+        console.error(err);
+        return res.send(err);
+    }
+    res.send({rtn:config.errorCode.unknownError, message:err});
+});
 
 module.exports = router;

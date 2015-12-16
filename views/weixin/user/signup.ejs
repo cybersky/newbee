@@ -20,7 +20,7 @@
 <div data-role="page" id="home">
 
     <div data-role="header">
-        <h1><b><%= info.openInfo.nickname %></b>, 欢迎使用律蜂</h1>
+        <h1><b><%= info && info.openInfo && info.openInfo.nickname %></b>, 欢迎使用律蜂</h1>
     </div>
     <!-- /header -->
 
@@ -34,21 +34,15 @@
                 <input type="button" id="getVerifyCode" value="获取验证码">
             </fieldset>
 
+            <input type="checkbox" checked name="checkbox-mini-0" id="checkbox-mini-0">
+                <label for="checkbox-mini-0">我同意服务条款</label>
+
             <button data-theme="b" type="submit">登录</button>
 
         </form>
     </div>
     <!-- /content -->
 
-    <div data-role="footer" data-position="fixed">
-        <div data-role="controlgroup" data-type="horizontal" style="text-align:center">
-            <!-- <a href="#service">律蜂服务条款</a> -->
-
-            <label for="checkbox-agree">
-                <input type="checkbox" checked name="checkbox-agree" id="checkbox-agree">我同意服务条款
-
-        </div>
-    </div>
 
 </div>
 <!-- /page -->
