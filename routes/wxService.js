@@ -76,8 +76,9 @@ var handleEvent = function(obj, type){
             var p = obj.Precision;
 
             var rk = ['location', type, openId].join(":");
+            var val = JSON.stringify({lat:lat, lon:lon, p:p});
             //console.log('update', openId, 'location', lat, lon, p);
-            redis.client.set(rk, {lat:lat, lon:lon, p:p}, function(err, result){
+            redis.client.set(rk, val, function(err, result){
                 console.log('update', openId, 'location', lat, lon, p, err, result);
             });
             break;

@@ -184,6 +184,7 @@ exports.authWXUser = function (options) {
             },
             function (user, cb) {
                 req.currentUser = user;
+                res.cookie('userId', user._id, {maxAge: 365 * 24 * 3600 * 1000, signed: true});
 
                 if (config.requireMobileSignIn && !req.currentUser.mobile && req.originalUrl.indexOf('/wp/user/signup') < 0) {
                     console.log('no mobile number found, redirect to compete user info page');

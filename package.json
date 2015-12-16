@@ -25,6 +25,7 @@
     "node-uuid": "~1.4.3",
     "node-weixin-api": "^0.2.5",
     "node-weixin-express": "^0.1.2",
+    "node-weixin-jssdk": "^0.2.1",
     "redis": "~2.2.5",
     "request": "^2.67.0",
     "serve-favicon": "~2.3.0",

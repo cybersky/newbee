@@ -13,7 +13,7 @@ var redis = require('../clients/redis');
 var config = require('../profile/config');
 var mongo = require('../clients/mongo');
 var locale = require('../profile/locales.js');
-
+var utils = require('../tools/utils.js');
 
 router.use(auth.authAPIOpenId());
 
@@ -68,19 +68,19 @@ var createCase = function (req, res, next) {
     if (_.pluck(config.userServiceType, 'name').indexOf(userCase.serviceType) < 0)
         return next({rtn: config.errorCode.paramError, message: locale.unkownServiceType});
 
-    if(!userCase.caseDesc || userCase.caseDesc.length < 20)
+    if (!userCase.caseDesc || userCase.caseDesc.length < 20)
         return next({rtn: config.errorCode.paramError, message: locale.tooShortDesc});
 
-    if(!userCase.caseTarget || userCase.caseTarget.length < 20)
+    if (!userCase.caseTarget || userCase.caseTarget.length < 20)
         return next({rtn: config.errorCode.paramError, message: locale.tooShortTarget});
 
-    if(userCase.price1 && userCase.price1)
+    if (userCase.price1 && userCase.price1)
         return next({rtn: config.errorCode.paramError, message: locale.eitherPrice});
 
-    if(isNaN(Number(userCase.price1)))
+    if (isNaN(Number(userCase.price1)))
         return next({rtn: config.errorCode.paramError, message: locale.price1FormatError});
 
-    if(isNaN(Number(userCase.price2)) || Number(userCase.price2) < 0 ||  Number(userCase.price2) > 100)
+    if (isNaN(Number(userCase.price2)) || Number(userCase.price2) < 0 || Number(userCase.price2) > 100)
         return next({rtn: config.errorCode.paramError, message: locale.price2FormatError});
 
 
@@ -92,58 +92,119 @@ var createCase = function (req, res, next) {
     var caseCollection = mongo.case();
 
     async.waterfall([
-        function(cb){
-            var rk = ['location', 'user', openId].join(":");
-            redis.client.get(rk, cb);
+        function (cb) {
+            utils.getLocation(openId, 'user', cb);
         },
-        function(loc, cb){
-            if(loc && loc.lon && loc.lat) userCase.location = [loc.lon, loc.lat];
+        function (loc, cb) {
+            if (loc && loc.lon && loc.lat) {
+                userCase.location = {type: "Point", coordinates: [loc.lon, loc.lat]};
+            }
             caseCollection.insert(userCase, cb);
         },
-        function(result, cb){
-            res.send({rtn:0});
+        function (result, cb) {
+            res.send({rtn: 0});
         }
     ], next);
 
 };
 
-var getUserCases = function(req, res, next){
+var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
 
     var caseCollection = mongo.case();
 
-    caseCollection.find({userOpenId:openId}).sort({createdAt:-1, updatedAt:-1}).toArray(function(err, result){
-        if(err) return next(err);
-        res.send({rtn:0, data:result});
+    caseCollection.find({userOpenId: openId}).sort({createdAt: -1, updatedAt: -1}).toArray(function (err, result) {
+        if (err) return next(err);
+        res.send({rtn: 0, data: result});
     });
 
 };
 
-var updateCase = function(req, res, next){
+var updateCase = function (req, res, next) {
     var openId = req.wxOpenId;
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
-    if(userCase.price1 && userCase.price1)
+    if (userCase.price1 && userCase.price1)
         return next({rtn: config.errorCode.paramError, message: 'either price1 or price2'});
 
     var updateDoc = {};
-    if(userCase.price1) updateDoc.price1 = userCase.price1;
-    if(userCase.price2) updateDoc.price2 = userCase.price2;
-    if(userCase.caseDesc) updateDoc.caseDesc = userCase.caseDesc;
-    if(userCase.caseTarget) updateDoc.caseTarget = userCase.caseTarget;
+    if (userCase.price1) updateDoc.price1 = userCase.price1;
+    if (userCase.price2) updateDoc.price2 = userCase.price2;
+    if (userCase.caseDesc) updateDoc.caseDesc = userCase.caseDesc;
+    if (userCase.caseTarget) updateDoc.caseTarget = userCase.caseTarget;
 
     var caseCollection = mongo.case();
-    caseCollection.update({userOpenId:openId}, updateDoc, {}, function(err, result){
-        if(err) return next(err);
-        if(result && result.nModified == 1){
-            res.send({rtn:0});
+    caseCollection.update({userOpenId: openId}, updateDoc, {}, function (err, result) {
+        if (err) return next(err);
+        if (result && result.nModified == 1) {
+            res.send({rtn: 0});
         }
     });
 
 };
 
 
-var getLawyerCases = function(req, res, next){
+var getLawyerCases = function (req, res, next) {
+    var sort = 'updated', page = 0, pageLength = 10, sortDoc;
+
+    if (req.query.sort && ['updated', 'geo', 'price'].indexOf(req.query.sort) > 0) {
+        sort = req.query.sort;
+    }
+
+    if (req.query.page && !isNaN(Number(req.query.page))) {
+        page = req.query.page;
+    }
+    switch (sort) {
+        case 'updated':
+            sortDoc = {updatedAt: -1, price1: -1};
+            break;
+        case 'geo':
+            sortDoc = null;
+            break;
+        case 'price':
+            sortDoc = {price1: -1, updatedAt: -1};
+            break;
+    }
+
+    var query = {status: {$in: [config.caseStatus.RAW.key, config.caseStatus.BID.key]}};
+
+    async.waterfall([
+        function (cb) {
+            if (sort != 'geo') return cb(null, null);
+            utils.getLocation(req.wxOpenId, 'lawyer', cb);
+        },
+        function (loc, cb) {
+            if (sort == 'geo') {
+                if (!loc || !loc.lon || !loc.lat) return cb({
+                    rtn: config.errorCode.paramError,
+                    message: 'can not location lawyer'
+                });
+
+                query['location'] = {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [loc.lon, loc.lat]
+                        },
+                        $maxDistance: 10 * 1000
+                    }
+                }
+            }
+
+
+            var caseCollection = mongo.case();
+
+            var cursor = caseCollection.find(query);
+
+            cursor.sort(sortDoc);
+            cursor.limit(pageLength);
+            cursor.skip(page * pageLength);
+            cursor.toArray(function (err, docs) {
+                res.send({rtn: 0, data: docs});
+            });
+        }
+
+    ], next);
 
 };
 
@@ -160,12 +221,12 @@ router.get('/ly/cases', getLawyerCases);
 
 
 //the error handler
-router.use(function(err, req, res, next){
-    if(err.rtn && err.message ){
+router.use(function (err, req, res, next) {
+    if (err.rtn && err.message) {
         console.error(err);
         return res.send(err);
     }
-    res.send({rtn:config.errorCode.unknownError, message:err});
+    res.send({rtn: config.errorCode.unknownError, message: err});
 });
 
 module.exports = router;

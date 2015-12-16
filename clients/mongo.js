@@ -35,12 +35,16 @@ MongoClient.connect(uri, function(err, db) {
 	exports.db = newbeeDB = db;
 
     var users = newbeeDB.collection('users');
-    users.ensureIndex('openId', {unique:true, background:true, sparse:true});
-    users.ensureIndex('mobile', {unique:true, background:true, sparse:true});
+    users.createIndex({openId:1}, {unique:true, background:true, sparse:true});
+    users.createIndex({mobile:1}, {unique:true, background:true, sparse:true});
 
     var lawyers = newbeeDB.collection('lawyers');
-    users.ensureIndex('openId', {unique:true, background:true, sparse:true});
-    users.ensureIndex('mobile', {unique:true, background:true, sparse:true});
+    users.createIndex({openId:1}, {unique:true, background:true, sparse:true});
+    users.createIndex({mobile:1}, {unique:true, background:true, sparse:true});
+
+    var cases = newbeeDB.collection('lawyers');
+    cases.createIndex({userOpenId:1}, {background:true});
+    cases.createIndex({'location':'2dsphere'}, {});
 });
 
 
