@@ -87,25 +87,7 @@ var lawyerRegister = (req, res, next) => {
         res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });
 };
-var getLawyers   = function(req, res, next){
-    var start = req.query['start'] || 0;
-    var rows = req.query['rows'] || 10;
 
-    var ct = '';
-    async.waterfall([
-        (cb) => {
-            Lawyer.LawyerCount(cb);
-        },
-        (count, cb) => {
-            ct = count;
-            Lawyer.getLawyers(start, rows, cb);
-        }
-    ], (err, docs) => {
-        if(err) return res.send(err);
-        res.send({rtn: 0, message: '', total: ct, data: docs});
-    });
-
-};
 var getOneLawyer = function(req, res, next){
     var LawyerId = _.trim(req.params['lawyerId']) || '';
     if(!LawyerId) return res.send({rtn: 1, message:'Missing param LawyerId'});
@@ -180,7 +162,7 @@ var handleSMSCode = function(req, res, next){
 
 router.post('/login', LawyerLogin);
 
-router.get('/lawyer', getLawyers);
+//router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
 router.put('/lawyer/:lawyerId', updateLawyer);
 router.delete('/lawyer/:lawyerId', deleteLawyer);

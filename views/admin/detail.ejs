@@ -1,0 +1,21 @@
+<% include fragments/header.ejs %>
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
+    var options = <%-JSON.stringify(options)%>;
+</script>
+
+<div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
+    <div class="page-header ">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h1>律师详细信息</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row placeholders panel-body">
+        <img v-attr="src: contents.identityFilename" style="width: 400px; height: 260px;"/>
+    </div>
+
+</div>
+
+<% include fragments/footer.ejs %>

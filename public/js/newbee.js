@@ -5,10 +5,8 @@
 var SignIn = {auth: 'POST /ua/lawyer/signin'};
 
 var Manager = {
-    findAll: 'GET /ua/lawyer?start={start}&rows={rows}',
-    findOne: 'GET /ua/lawyer/{id}',
-    update:  'PUT /ua/lawyer/{id}',
-    destroy: 'DELETE /ua/lawyer/{id}'
+    findAll: 'GET /aa/lawyer?start={start}&rows={rows}',
+    findOne: 'GET /aa/lawyer/{id}'
 };
 
 var SignInModel = new Model(SignIn);
@@ -46,6 +44,21 @@ $(function(){
             selected : 0
         },
         methods : {
+            findOne: function(){
+
+                var id = options.id;
+                if(!id) return false;
+                var self = this;
+
+                this.model.findOne({id: id}, function(result){
+                    self.contents = result.data;
+                    console.log(JSON.stringify(result));
+                },function (xhr) {
+                    errorTip(xhr.responseText);
+                });
+
+
+            },
             refreshModel     : function (page) {
                 page = page || 0;
                 var self = this;
@@ -163,5 +176,6 @@ $(function(){
 
 
     if(window.options.action === 'none') return;
+    if(window.options.action === 'findOne') return profile.vue.findOne();
     return profile.vue.refreshModel();
 });

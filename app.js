@@ -21,8 +21,6 @@ var privatePage = require('./routes/privatePage');
 var wxService = require('./routes/wxService');
 var wxPage = require('./routes/wxPage');
 
-var session = require('./middleware/session');
-
 var vhost = require('vhost');
 
 
@@ -52,9 +50,6 @@ app.use(cookieParser(config.cookieSecret));
 
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: '30d'} ));
-
-
-app.use(session.storeSessionToRedis());
 
 
 app.use('/', routes);

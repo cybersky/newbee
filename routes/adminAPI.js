@@ -9,9 +9,12 @@ var validator=require('validator');
 var secure	= require('../tools/secret');
 var Operator = require('../odm/operator');
 var config  = require('../profile/config');
+var Lawyer = require('../odm/lawyer');
+var auth   = require('../middleware/auth');
 
 
-var adminLogin = (req, res, next) => {
+
+var adminLogin = function(req, res, next) {
     var email = req.body['email'] || '';
     var pass  = req.body['password'] || '';
 
@@ -20,27 +23,56 @@ var adminLogin = (req, res, next) => {
     if(!pass)  return res.send({rtn: 1, code: 1, message: 'Password can not be empty'});
 
     async.waterfall([
-        (cb) => {
+        function(cb){
             Operator.getOperatorByCondition({email: email}, cb);
         },
-        (docs, cb) => {
+        function(docs, cb){
             if(!docs) return cb({rtn: 1, code: 1, notice:'emailNotice' ,message: 'The Email you typed do not matched'});
             if(secure.sha1(pass, 'utf-8') != docs.password) {
                 return cb({rtn: 1, code: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
             }
             cb(null, docs);
         }
-    ], (err, docs) => {
+    ], function(err, docs) {
         if(err) return res.send(err);
         var token = secure.md5(email+config.operatorCookie.privateKey);
         res.cookie(config.operatorCookie.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.operatorCookie.options);
-        if(docs.password) delete docs._doc.password;
-
-        req.session.adminInfo    = docs;
         return res.send({ rtn: 0, message: 'OK', refer: '/ap/manager'});
     });
 };
 router.post('/signin', adminLogin);
 
+
+var getLawyers  = function(req, res, next){
+    var start = req.query['start'] || 0;
+    var rows = req.query['rows'] || 10;
+
+    var ct = '';
+    async.waterfall([
+        function(cb){
+            Lawyer.lawyerCount(cb);
+        },
+        function(count, cb){
+            ct = count;
+            Lawyer.getLawyers(start, rows, cb);
+        }
+    ], function(err, docs){
+        if(err) return res.send(err);
+        res.send({rtn: 0, message: '', total: ct, data: docs});
+    });
+};
+
+router.get('/lawyer', auth.authOperatorCookie, getLawyers);
+
+var getLawyer = function(req, res, next){
+    var lawyerId = req.params['lawyerId'];
+    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: 'lawyer id can not be empty'});
+    Lawyer.getOneLawyer(lawyerId, function(err, doc){
+        if(err) return res.send({rtn: 1, message: err});
+        if(doc._doc.password) delete doc._doc.password;
+        return res.send({rtn: 0, message: '', data: doc});
+    });
+};
+router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
 
 module.exports = router;

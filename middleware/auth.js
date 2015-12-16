@@ -4,11 +4,10 @@
 var config = require('../profile/config');
 var secure = require('../tools/secret');
 var mongo = require('../clients/mongo');
-var ObjectID = require('mongodb').ObjectID;
-var _ = require('underscore');
 var request = require('request');
 var async = require('async');
 var utils = require('../tools/utils');
+var Operator = require('../odm/operator');
 
 
 exports.oauthWXOpenId = function(option){
@@ -189,10 +188,7 @@ exports.authWXUser = function(options){
 
 exports.authCookie = (req, res, next) => {
     var cookie = req.cookies[config.cookieConfig.name];
-    if(!cookie) {
-		req.session.destroy();
-		return res.redirect(302, '/up/signin');
-	}
+    if(!cookie) return res.redirect(302, '/up/signin');
 
     var str = cookie.split(':');
     if(secure.md5(str[1]+config.cookieConfig.privateKey) != str[str.length - 1]) {
@@ -213,25 +209,24 @@ exports.authLawyerSignIn = (req, res, next) => {
 
 exports.authOperatorCookie = (req, res, next) => {
 	var cookie = req.cookies[config.operatorCookie.name];
-    if(!cookie) {
-		req.session.destroy();
-		return res.redirect(302, '/ap/signin');
-	}
+    if(!cookie) return res.redirect(302, '/ap/signin');
 
 	var str = cookie.split(':');
 	if(secure.md5(str[1]+config.operatorCookie.privateKey) != str[str.length - 1]) {
 		res.clearCookie(config.operatorCookie.name);
-		req.session.destroy();
 		return res.redirect(302, '/ap/signin');
 	}
 
-    return next();
+    next();
 };
 
-exports.authAdminSignIn = (req, res, next) => {
-	var cookie = req.cookies[config.operatorCookie.name];
-	if(cookie) return res.redirect('/ap/manager');
-
-	return next();
-
+exports.prepareAdminInfo = function(req, res, next){
+    var cookie = req.cookies[config.operatorCookie.name];
+    var str = cookie.split(':');
+    Operator.getOperatorById(str[2], function(err, doc){
+        if(err) req.adminInfo = err || {};
+        if(doc._doc.password) delete doc._doc.password;
+        req.adminInfo = doc._doc;
+        return next();
+    });
 };

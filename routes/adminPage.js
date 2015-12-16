@@ -6,35 +6,42 @@ var router = express.Router();
 var auth    = require('../middleware/auth');
 var config  = require('../profile/config');
 
-
-var root = (req, res, next) => {
-	return res.redirect('/ap/manager');
+var signin = function(req, res, next){
+    return res.render('admin/signin');
 };
 
-
-var login = (req, res, next) => {
-    return res.render('admin/signin', {options:{}, adminInfo: req.session.adminInfo});
-};
-
-var manager = (req, res, next) => {
-    return res.render('admin/manager', {
-        options: {target: 'manager'},
-        adminInfo: req.session.adminInfo
-    });
-};
-
-
-var signOut = (req, res, next) => {
+var signOut = function(req, res, next){
     res.clearCookie(config.operatorCookie.name, {path: config.operatorCookie.options.path});
-    req.session.destroy();
     return res.redirect('/ap/signin');
 };
 
+var manager = function(req, res, next){
+    return res.render('admin/manager', {
+        options: {target: 'manager'},
+        adminInfo: req.adminInfo
+    });
+};
 
-router.get('/', root);
+var lawyerDetail = function(req, res, next){
+    var lawyerId = req.params['lawyerId'];
+    return res.render('admin/detail', {
+        options:{
+            id: lawyerId, target: 'manager', action: 'findOne'
+        },
+        adminInfo: req.adminInfo
+    });
+};
+
+router.get('/signin', function(req, res, next){
+    var cookie = req.cookies[config.operatorCookie.name];
+    if(cookie) return res.redirect('/ap/manager');
+    return next();
+}, signin);
+
+
 router.get('/signout', signOut);
-router.get('/signin', auth.authAdminSignIn, login);
-router.get('/manager', auth.authOperatorCookie,  manager);
+router.get('/manager', auth.authOperatorCookie, auth.prepareAdminInfo, manager);
+router.get('/detail/:lawyerId', auth.authOperatorCookie,  auth.prepareAdminInfo, lawyerDetail);
 
 
 module.exports = router;
