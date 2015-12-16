@@ -199,14 +199,7 @@ exports.authWXUser = function (options) {
 
 exports.authCookie = (req, res, next) => {
     var cookie = req.cookies[config.cookieConfig.name];
-<<<<<<< HEAD
     if(!cookie) return res.redirect(302, '/up/signin');
-=======
-    if (!cookie) {
-        req.session.destroy();
-        return res.redirect(302, '/up/signin');
-    }
->>>>>>> fccecd3d70352a589eeb7ffab42c3b599294c42b
 
     var str = cookie.split(':');
     if (secure.md5(str[1] + config.cookieConfig.privateKey) != str[str.length - 1]) {
