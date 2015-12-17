@@ -80,7 +80,7 @@ exports.getJSAPIConfig = function(option, url, callback){
 
             console.log('ticket', ticket);
 
-            var nonce = String.prototype.substr.call(Math.random(), 0, 6);
+            var nonce = String.prototype.substr.call(Math.random(), 2, 8);
             var timestamp = (Date.now()/1000).toFixed();
 
             var sigstring = ['jsapi_ticket=', ticket, '&noncestr=', nonce, '&timestamp=', timestamp, '&url=', url].join('');

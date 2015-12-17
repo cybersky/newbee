@@ -1,0 +1,75 @@
+<%include ../fragments/header.ejs%>
+
+<div data-role="page" id="page0">
+    <div data-role="header">
+        <div data-role="navbar"><ul>
+                <li><a href="#page0" class="ui-btn-active ui-state-persist">查找案件</a></li>
+                <li><a href="#page1">我的案件</a></li>
+                <li><a href="#page2">我的客户</a></li>
+            </ul>
+        </div>
+    </div>
+    <div data-role="content">
+        <form action="/va/ly/cases" method="post" id="caseForm">
+            <input type="search" name="password" id="search" value="" placeholder="查找案件">
+
+            <label for="caseType" class="ui-hidden-accessible">案件类型</label>
+            <select name="caseType" id="caseType">
+                <%caseType.forEach(function(type){%>
+                <option value="<%=type.name%>"><%=type.label%></option>
+                <%})%>
+            </select>
+
+            <label for="serviceType" class="ui-hidden-accessible">服务类型</label>
+            <select name="serviceType" id="serviceType">
+                <%serviceType.forEach(function(type){%>
+                <option value="<%=type.name%>"><%=type.label%></option>
+                <%})%>
+            </select>
+
+            <input data-role="button" type="submit" data-theme="b" value="查找">
+        </form>
+    </div>
+
+</div>
+
+<div data-role="page" id="page1">
+
+    <div data-role="header">
+        <div data-role="navbar"><ul>
+                <li><a href="#page0" >查找案件</a></li>
+                <li><a href="#page1" class="ui-btn-active ui-state-persist">我的案件</a></li>
+                <li><a href="#page2">我的客户</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="content">
+        您暂时没有案件
+    </div>
+    <!-- /content -->
+
+</div>
+<!-- /page -->
+
+<div data-role="page" id="page2">
+
+    <div data-role="header">
+        <div data-role="navbar"><ul>
+                <li><a href="#page0" >查找案件</a></li>
+                <li><a href="#page1">我的案件</a></li>
+                <li><a href="#page2" class="ui-btn-active ui-state-persist">我的客户</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="content">
+        您暂时没有客户，赶快去找一个案子开工吧！
+    </div>
+    <!-- /content -->
+
+</div>
+<!-- /page -->
+
+</body>
+</html>

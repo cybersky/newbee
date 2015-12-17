@@ -12,7 +12,7 @@ var request = require('request');
 var redisClient   = require('../clients/redis').client;
 var config  = require('../profile/config');
 var utils   = require('../tools/utils');
-
+var uuid = require('node-uuid');
 
 validator.authId = function(id){
     if(!id) return false;
@@ -166,6 +166,13 @@ router.post('/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) ,
 
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
+
+router.get('/gettestopenid', function(req, res, next){
+    if(!req.signedCookies.openId){
+        res.cookie('openId', uuid.v1(), {maxAge: 24 * 3600 * 1000, signed: true});
+    }
+    res.send();
+});
 
 
 //the error handler

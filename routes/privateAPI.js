@@ -209,6 +209,34 @@ var getLawyerCases = function (req, res, next) {
 };
 
 
+
+
+var getJSSDKConfig = function(option){
+
+    return function(req, res, next){
+        var url = req.get('referrer') || config.wxPageHost + req.originalUrl;
+
+        utils.getJSAPIConfig(option, url, function(err, config){
+            if(err) return next(err);
+            var jssdkConfig = config;
+
+            jssdkConfig.debug = true;
+            jssdkConfig.jsApiList = [
+                'openLocation',
+                'getLocation',
+                'chooseImage',
+                'previewImage',
+                'uploadImage',
+                'downloadImage',
+                'getNetworkType'];
+
+            res.send({rtn:0, data:{config:jssdkConfig}});
+        });
+    };
+
+};
+
+
 router.post('/user/bindmobile', bindUserMobile);
 
 router.post('/user/cases', createCase);
@@ -218,6 +246,10 @@ router.get('/user/cases', getUserCases);
 router.post('/user/cases/:caseId', updateCase);
 
 router.get('/ly/cases', getLawyerCases);
+
+router.get('/user/jsconfig', getJSSDKConfig(config.optionsUser));
+
+router.get('/ly/jsconfig', getJSSDKConfig(config.optionsLawyer));
 
 
 //the error handler

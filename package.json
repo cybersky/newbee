@@ -22,7 +22,7 @@
     "mongoose": "^4.1.11",
     "morgan": "~1.6.1",
     "multer": "~1.0.6",
-    "node-uuid": "~1.4.3",
+    "node-uuid": "^1.4.7",
     "node-weixin-api": "^0.2.5",
     "node-weixin-express": "^0.1.2",
     "node-weixin-jssdk": "^0.2.1",
