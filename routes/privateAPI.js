@@ -4,8 +4,6 @@ var Lawyer = require('../odm/lawyer');
 var async = require('async');
 var _ = require('lodash');
 var validator = require('validator');
-var secure = require('../tools/secret');
-var middleware = require('../middleware/uploader');
 var auth = require('../middleware/auth.js');
 var m = require('moment');
 var request = require('request');
@@ -14,6 +12,7 @@ var config = require('../profile/config');
 var mongo = require('../clients/mongo');
 var locale = require('../profile/locales.js');
 var utils = require('../tools/utils.js');
+var caseModel = require('../odm/case.js');
 
 router.use(auth.authAPIOpenId());
 
@@ -60,48 +59,21 @@ var bindUserMobile = function (req, res, next) {
 
 var createCase = function (req, res, next) {
     var openId = req.wxOpenId;
-    var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
-
-    if (_.pluck(config.userCaseType, 'name').indexOf(userCase.caseType) < 0)
-        return next({rtn: config.errorCode.paramError, message: locale.unknowCaseType});
-
-    if (_.pluck(config.userServiceType, 'name').indexOf(userCase.serviceType) < 0)
-        return next({rtn: config.errorCode.paramError, message: locale.unkownServiceType});
-
-    if (!userCase.caseDesc || userCase.caseDesc.length < 20)
-        return next({rtn: config.errorCode.paramError, message: locale.tooShortDesc});
-
-    if (!userCase.caseTarget || userCase.caseTarget.length < 20)
-        return next({rtn: config.errorCode.paramError, message: locale.tooShortTarget});
-
-    if (userCase.price1 && userCase.price1)
-        return next({rtn: config.errorCode.paramError, message: locale.eitherPrice});
-
-    if (isNaN(Number(userCase.price1)))
-        return next({rtn: config.errorCode.paramError, message: locale.price1FormatError});
-
-    if (isNaN(Number(userCase.price2)) || Number(userCase.price2) < 0 || Number(userCase.price2) > 100)
-        return next({rtn: config.errorCode.paramError, message: locale.price2FormatError});
-
-
-    userCase.status = config.caseStatus.RAW.key;
+    var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2', 'lon', 'lat']);
     userCase.userOpenId = openId;
-    userCase.createdAt = new Date();
-    userCase.updatedAt = new Date();
-
-    var caseCollection = mongo.case();
 
     async.waterfall([
         function (cb) {
+            if(userCase.lon && userCase.lat) return cb(null, {lon:userCase.lon, lat:userCase.lat});
             utils.getLocation(openId, 'user', cb);
         },
         function (loc, cb) {
             if (loc && loc.lon && loc.lat) {
                 userCase.location = {type: "Point", coordinates: [loc.lon, loc.lat]};
             }
-            caseCollection.insert(userCase, cb);
+            caseModel.createCase(userCase, cb);
         },
-        function (result, cb) {
+        function() {
             res.send({rtn: 0});
         }
     ], next);
@@ -110,6 +82,8 @@ var createCase = function (req, res, next) {
 
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
+
+    caseModel.getCase({userOpenId: openId}, );
 
     var caseCollection = mongo.case();
 
@@ -122,6 +96,7 @@ var getUserCases = function (req, res, next) {
 
 var updateCase = function (req, res, next) {
     var openId = req.wxOpenId;
+    var caseId = req.params['caseId'];
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
     if (userCase.price1 && userCase.price1)
