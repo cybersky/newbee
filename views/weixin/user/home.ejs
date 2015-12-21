@@ -1,45 +1,7 @@
 <% include ../fragments/header.ejs %>
 
 <script>
-    $(function () {
-        $.get('/va/user/jsconfig', function (data) {
-            if (data.rtn && data.rtn > 0) return alert('error: ' + data.message);
-            wx.config(data.data.config);
 
-            wx.ready(function () {
-                console.log('jsconfig ok');
-            });
-            wx.error(function (res) {
-                console.log('something wrong with jssdk api: ' + JSON.stringify(res));
-            });
-        });
-
-        $('#getNetworkButton').on('click', function(){
-            wx.getNetworkType({
-                success: function (res) {
-                    var networkType = res.networkType; // 返回网络类型2g，3g，4g，wifi
-                    alert('network:' + networkType);
-                }
-            });
-        });
-
-        $('#reportLocation').on('click', function(){
-            wx.getLocation({
-                type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
-                success: function (res) {
-                    var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
-                    var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
-                    var speed = res.speed; // 速度，以米/每秒计
-                    var accuracy = res.accuracy; // 位置精度
-
-                    alert('lon' + longitude + ',lat' + latitude);
-                }
-            });
-        });
-
-
-
-    });
 </script>
 
 <div data-role="page" id="page0">
@@ -100,7 +62,7 @@
                     <div id="two" class="ui-body-d ui-content">
                         <div class="ui-body ui-body-a ui-corner-all">
                             <label for="price2">悬赏比例(%)</label>
-                            <input type="range" name="price2" id="price2" value="10" min="0" max="100" data-highlight="true">
+                            <input type="range" name="price2" id="price2" value="0" min="0" max="100" data-highlight="true">
                             <p style="font-size: 0.8em;color: dimgrey">
                                 一些案件可能追讨的金额有一个范围，比如一些债务纠纷案件，这时候您可以通过悬赏所追讨金额的一定比例来招募所需要的律师，追讨回的金额越多，律师所获取的报酬也越多。
                             </p>
@@ -236,6 +198,6 @@
 
 </div>
 <!-- /page -->
-
+<script src="/js/home.js"></script>
 </body>
 </html>
