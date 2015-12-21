@@ -83,7 +83,7 @@ var createCase = function (req, res, next) {
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
 
-    caseModel.getCase({userOpenId: openId}, );
+    caseModel.getCase({userOpenId: openId});
 
     var caseCollection = mongo.case();
 
