@@ -4,35 +4,41 @@
     $(function () {
         $.get('/va/user/jsconfig', function (data) {
             if (data.rtn && data.rtn > 0) return alert('error: ' + data.message);
-
             wx.config(data.data.config);
 
             wx.ready(function () {
-
-                wx.getLocation({
-                    type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
-                    success: function (res) {
-                        var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
-                        var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
-                        var speed = res.speed; // 速度，以米/每秒计
-                        var accuracy = res.accuracy; // 位置精度
-
-                        alert('lon' + longitude + ',lat' + latitude);
-                    }
-                });
-
-                wx.getNetworkType({
-                    success: function (res) {
-                        var networkType = res.networkType; // 返回网络类型2g，3g，4g，wifi
-                        alert('network:' + networkType);
-                    }
-                });
-
+                console.log('jsconfig ok');
             });
             wx.error(function (res) {
                 console.log('something wrong with jssdk api: ' + JSON.stringify(res));
             });
         });
+
+        $('#getNetworkButton').on('click', function(){
+            wx.getNetworkType({
+                success: function (res) {
+                    var networkType = res.networkType; // 返回网络类型2g，3g，4g，wifi
+                    alert('network:' + networkType);
+                }
+            });
+        });
+
+        $('#reportLocation').on('click', function(){
+            wx.getLocation({
+                type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+                success: function (res) {
+                    var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                    var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                    var speed = res.speed; // 速度，以米/每秒计
+                    var accuracy = res.accuracy; // 位置精度
+
+                    alert('lon' + longitude + ',lat' + latitude);
+                }
+            });
+        });
+
+
+
     });
 </script>
 
@@ -87,28 +93,27 @@
                     <div id="one" class="ui-body-d ui-content">
                         <!-- <h3 class="ui-bar ui-bar-a ui-corner-all">Heading</h3> -->
                         <div class="ui-body ui-body-a ui-corner-all">
-                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)"
-                                   value=""><span></span>
-
+                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value=""
                             <p style="font-size: 0.8em;color: dimgrey">您可以通过悬赏一个固定的金额总数来悬赏招募律师</p>
                         </div>
                     </div>
                     <div id="two" class="ui-body-d ui-content">
-                            
                         <div class="ui-body ui-body-a ui-corner-all">
                             <label for="price2">悬赏比例(%)</label>
-                            <input type="range" name="price2" id="price2" value="10" min="0" max="100"
-                                   data-highlight="true">
-
+                            <input type="range" name="price2" id="price2" value="10" min="0" max="100" data-highlight="true">
                             <p style="font-size: 0.8em;color: dimgrey">
-                                一些案件可能追讨的金额有一个范围，比如一些债务纠纷案件，这时候您可以通过悬赏所追讨金额的一定比例来招募所需要的律师，追讨回的金额越多，律师所获取的报酬也越多。</p>
+                                一些案件可能追讨的金额有一个范围，比如一些债务纠纷案件，这时候您可以通过悬赏所追讨金额的一定比例来招募所需要的律师，追讨回的金额越多，律师所获取的报酬也越多。
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
+            <label><input type="checkbox" name="reportLocation" id="reportLocation">上报地址以便律师找到我</label>
+
             <input data-role="button" type="submit" data-theme="b" value="倾诉完毕，立即悬赏">
 
-            <a data-role="button" id="testButton">click me</a>
+            <a data-role="button" id="testButton">test nav page</a>
+            <a data-role="button" id="getNetworkButton">test js sdk</a>
         </form>
     </div>
 

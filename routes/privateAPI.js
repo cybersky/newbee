@@ -195,7 +195,7 @@ var getJSSDKConfig = function(option){
             if(err) return next(err);
             var jssdkConfig = config;
 
-            jssdkConfig.debug = true;
+            //jssdkConfig.debug = true;
             jssdkConfig.jsApiList = [
                 'openLocation',
                 'getLocation',
