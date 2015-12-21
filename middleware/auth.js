@@ -245,3 +245,8 @@ exports.prepareAdminInfo = function(req, res, next){
         return next();
     });
 };
+
+exports.authOperatorLevel = function(req, res, next){
+    if(req.adminInfo.level != 1) return res.send('Permission deny').status(404);
+    next();
+};

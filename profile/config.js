@@ -100,6 +100,15 @@ exports.redisPrefix = {
 exports.requireMobileSignIn = true;
 exports.skipConfirmCode = false;
 
+exports.operatorLevel = [
+    {
+        level: 1, label: 'Super User',
+        description: '超级用户拥有绝对权限'
+    },{
+        level: 9, label: 'Operator',
+        description: '仅限审核律师注册信息和案件审核'
+    }
+];
 
 exports.userCaseType = [
     {name:'xsbh', label:'刑事辩护'},

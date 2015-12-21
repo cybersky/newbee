@@ -7,10 +7,18 @@ var Manager = {
     findOne: 'GET /aa/lawyer/{id}'
 };
 
-var ManagerModel= new Model(Manager);
+var Operator = {
+    findAll: 'GET /aa/operators?start={start}&rows={rows}',
+    findOne: 'GET /aa/operator/{id}',
+    create: 'POST /aa/operator'
+};
+
+var ManagerModel = new Model(Manager);
+var OperatorModel = new Model(Operator);
 
 var dataModel = {
-    'manager':{model: ManagerModel,view: '#managerDiv'}
+    'manager': { model: ManagerModel,  view: '#managerDiv' },
+    'operator':{ model: OperatorModel, view: '#OperatorDiv' }
 };
 
 
@@ -40,6 +48,43 @@ $(function(){
             selected : 0
         },
         methods : {
+            onCreateOperator: function(){
+                var data = {};
+                data.username = $('#username').val();
+                data.email = $('#email').val();
+                data.level = $('#levels').val();
+                data.password = $('#password').val();
+                data.cpassword = $('#cpd').val();
+
+                var err = {code: 1, message: ''};
+                if(data.password != data.cpassword){
+                    err.message = '新密码和确认密码不匹配';
+                    return errorTip(err, 1000 * 3);
+                }
+                if(!data.username) {
+                    err.message = '用户名不能为空';
+                    return errorTip(err, 1000 * 3);
+                }
+                if(!data.email) {
+                    err.message = '邮件不能为空';
+                    return errorTip(err , 1000 * 3);
+                }
+                if(!validator.isEmail(data.email)) {
+                    err.message = '邮箱格式错误';
+                    return errorTip(err, 1000 * 3);
+                }
+
+                var self = this;
+
+                var nc = new this.model(data);
+                nc.save(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('创建用户成功', 1000 * 3, true);
+                });
+            },
+
             findOne: function(){
 
                 var id = options.id;

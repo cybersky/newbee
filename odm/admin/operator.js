@@ -31,5 +31,6 @@ exports.getOperatorByCondition = function(query, callback) {
 exports.operatorCount = function(callback){
 	return Operator.count(callback);
 };
+
 exports.deleteOperator = function(){};
 exports.updateOperator = function(){};
