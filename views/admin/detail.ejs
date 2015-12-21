@@ -5,17 +5,70 @@
 
 <div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
     <div class="page-header ">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h1>律师详细信息</h1>
+        <h1>律师详细信息</h1>
+    </div>
+
+    <div class="media">
+        <div class="media-left">
+            <img v-attr="src: contents.identityFilename" style="width: 400px; height: 260px;"/>
+        </div>
+        <div class="media-body">
+            <div class="media-heading">
+                <h3>身份证信息详情</h3>
+            </div>
+
+            <br>
+            <div class="media-left">
+                <div>
+                    <label for="username">真实姓名:</label>
+                    <span id="username">{{contents.username}}</span>
+                </div>
+
+                <div>
+                    <label for="identityNumber">身份证号码:</label>
+                    <span id="identityNumber">{{contents.identityNumber}}</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row placeholders panel-body">
-        <img v-attr="src: contents.identityFilename" style="width: 400px; height: 260px;"/>
+    <div class="media">
+        <div class="media-left">
+            <img v-attr="src: contents.lawyerIdFilename" style="width: 400px; height: 260px;"/>
+        </div>
+        <div class="media-body">
+            <div class="media-heading">
+                <h3>律师证信息详情</h3>
+            </div>
+            <br>
+            <div class="media-left">
+                <div>
+                    <label for="PhoneNumber">电话:</label>
+                    <span id="PhoneNumber">{{contents.phoneNumber}}</span>
+                </div>
+
+                <div>
+                    <label for="lawyerId">律师证号码:</label>
+                    <span id="lawyerId">{{contents.lawyerId}}</span>
+                </div>
+
+                <div>
+                    <label for="lawyerLocation">律师所在地:</label>
+                    <span id="lawyerLocation">{{contents.lawyerLocation}}</span>
+                </div>
+
+                <div>
+                    <label for="lawyerServiceArea">律师服务领域:</label>
+                    <span id="lawyerServiceArea">{{contents.lawServiceArea}}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div class="btn-group" style="margin-top: 80px;">
+        <button class="btn btn-danger">Rejected</button>
+        <button class="btn btn-success">Success</button>
+    </div>
 </div>
 
 <% include fragments/footer.ejs %>
