@@ -168,10 +168,9 @@ router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
 
 router.get('/gettestopenid', function(req, res, next){
-    if(!req.signedCookies.openId){
-        res.cookie('openId', uuid.v1(), {maxAge: 24 * 3600 * 1000, signed: true});
-    }
-    res.send();
+    var openId = req.signedCookies.openId || uuid.v1();
+    res.cookie('openId', openId, {maxAge: 24 * 3600 * 1000, signed: true});
+    res.send({rtn:0, data:{openId:openId}});
 });
 
 

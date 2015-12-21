@@ -3,7 +3,12 @@
  */
 
 var clearRaiseCase = function () {
-
+    $('#caseType').val('');
+    $('#serviceType').val('');
+    $('#caseDesc').val('');
+    $('#caseTarget').val('');
+    $('#price1').val('');
+    $('#price2').val('');
 };
 
 var loadUserCases = function () {

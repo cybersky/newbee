@@ -5,6 +5,7 @@ var assert = require('assert');
 var async = require('async');
 var request = require('request');
 var config = require('../profile/config.js');
+var _ = require('underscore');
 
 request = request.defaults({jar:true});
 var testHost = 'http://localhost:8080';
@@ -34,29 +35,57 @@ describe('let us get started', function(){
             request(testHost + '/ua/gettestopenid', done);
         });
 
-        it('should create 100 case', function(done){
-            var caseInfo = {
-                'caseType':getCaseType(),
-                'serviceType':getServiceType(),
-                'caseDesc':getCaseDesc(),
-                'caseTarget':getCaseTarget(),
-                'price1':getCasePrice1()
-            };
+        it('should create 10 case', function(done){
 
-            var option = {
-                url:testHost + '/va/user/cases',
-                json:true,
-                body:caseInfo
-            };
+            async.eachLimit(_.range(10), 5, function(index, cb){
+                var caseInfo = {
+                    'caseType':getCaseType(),
+                    'serviceType':getServiceType(),
+                    'caseDesc':getCaseDesc(),
+                    'caseTarget':getCaseTarget(),
+                    'price1':getCasePrice1(),
+                    'lon':getLocationLon(),
+                    'lat':getLocationLat()
+                };
 
-            request(option, function(err, resp, body){
-                if(err) throw Error(err);
+                var option = {
+                    url:testHost + '/va/user/cases',
+                    json:true,
+                    body:caseInfo,
+                    method:'post'
+                };
+
+                request(option, function(err, resp, body){
+                    if(err) throw Error(err);
+                    if(typeof body == 'string'){
+                        try{ body = JSON.parse(body); } catch(err){ console.error('error response:', body); }
+                    }
+                    assert.equal(body.rtn , 0);
+                    console.log('case create ok, id:', body.data.id);
+
+                    cb();
+                })
+            }, done);
+
+        });
+
+        it('should return 10 cases', function(done){
+
+            request(testHost + '/va/user/cases', function(err, resp, body){
                 if(typeof body == 'string'){
                     try{ body = JSON.parse(body); } catch(err){ console.error('error response:', body); }
                 }
+                console.log('body', body);
+
+                assert.equal(err, null);
+                assert.equal(body.rtn, 0);
+                assert.equal(body.data.length, 10);
+
                 done();
-            })
+            });
+
         });
+
     });
 
     describe('get my case for user', function(){
@@ -105,11 +134,11 @@ var getCasePrice2 = function(){
 var getLocationLon = function(){
     var max = 115.25;
     var min = 117.30;
-    return (min + Math.random() * (max-min)).toFixed(2);
+    return (min + Math.random() * (max-min)).toFixed(4);
 };
 
 var getLocationLat = function(){
     var max = 41.03;
     var min = 39.26;
-    return (min + Math.random() * (max-min)).toFixed(2);
+    return (min + Math.random() * (max-min)).toFixed(4);
 };

@@ -58,13 +58,14 @@ var bindUserMobile = function (req, res, next) {
 
 
 var createCase = function (req, res, next) {
+
     var openId = req.wxOpenId;
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2', 'lon', 'lat']);
     userCase.userOpenId = openId;
 
     async.waterfall([
         function (cb) {
-            if(userCase.lon && userCase.lat) return cb(null, {lon:userCase.lon, lat:userCase.lat});
+            if (userCase.lon && userCase.lat) return cb(null, {lon: userCase.lon, lat: userCase.lat});
             utils.getLocation(openId, 'user', cb);
         },
         function (loc, cb) {
@@ -73,8 +74,9 @@ var createCase = function (req, res, next) {
             }
             caseModel.createCase(userCase, cb);
         },
-        function() {
-            res.send({rtn: 0});
+        function (result) {
+            var id = result.insertedId.toString();
+            res.send({rtn: 0, data: {id: id}});
         }
     ], next);
 
@@ -83,14 +85,11 @@ var createCase = function (req, res, next) {
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
 
-    caseModel.getCase({userOpenId: openId});
-
-    var caseCollection = mongo.case();
-
-    caseCollection.find({userOpenId: openId}).sort({createdAt: -1, updatedAt: -1}).toArray(function (err, result) {
+    caseModel.getCase({userOpenId: openId}, {sort:{createdAt: -1, updatedAt: -1}}, function(err, result){
         if (err) return next(err);
         res.send({rtn: 0, data: result});
     });
+
 
 };
 
@@ -108,8 +107,7 @@ var updateCase = function (req, res, next) {
     if (userCase.caseDesc) updateDoc.caseDesc = userCase.caseDesc;
     if (userCase.caseTarget) updateDoc.caseTarget = userCase.caseTarget;
 
-    var caseCollection = mongo.case();
-    caseCollection.update({userOpenId: openId}, updateDoc, {}, function (err, result) {
+    caseModel.updateCase(caseId, updateDoc, function () {
         if (err) return next(err);
         if (result && result.nModified == 1) {
             res.send({rtn: 0});
@@ -166,17 +164,10 @@ var getLawyerCases = function (req, res, next) {
                 }
             }
 
-
-            var caseCollection = mongo.case();
-
-            var cursor = caseCollection.find(query);
-
-            cursor.sort(sortDoc);
-            cursor.limit(pageLength);
-            cursor.skip(page * pageLength);
-            cursor.toArray(function (err, docs) {
+            caseModel.getCase(query, {sort: sortDoc, limit: pageLength, skip: page * pageLength}, function (err, docs) {
                 res.send({rtn: 0, data: docs});
             });
+
         }
 
     ], next);
@@ -184,15 +175,13 @@ var getLawyerCases = function (req, res, next) {
 };
 
 
+var getJSSDKConfig = function (option) {
 
-
-var getJSSDKConfig = function(option){
-
-    return function(req, res, next){
+    return function (req, res, next) {
         var url = req.get('referrer') || config.wxPageHost + req.originalUrl;
 
-        utils.getJSAPIConfig(option, url, function(err, config){
-            if(err) return next(err);
+        utils.getJSAPIConfig(option, url, function (err, config) {
+            if (err) return next(err);
             var jssdkConfig = config;
 
             //jssdkConfig.debug = true;
@@ -205,7 +194,7 @@ var getJSSDKConfig = function(option){
                 'downloadImage',
                 'getNetworkType'];
 
-            res.send({rtn:0, data:{config:jssdkConfig}});
+            res.send({rtn: 0, data: {config: jssdkConfig}});
         });
     };
 
@@ -229,11 +218,10 @@ router.get('/ly/jsconfig', getJSSDKConfig(config.optionsLawyer));
 
 //the error handler
 router.use(function (err, req, res, next) {
-    if (err.rtn && err.message) {
-        console.error(err);
-        return res.send(err);
-    }
-    res.send({rtn: config.errorCode.unknownError, message: err});
+    console.error('private api error:', err);
+    console.error('message', err.message );
+    console.error('stack', err.stack);
+    res.send({rtn: err.rtn || config.errorCode.unknownError, message: err.message || err.toString() });
 });
 
 module.exports = router;

@@ -5,6 +5,14 @@ $(function(){
     $('#getVerifyCode').click(function(){
         var mobile = $('#inputMobile').val();
         if(!/\d{11}/.test(mobile)) return alert('请输入正确的手机号');
+
+        $('#getVerifyCode').prop('disabled', true);
+        $('#getVerifyCode').val('10分钟内有效，请注意接收');
+
+        setInterval(function(){
+
+        }, 60*1000);
+
         $.post('/ua/voicecode', {mobile:mobile}, function(data, status){
             if(data&& data.rtn > 0) alert('error'+data.message);
         });
