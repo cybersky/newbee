@@ -1,0 +1,103 @@
+<% include ./fragments/header.ejs %>
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
+    var options = <%-JSON.stringify(options)%>;
+    var levels = <%-JSON.stringify(levels)%>;
+</script>
+
+<div class="col-sm-9 col-md-10 col-md-offset-1 main" id="OperatorDiv">
+    <div class="page-header">
+        <h1>管理员用户</h1>
+    </div>
+
+    <div class="panel" id="createUserDiv">
+        <div class="panel-heading">
+            <button id="createUser" class="btn btn-success">点击创建用户</button>
+        </div>
+
+        <div id="iptForm" class="panel-body col-sm-5" style="display: none;">
+            <div class="form-group">
+                <label for="username">用户米</label>
+                <input class="form-control" id="username" type="text" placeholder="Enter Username">
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input class="form-control" id="email" type="email" placeholder="Enter Email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">新密码</label>
+                <input class="form-control" id="password" type="password" placeholder="Enter Password">
+            </div>
+
+            <div class="form-group">
+                <label for="cpd">确认密码</label>
+                <input class="form-control" id="cpd" type="password" placeholder="Confirm Password">
+            </div>
+
+            <div class="form-group">
+                <label for="levels">用户等级</label>
+                <select class="form-control" id="levels">
+                    <% for(var i= 0, len= levels.length; i < len; i++){%>
+                    <option value="<%= levels[i].level%>"><%= levels[i].level%></option>
+                    <%}%>
+                </select>
+
+                <h4 id="tip" class="text-danger"><%= levels[0].description%></h4>
+            </div>
+
+            <button class="btn btn-success" id="submit" v-on="click:onCreateOperator">提交并创建用户</button>
+        </div>
+    </div>
+
+
+    <div id="operators">
+        <table  class="table table-hover">
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>用户邮箱</th>
+                    <th>用户等级</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-repeat="c:contents">
+                    <td>{{c.username}}</td>
+                    <td>{{c.email}}</td>
+                    <td>{{c.level}}</td>
+                    <td class="btn-group">
+                        <button class="btn btn-danger" id="remove">删除</button>
+                        <button class="btn btn-success" id="update">更新</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script type="application/javascript">
+    $(function(){
+        $('#levels').on('change', function(event){
+            var val = $('#levels').val();
+            var text= document.getElementById('tip');
+            for(var i = 0, len = levels.length; i<len; i++){
+                if(val == levels[i].level){
+                    text.innerHTML = levels[i].description;
+                    break;
+                }
+            }
+        });
+
+        $('#createUser').on('click', function(event){
+            var div = document.getElementById('iptForm');
+            if(div.style.display == 'none'){
+                div.style.display = '';
+            }else{
+                div.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<% include ./fragments/footer.ejs %>

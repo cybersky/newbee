@@ -11,7 +11,8 @@ var Operator = new Schema({
     username: {type: String},
     email: {type: String},
     password: {type: String},
-    is_admin:{type: Boolean, default: false}
+    level: {type: Number, default: 9 },
+    is_admin:{type: Boolean, default: true}
 });
 
 Operator.plugin(plugins.documentDate);

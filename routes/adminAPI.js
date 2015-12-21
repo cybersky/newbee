@@ -75,4 +75,53 @@ var getLawyer = function(req, res, next){
 };
 router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
 
+
+var getOperator = function(req, res, next){};
+//router.get('/operator');
+
+var getOperators = function(req, res, next){
+    var start = req.query['start'] || 0;
+    var rows  = req.query['rows']  || 10;
+
+    return Operator.getOperators(start, rows, function(err, docs){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        return res.send({rtn: 0, message: 'ok', data: docs});
+    });
+};
+router.get('/operators', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, getOperators);
+
+var createOperator = function(req, res, next){
+    var username    = _.trim(req.body['username']);
+    var email       = _.trim(req.body['email']).toLowerCase();
+    var level       = _.trim(req.body['level']);
+    var password    = _.trim(req.body['password']);
+    var cpt         = _.trim(req.body['cpassword']);
+
+    var err;
+    if(password != cpt) err = 'The password is not matched with confirm password';
+    if(!username)       err = 'The username can not be empty';
+    if(!email)          err = 'The email can not be empty';
+    if(!level)          err = 'The level can not be empty';
+    if(!validator.isEmail(email)) err = 'The email format error';
+    if(err) return res.send({rtn: 1, code: 1, message: config.errorCode.paramError});
+
+    var operatorInfo = {
+        username: username, email: email, level: level,
+        password: secure.sha1(password, 'utf8', 'hex')
+    };
+
+    var callback = function(err, results){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        res.send({rtn: 0, message: 'ok', data: results});
+    };
+    return Operator.createOperator(operatorInfo,  callback);
+};
+router.post('/operator', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, createOperator);
+
+var updateOperator = function(req, res, next){};
+//router.post('/operator/:operatorId');
+
+var removeOperator = function(req, res, next){};
+//router.delete('/operator/:operatorId');
+
 module.exports = router;
