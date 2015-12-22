@@ -20,13 +20,12 @@ exports.documentDate = function(schema, options){
 	});
 
 	schema.pre('update', function (next) {
-		this._doc.updatedAt = new Date();
+		if(this._doc) this._doc.updatedAt = new Date();
 		next();
 	});
 
 	schema.pre('findOneAndUpdate', function (next) {
-		this._doc.updatedAt = new Date();
-		this._doc.updatedAt = new Date();
+		if(this._doc) this._doc.updatedAt = new Date();
 		next();
 	});
 };

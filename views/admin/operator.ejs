@@ -16,7 +16,7 @@
 
         <div id="iptForm" class="panel-body col-sm-5" style="display: none;">
             <div class="form-group">
-                <label for="username">用户米</label>
+                <label for="username">用户姓名</label>
                 <input class="form-control" id="username" type="text" placeholder="Enter Username">
             </div>
 
@@ -66,9 +66,8 @@
                     <td>{{c.username}}</td>
                     <td>{{c.email}}</td>
                     <td>{{c.level}}</td>
-                    <td class="btn-group">
-                        <button class="btn btn-danger" id="remove">删除</button>
-                        <button class="btn btn-success" id="update">更新</button>
+                    <td>
+                        <button class="btn btn-default" id="detail"><a href="/ap/operator/detail/{{c._id}}">操作与详情</a></button>
                     </td>
                 </tr>
             </tbody>

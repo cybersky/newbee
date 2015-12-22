@@ -20,7 +20,9 @@ var CaseSchema = exports.CaseSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     askType:{type:String},//奖赏类别 'price' or 'percent'
     price:{ type:Number},//固定金额
-    percent:{type:Number}//按比例
+    percent:{type:Number},//按比例
+    createAt: {type: Date},
+    updateAt: {type: Date}
 });
 
 CaseSchema.plugin(plugins.hiddenFields);

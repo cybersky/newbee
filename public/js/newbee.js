@@ -10,7 +10,9 @@ var Manager = {
 var Operator = {
     findAll: 'GET /aa/operators?start={start}&rows={rows}',
     findOne: 'GET /aa/operator/{id}',
-    create: 'POST /aa/operator'
+    create: 'POST /aa/operator',
+    destroy: 'DELETE /aa/operator/{id}',
+    update: 'PUT /aa/operator/{id}'
 };
 
 var ManagerModel = new Model(Manager);
@@ -48,6 +50,37 @@ $(function(){
             selected : 0
         },
         methods : {
+            onUpdateOperator: function(id){
+                var data = {};
+                data.id = id;
+                data.username = $('#username').val();
+                data.email = $('#email').val();
+                data.level = $('#levels').val();
+                if($('#password').val()) data.password = $('#password').val();
+                if($('#cpd').val()) data.cpd = $('#cpd').val();
+
+                var nc = new this.model(data);
+                nc.save(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('更新用户成功', 1000 * 3, true);
+                });
+
+            },
+            onDelOperator: function(id){
+                if(!id) return false;
+
+                var self = this;
+                var nc = new this.model({id: id});
+                nc.destroy(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('删除用户成功', 1000 * 3, true);
+                });
+
+            },
             onCreateOperator: function(){
                 var data = {};
                 data.username = $('#username').val();

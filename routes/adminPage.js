@@ -25,9 +25,7 @@ var manager = function(req, res, next){
 var lawyerDetail = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
     return res.render('admin/detail', {
-        options:{
-            id: lawyerId, target: 'manager', action: 'findOne'
-        },
+        options:{id: lawyerId, target: 'manager', action: 'findOne'},
         adminInfo: req.adminInfo
     });
 };
@@ -35,6 +33,16 @@ var lawyerDetail = function(req, res, next){
 var operator = function(req, res, next){
     return res.render('admin/operator', {
         options:{ target: 'operator' },
+        adminInfo: req.adminInfo, levels: config.operatorLevel
+    });
+};
+
+var operatorDetail = function(req, res, next){
+    var operatorId = req.params['operatorId'];
+    if(!operatorId) return res.send('Page Not Fount').status(404);
+
+    return res.render('admin/operatorDetail', {
+        options:{ target: 'operator', id: operatorId , action: 'findOne'},
         adminInfo: req.adminInfo, levels: config.operatorLevel
     });
 };
@@ -50,5 +58,6 @@ router.get('/signout', signOut);
 router.get('/manager', auth.authOperatorCookie, auth.prepareAdminInfo, manager);
 router.get('/manager/detail/:lawyerId', auth.authOperatorCookie,  auth.prepareAdminInfo, lawyerDetail);
 router.get('/operator', auth.authOperatorCookie, auth.prepareAdminInfo, operator);
+router.get('/operator/detail/:operatorId', auth.authOperatorCookie,  auth.prepareAdminInfo, operatorDetail);
 
 module.exports = router;
