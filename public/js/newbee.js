@@ -18,8 +18,7 @@ var Operator = {
 var Case = {
     findAll: 'GET /aa/cases?start={start}&rows={rows}',
     findOne: 'GET /aa/case/{id}',
-    destroy: 'DELETE /aa/operator/{id}',
-    update: 'PUT /aa/operator/{id}'
+    update: 'PUT /aa/case/{id}'
 };
 
 var ManagerModel = new Model(Manager);
@@ -59,6 +58,25 @@ $(function(){
             selected : 0
         },
         methods : {
+            onCaseSuccess: function(id){
+
+            },
+            onCaseRejected: function(id){
+                var reason = $('#rejectedInfo').val();
+                if(!reason) return errorTip({code: 1, message: '拒绝理由不能为空'}, 1000 * 3);
+
+                var caseId = id;
+                if(!caseId) return errorTip({code: 1, message: 'CaseId不能为空'}, 1000 * 3);
+                var self = this;
+
+                var nc = new this.model({id: caseId, reason: reason});
+                nc.save(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('更新案例成功', 1000 * 3, true);
+                });
+            },
             onUpdateOperator: function(id){
                 var data = {};
                 data.id = id;

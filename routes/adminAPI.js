@@ -63,7 +63,7 @@ var getLawyers  = function(req, res, next){
     });
 };
 
-router.get('/lawyer', auth.authOperatorCookie, getLawyers);
+router.get('/lawyer', auth.authOperatorCookie, auth.prepareAdminInfo, getLawyers);
 
 var getLawyer = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
@@ -74,7 +74,7 @@ var getLawyer = function(req, res, next){
         return res.send({rtn: 0, message: '', data: doc});
     });
 };
-router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
+router.get('/lawyer/:lawyerId', auth.authOperatorCookie, auth.prepareAdminInfo, getLawyer);
 // ============================= lawyer CRUD end================================
 
 
@@ -204,7 +204,19 @@ var getCases = function(req, res, next){
     });
 };
 router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);
-//var getCases = function(req, res, next){};
+
+var updateCase = function(req, res, next){
+    var caseId = req.params['caseId'];
+    if(!caseId) return res.send({rtn: 1, code: 1, message: 'invalid case id'});
+    var reason = req.body['reason'];
+    if(!reason) return res.send({rtn: 1, code: 1, message: 'Rejected reason can not be empty'});
+
+    return Case.updateCase(caseId, {status: 'reject', message: reason}, function(err, result){
+        if(err) return res.send({rtn: 1,  code: 1, message: err });
+        return res.send({rtn: 0, message: 'ok', data: result});
+    });
+};
+router.put('/case/:caseId', auth.authOperatorCookie, auth.prepareAdminInfo, updateCase);
 //var getCases = function(req, res, next){};
 
 // ============================= case CRUD end ================================
