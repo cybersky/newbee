@@ -8,7 +8,9 @@ var userSchema = exports.UserSchema = new Schema({
     password: { type: String },
     email: { type: String },
     mobile: {type: String },
-    openId: {type:String}
+    openId: {type:String},
+    createAt: {type: Date},
+    updateAt: {type: Date}
 });
 
 userSchema.plugin(plugins.hiddenFields);

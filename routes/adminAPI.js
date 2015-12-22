@@ -76,8 +76,20 @@ var getLawyer = function(req, res, next){
 router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
 
 
-var getOperator = function(req, res, next){};
-//router.get('/operator');
+
+// ============================= operator CRUD ================================
+var getOperator = function(req, res, next){
+    var operatorId = req.params['operatorId'];
+    if(!operatorId) return res.send({rtn: 1, code: 1, message: 'Invalid operator id'});
+
+    return Operator.getOperatorById(operatorId, function(err, doc){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(doc._doc.password) delete doc._doc.password;
+        return res.send({rtn: 0, code: 0, message: 'ok', data: doc});
+    });
+
+};
+router.get('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, getOperator);
 
 var getOperators = function(req, res, next){
     var start = req.query['start'] || 0;
@@ -118,10 +130,62 @@ var createOperator = function(req, res, next){
 };
 router.post('/operator', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, createOperator);
 
-var updateOperator = function(req, res, next){};
-//router.post('/operator/:operatorId');
+var updateOperator = function(req, res, next){
+    var operatorId = req.params['operatorId'];
+    var username = req.body['username'];
+    var email = req.body['email'];
+    var password = req.body['password'];
+    var cpassword = req.body['cpd'];
+    var level = req.body['level'];
 
-var removeOperator = function(req, res, next){};
-//router.delete('/operator/:operatorId');
+    var err;
+    if(!operatorId) err = '用户ID不能为空';
+    if(password != cpassword) err = '两次密码不匹配';
+    if(!username) err = '用户名不能为空';
+    if(!email) err = '邮箱不能为空';
+    if(!validator.isEmail(email)) err = '邮箱格式不合法';
+    if(!level || isNaN(level)) err = '非法用户等级';
+    if(err) return res.send({rtn: config.errorCode.paramError, code: 1, message: err});
+
+    var data = {};
+    async.waterfall([
+        function(cb){
+            Operator.getOperatorById(operatorId, cb);
+        },
+        function(doc, cb){
+            var psd = secure.sha1(password, 'utf8', 'hex');
+            if(psd){
+                if(doc.password != psd) data.password = psd;
+            }
+            if(doc.username != username) data.username = username;
+            if(doc.email != email) data.email = email;
+            if(doc.level != level) data.level = level;
+            return cb(null);
+        },
+        function(cb){
+            return Operator.updateOperator(operatorId, data, cb);
+        }
+    ], function(err, result){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        return res.send({rtn: 0, message: 'ok', data: result});
+    });
+
+};
+router.put('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, updateOperator);
+
+var removeOperator = function(req, res, next){
+    var operatorId = req.params['operatorId'];
+    if(!operatorId) return res.send({rtn: 1, code: 1, message: 'Invalid Operator Id'});
+
+    if(operatorId == req.adminInfo._id) return res.send({rtn:1 , code: 1, message: '无法将自己删除'});
+
+    return Operator.removeOperator(operatorId, function(err, docs){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        return res.send({rtn: 0, message: 'ok', data: docs});
+    });
+};
+router.delete('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, removeOperator);
+// ============================= operator CRUD end ================================
+
 
 module.exports = router;

@@ -32,5 +32,11 @@ exports.operatorCount = function(callback){
 	return Operator.count(callback);
 };
 
-exports.deleteOperator = function(){};
-exports.updateOperator = function(){};
+exports.removeOperator = function(operatorId, callback){
+    if(!operatorId) return callback('invalid operator id');
+    return Operator.findOneAndRemove({_id: operatorId}, callback);
+};
+exports.updateOperator = function(operatorId, data, callback){
+    if(!operatorId) return callback('invalid operator id');
+    return Operator.findOneAndUpdate({_id: operatorId}, {$set: data || {}}, callback);
+};

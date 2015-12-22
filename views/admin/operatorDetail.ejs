@@ -1,0 +1,53 @@
+<% include ./fragments/header.ejs %>
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
+    var options = <%-JSON.stringify(options)%>;
+    var levels = <%-JSON.stringify(levels)%>;
+</script>
+
+
+<div class="col-sm-9 col-md-10 col-md-offset-1 main" id="OperatorDiv">
+
+    <div class="page-header">
+        <h1><a href="/ap/operator">/返回</a> 用户详情与操作</h1>
+    </div>
+
+    <div class="panel">
+        <div class="panel-heading">
+            <button class="btn btn-success" id="update" v-on="click:onUpdateOperator(contents._id)">保存</button>
+            <button class="btn btn-danger" id="remove" v-on="click:onDelOperator(contents._id)">删除</button>
+        </div>
+
+        <div id="iptForm" class="panel-body col-sm-5">
+            <div class="form-group">
+                <label for="username">用户姓名</label>
+                <input class="form-control" id="username" type="text" value="{{contents.username}}">
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input class="form-control" id="email" type="email" value="{{contents.email}}">
+            </div>
+
+            <div class="form-group">
+                <label for="password">新密码</label>
+                <input class="form-control" id="password" type="password" placeholder="Enter New Password">
+            </div>
+
+            <div class="form-group">
+                <label for="cpd">确认密码</label>
+                <input class="form-control" id="cpd" type="password" placeholder="Confirm New Password">
+            </div>
+
+            <div class="form-group">
+                <label for="levels">用户等级</label>
+                <select class="form-control" id="levels" >
+                    <% for(var i= 0, len= levels.length; i < len; i++){%>
+                    <option value="<%= levels[i].level%>"><%= levels[i].level%></option>
+                    <%}%>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% include ./fragments/footer.ejs %>

@@ -22,7 +22,9 @@ var lawyerSchema = exports.LawyerSchema = new Schema({
 	lawyerIdFilename: { type: String },//lawyer id image name
 	lawyerLocation: {type: String},
 	lawServiceArea: {type: String },
-	authentication: {type: Boolean, default: false }
+	authentication: {type: Boolean, default: false },
+	createAt: {type: Date},
+	updateAt: {type: Date}
 });
 
 lawyerSchema.plugin(plugins.hiddenFields);
