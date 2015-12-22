@@ -191,14 +191,12 @@ router.delete('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdmi
 
 
 // ============================= case CRUD start ==============================
-var getCase = function(req, res, next){};
+
 var getCases = function(req, res, next){
     var start = req.query['start'] || 0;
     var rows = req.query['rows'] || 10;
 
-    var state = 'raw';//initially state case
-
-    return Case.getCaseByStatus(state, {skin: start, limit: rows}, function(err, cases){
+    return Case.getCaseByStatus(config.caseStatus.raw.key, {skin: start, limit: rows}, function(err, cases){
         if(err) return res.send({rtn: 1, code: 1, message: err});
         return res.send({rtn: 0, message: 'ok', data: cases});
     });
@@ -208,16 +206,29 @@ router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);
 var updateCase = function(req, res, next){
     var caseId = req.params['caseId'];
     if(!caseId) return res.send({rtn: 1, code: 1, message: 'invalid case id'});
-    var reason = req.body['reason'];
-    if(!reason) return res.send({rtn: 1, code: 1, message: 'Rejected reason can not be empty'});
 
-    return Case.updateCase(caseId, {status: 'reject', message: reason}, function(err, result){
+    var action = req.body['action'];
+    if(!action) return res.send({rtn: 1, code: 1, message: 'Action can not be empty'});
+
+    var data = {};
+    if(action == config.caseStatus.reject.key){
+        data.status =  config.caseStatus.reject.key;
+        var reason = req.body['reason'];
+        if(!reason) return res.send({rtn: 1, code: 1, message: 'Rejected reason can not be empty'});
+        data.message = reason;
+    }else if (action == config.caseStatus.online.key){
+        data.status = config.caseStatus.online.key;
+    }else{
+        return res.send({rtn: 1, code: 1, message: 'invalid action keyword'});
+    }
+
+    return Case.updateCase(caseId, data, function(err, result){
         if(err) return res.send({rtn: 1,  code: 1, message: err });
         return res.send({rtn: 0, message: 'ok', data: result});
     });
 };
 router.put('/case/:caseId', auth.authOperatorCookie, auth.prepareAdminInfo, updateCase);
-//var getCases = function(req, res, next){};
+
 
 // ============================= case CRUD end ================================
 
