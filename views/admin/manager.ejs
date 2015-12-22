@@ -7,15 +7,28 @@
 <div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
 	<h1 class="page-header">注册律师信息</h1>
 
-	<div class="row placeholders panel-body">
-		<div class="col-xs-6 col-sm-3 placeholder" v-repeat="c:contents">
-			<img v-attr="src:c.identityFilename" style="width: 200px; height: 200px;" class="img-responsive" alt="Generic placeholder thumbnail">
-			<div class="text-justify" style="text-align: center;">
-				<h5><a href="/ap/manager/detail/{{c._id}}">律师详细信息</a></h5>
-				<span class="text-muted">姓名: {{c.username}}</span><br>
-				<span class="text-muted">ID: {{c.identityNumber}}</span>
-			</div>
-		</div>
-	</div>
+	<div class="media" v-repeat="c:contents">
+        <div class="media-left">
+            <img v-attr="src: c.identityFilename" style="width: 400px; height: 260px;"/>
+        </div>
+
+        <div class="media-body">
+            <div class="media-heading">
+                <h3>律师详细信息</h3>
+            </div>
+
+            <div class="media-right">
+                <div>
+                    <label for="username">真实姓名:</label>
+                    <span id="username" class="text-muted">姓名: {{c.username}}</span><br>
+                </div>
+
+                <div>
+                    <label for="identityNumber">身份证号码:</label>
+                    <span id="identityNumber">{{c.identityNumber}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <% include fragments/footer.ejs %>
