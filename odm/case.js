@@ -135,8 +135,8 @@ exports.getCase = function(query, option){
     var cursor = caseCollection.find(query);
 
     if(option && option.sort) cursor.sort(option.sort);
-    if(option && option.skip) cursor.skip(option.skip);
-    if(option && option.limit) cursor.limit(option.limit);
+    if(option && option.skip) cursor.skip(Number(option.skip));
+    if(option && option.limit) cursor.limit(Number(option.limit));
 
     cursor.toArray(callback);
 

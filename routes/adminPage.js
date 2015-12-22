@@ -47,6 +47,10 @@ var operatorDetail = function(req, res, next){
     });
 };
 
+var _case = function(req, res, next){
+    return res.render('admin/case', {options:{ target: 'case'}, adminInfo: req.adminInfo});
+};
+
 router.get('/signin', function(req, res, next){
     var cookie = req.cookies[config.operatorCookie.name];
     if(cookie) return res.redirect('/ap/manager');
@@ -59,5 +63,6 @@ router.get('/manager', auth.authOperatorCookie, auth.prepareAdminInfo, manager);
 router.get('/manager/detail/:lawyerId', auth.authOperatorCookie,  auth.prepareAdminInfo, lawyerDetail);
 router.get('/operator', auth.authOperatorCookie, auth.prepareAdminInfo, operator);
 router.get('/operator/detail/:operatorId', auth.authOperatorCookie,  auth.prepareAdminInfo, operatorDetail);
+router.get('/case', auth.authOperatorCookie, auth.prepareAdminInfo, _case);
 
 module.exports = router;

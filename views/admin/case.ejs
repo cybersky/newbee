@@ -1,0 +1,53 @@
+<% include ./fragments/header.ejs %>
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
+    var options = <%-JSON.stringify(options)%>;
+</script>
+
+<div class="col-sm-9 col-md-10 col-md-offset-1 main" id="caseDiv">
+
+    <div class="page-header">
+        <h1>案例列表</h1>
+    </div>
+
+
+    <div v-repeat="c:contents">
+        <a class="btn btn-primary" role="button" data-toggle="collapse" href="#{{c._id}}" aria-expanded="true" aria-controls="{{c._id}}">
+            <h5>案例ID: {{c._id}}</h5>
+        </a>
+        <div class="collapse in" id="{{c._id}}">
+            <div class="well">
+                <div>
+                    <label for="caseType">案例类型: </label>
+                    <span id="caseType">{{c.caseType}}</span>
+                </div>
+                <br>
+
+                <div>
+                    <label for="serviceType">服务类型: </label>
+                    <span id="serviceType">{{c.serviceType}}</span>
+                </div>
+                <br>
+
+                <div>
+                    <label for="price">价格: </label>
+                    <span id="price">{{c.price1}}</span>
+                </div>
+
+                <br>
+                <div>
+                    {{c.caseDesc}}
+                </div>
+
+                <div class="btn-group" style="margin-top: 20px; ">
+                    <button class="btn btn-danger">拒绝</button>
+                    <button class="btn btn-success">通过</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<% include ./fragments/footer.ejs %>
