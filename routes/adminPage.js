@@ -24,7 +24,7 @@ var manager = function(req, res, next){
 
 var lawyerDetail = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
-    return res.render('admin/detail', {
+    return res.render('admin/lawyerDetail', {
         options:{id: lawyerId, target: 'manager', action: 'findOne'},
         adminInfo: req.adminInfo
     });

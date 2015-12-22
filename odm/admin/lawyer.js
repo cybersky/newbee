@@ -3,8 +3,8 @@
  */
 var Lawyer  = require('../../model/lawyer').Lawyer;
 
-exports.getLawyers =  function(start, rows, callback){
-    return Lawyer.find().skip(start).limit(rows).exec(callback);
+exports.getLawyers =  function(start, rows, query, callback){
+    return Lawyer.find(query || {}).skip(start).limit(rows).exec(callback);
 };
 
 exports.getOneLawyer = function(lawyerId, callback){
@@ -19,4 +19,9 @@ exports.getLawyerByCondition = function(condition, callback){
 
 exports.lawyerCount = function(callback){
     return Lawyer.count(callback);
+};
+
+
+exports.updateLawyer = function(lawyerId, query, callback){
+    return Lawyer.findOneAndUpdate({_id: lawyerId}, {$set: query}, callback);
 };

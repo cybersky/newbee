@@ -4,7 +4,8 @@
 
 var Manager = {
     findAll: 'GET /aa/lawyer?start={start}&rows={rows}',
-    findOne: 'GET /aa/lawyer/{id}'
+    findOne: 'GET /aa/lawyer/{id}',
+    update: 'PUT /aa/lawyer/{id}'
 };
 
 var Operator = {
@@ -58,6 +59,37 @@ $(function(){
             selected : 0
         },
         methods : {
+            onLawyerSuccess: function(id){
+                var lawyerId = id;
+                if(!lawyerId) return errorTip({code: 1, message: 'LawyerId不能为空'}, 1000 * 3);
+                var self = this;
+                var action = 'ok';
+
+                var nc = new this.model({id: lawyerId, action: action});
+                nc.save(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('更新律师信息成功', 1000 * 3, true, '/ap/manager');
+                });
+            },
+            onLawyerRejected: function(id){
+                var lawyerId = id;
+                if(!lawyerId) return errorTip({code: 1, message: 'LawyerId不能为空'}, 1000 * 3);
+                var self = this;
+                var action = 'reject';
+
+                var reason = $('#rejectedInfo').val();
+                if(!reason) return errorTip({code: 1, message: '拒绝理由不能为空'}, 1000 * 3);
+
+                var nc = new this.model({id: lawyerId, reason: reason, action: action});
+                nc.save(function(result){
+                    if(result.rtn != 0){
+                        return errorTip(result, 1000 * 5);
+                    }
+                    return successTip('更新律师信息成功', 1000 * 3, true, '/ap/manager');
+                });
+            },
             onCaseSuccess: function(id){
 
                 var caseId = id;
@@ -70,7 +102,7 @@ $(function(){
                     if(result.rtn != 0){
                         return errorTip(result, 1000 * 5);
                     }
-                    return successTip('更新案例成功', 1000 * 3, true);
+                    successTip('更新案例成功', 1000 * 3, true);
                 });
             },
             onCaseRejected: function(id){
