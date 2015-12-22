@@ -59,13 +59,10 @@ exports.createCase = function(userCase){
     });
 };
 
-
 exports.updateCase = function(caseId, caseDoc) {
 
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
-
-
 
     if (caseDoc.userCaseType && _.pluck(config.userCaseType, 'name').indexOf(caseDoc.caseType) < 0)
         return callback({rtn: config.errorCode.paramError, message: locale.unknowCaseType});
@@ -142,5 +139,14 @@ exports.getCase = function(query, option){
     if(option && option.limit) cursor.limit(Number(option.limit));
 
     cursor.toArray(callback);
+
+};
+
+
+exports.bidCase = function(caseId, bidDoc){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    {_id:new ObjectID(caseId)}
 
 };
