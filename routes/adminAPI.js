@@ -11,6 +11,7 @@ var Operator = require('../odm/admin/operator');
 var Lawyer = require('../odm/admin/lawyer');
 var config  = require('../profile/config');
 var auth   = require('../middleware/auth');
+var Case    = require('../odm/case');
 
 
 
@@ -42,7 +43,7 @@ var adminLogin = function(req, res, next) {
 };
 router.post('/signin', adminLogin);
 
-
+// ============================= lawyer CRUD start================================
 var getLawyers  = function(req, res, next){
     var start = req.query['start'] || 0;
     var rows = req.query['rows'] || 10;
@@ -74,10 +75,11 @@ var getLawyer = function(req, res, next){
     });
 };
 router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
+// ============================= lawyer CRUD end================================
 
 
 
-// ============================= operator CRUD ================================
+// ============================= operator CRUD start============================
 var getOperator = function(req, res, next){
     var operatorId = req.params['operatorId'];
     if(!operatorId) return res.send({rtn: 1, code: 1, message: 'Invalid operator id'});
@@ -185,7 +187,27 @@ var removeOperator = function(req, res, next){
     });
 };
 router.delete('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminInfo, auth.authOperatorLevel, removeOperator);
-// ============================= operator CRUD end ================================
+// ============================= operator CRUD end ============================
+
+
+// ============================= case CRUD start ==============================
+var getCase = function(req, res, next){};
+var getCases = function(req, res, next){
+    var start = req.query['start'] || 0;
+    var rows = req.query['rows'] || 10;
+
+    var state = 'raw';//initially state case
+
+    return Case.getCaseByStatus(state, {skin: start, limit: rows}, function(err, cases){
+        if(err) return res.send({rtn: 1, code: 1, message: err});
+        return res.send({rtn: 0, message: 'ok', data: cases});
+    });
+};
+router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);
+//var getCases = function(req, res, next){};
+//var getCases = function(req, res, next){};
+
+// ============================= case CRUD end ================================
 
 
 module.exports = router;

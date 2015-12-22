@@ -15,12 +15,21 @@ var Operator = {
     update: 'PUT /aa/operator/{id}'
 };
 
+var Case = {
+    findAll: 'GET /aa/cases?start={start}&rows={rows}',
+    findOne: 'GET /aa/case/{id}',
+    destroy: 'DELETE /aa/operator/{id}',
+    update: 'PUT /aa/operator/{id}'
+};
+
 var ManagerModel = new Model(Manager);
 var OperatorModel = new Model(Operator);
+var CaseModel = new Model(Case);
 
 var dataModel = {
-    'manager': { model: ManagerModel,  view: '#managerDiv' },
-    'operator':{ model: OperatorModel, view: '#OperatorDiv' }
+    'manager':  { model: ManagerModel,  view: '#managerDiv' },
+    'operator': { model: OperatorModel, view: '#OperatorDiv' },
+    'case':     { model: CaseModel, view: '#caseDiv' }
 };
 
 

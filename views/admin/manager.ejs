@@ -1,22 +1,22 @@
 <%include fragments/header.ejs%>
 <script type="text/javascript" xmlns="http://www.w3.org/1999/html">
-	var options = <%-JSON.stringify(options)%>;
+    var options = <%-JSON.stringify(options)%>;
 </script>
 
 
 <div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
-	<h1 class="page-header">注册律师信息</h1>
+    <h1 class="page-header">注册律师信息</h1>
 
-	<div class="media" v-repeat="c:contents">
+    <div class="media" v-repeat="c:contents">
         <div class="media-left">
             <img v-attr="src: c.identityFilename" style="width: 400px; height: 260px;"/>
         </div>
 
         <div class="media-body">
             <div class="media-heading">
-                <h3>律师详细信息</h3>
+                <h3><a href="/ap/manager/detail/{{c._id}}">详细信息</a></h3>
             </div>
-
+            <br>
             <div class="media-right">
                 <div>
                     <label for="username">真实姓名:</label>
