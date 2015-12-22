@@ -129,13 +129,13 @@ exports.userServiceType = [
 
 
 exports.caseStatus = {
-    RAW:{key:'raw', desc:'案件处于初始状态，需要后台人员整理归类审核才可上线'},
-    ONLINE:{key:'online', desc:'案件经过了运营人员审核，上线招标'},
-    BID:{key:'bid', desc:'已有律师投标'},
-    CANCEL:{key:'cancel', desc:'客户取消案件'},
-    TARGET:{key:'target', desc:'客户已经选择了投标律师'},
-    PROCESS:{key:'process', desc:'案件开始受理案件，进展中'},
-    CLOSE:{key:'close', desc:'案件关闭'}
+    raw:{key:'raw', desc:'案件处于初始状态，需要后台人员整理归类审核才可上线'},
+    online:{key:'online', desc:'案件经过了运营人员审核，上线招标'},
+    bid:{key:'bid', desc:'已有律师投标'},
+    cancel:{key:'cancel', desc:'客户取消案件'},
+    target:{key:'target', desc:'客户已经选择了投标律师'},
+    process:{key:'process', desc:'案件开始受理案件，进展中'},
+    close:{key:'close', desc:'案件关闭'}
 };
 
 
