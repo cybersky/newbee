@@ -17,8 +17,8 @@ exports.getLawyerByCondition = function(condition, callback){
     return Lawyer.findOne(condition, callback);
 };
 
-exports.lawyerCount = function(callback){
-    return Lawyer.count(callback);
+exports.lawyerCount = function(query, callback){
+    return Lawyer.count(query || {}, callback);
 };
 
 

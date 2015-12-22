@@ -54,7 +54,7 @@ var getLawyers  = function(req, res, next){
     var ct = '';
     async.waterfall([
         function(cb){
-            Lawyer.lawyerCount(cb);
+            Lawyer.lawyerCount({status: config.lawyerStatus.raw.key},cb);
         },
         function(count, cb){
             ct = count;

@@ -7,6 +7,10 @@
 <div class="col-sm-9 col-md-10 col-md-offset-1 main" id="managerDiv">
     <h1 class="page-header">注册律师信息</h1>
 
+    <div v-show="display">
+        <h1 style="color: #00B7FF;">&nbsp;&nbsp;&nbsp;暂无注册律师需要审核 ...</h1>
+    </div>
+
     <div class="media" v-repeat="c:contents">
         <div class="media-left">
             <img v-attr="src: c.identityFilename" style="width: 400px; height: 260px;"/>

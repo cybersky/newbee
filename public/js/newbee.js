@@ -56,7 +56,8 @@ $(function(){
             modelName: window.options.target,
             model    : profile.model,
             ctn      : {},
-            selected : 0
+            selected : 0,
+            display  : 0
         },
         methods : {
             onLawyerSuccess: function(id){
@@ -226,6 +227,7 @@ $(function(){
                     for (var i = 0, length = list.length; i < length; i++) {
                         cm.push(list[i]);
                     }
+                    if(list.length <= 0) self.display = true;
                     self.contents = cm;
                     self.total    = result.total || 0;
                     self.page     = page;
