@@ -20,7 +20,7 @@ validator.authId = function(id){
     return re.test(id);
 };
 
-var lawyerRegister = (req, res, next) => {
+var lawyerRegister = function(req, res, next){
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({rtn: 1, code: 1 , message: 'Missing lawyer id image'});
     if(!files['identityImage']) return res.send({rtn: 1, code: 1 , message: 'Missing identity image'});
@@ -46,7 +46,6 @@ var lawyerRegister = (req, res, next) => {
     if(!validator.isEmail(lawyer.email)) err = '邮箱格式错误';
     if(!lawyer.phoneNumber)err		    = '手机号码不能为空';
     if(!/\d{11}/.test(lawyer.phoneNumber)) err = '手机号码格式错误';
-    if(!lawyer.verifyCode) err          = '验证码不能为空';
     if(!lawyer.lawyerId) err            = '律师ID不能为空';
     if(!lawyer.identityNumber)err	    = '身份证号码不能为空';
     if(!validator.authId(lawyer.identityNumber)) err = '身份证号码格式错误';
@@ -54,35 +53,37 @@ var lawyerRegister = (req, res, next) => {
 
 
     async.waterfall([
-        (cb) => {
-            redisClient.get([config.redisPrefix.verifyCode, lawyer.phoneNumber].join(':'), (err, result) => {
+        function(cb){
+            if(config.switchPhoneVerifyCodeOff) return cb(null);
+            if(!lawyer.verifyCode) return res.send({rtn: 1, message:'验证码不能为空'});
+            redisClient.get([config.redisPrefix.verifyCode, lawyer.phoneNumber].join(':'), function(err, result){
                 if(err) return cb(err);
                 if(lawyer.verifyCode != result) return cb('验证码错误');
                 return cb(null);
             });
         },
-        (cb) => {
+        function(cb){
             //auth post data
             Lawyer.getLawyerByCondition({email: lawyer.email}, cb);
         },
-        (docs, cb) => {
+        function(docs, cb){
             if(docs) return cb({rtn: 1, message:'邮箱已经被注册'});
             Lawyer.getLawyerByCondition({phoneNumber: lawyer.phoneNumber}, cb);
         },
-        (docs, cb) => {
+        function(docs, cb){
             if(docs) return cb({rtn: 1, message:'手机号码已经被注册'});
             Lawyer.getLawyerByCondition({identityNumber: lawyer.identityNumber}, cb);
         },
-        (docs, cb) => {
+        function(docs, cb){
             if(docs) return cb({rtn: 1, message:'身份证号码已经被注册'});
             Lawyer.getLawyerByCondition({lawyerId: lawyer.lawyerId}, cb);
         },
-        (docs, cb) => {
+        function(docs, cb){
             if(docs) return cb({rtn: 1, message:'律师执业证号已经被注册'});
-            lawyer.password = secure.sha1(lawyer.password, 'utf-8');
+            lawyer.password = secure.sha1(lawyer.password, 'utf-8', 'hex');
             Lawyer.createLawyer(lawyer, cb);
         }
-    ], (err, docs) => {
+    ], function(err, docs){
         if(err) return res.send({rtn: 1, message: err});
         res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });

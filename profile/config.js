@@ -3,6 +3,7 @@
  */
 exports.applicationPort = 80;
 exports.uploadPath = __dirname + '/../public/upload';
+exports.switchPhoneVerifyCodeOff = false;
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
 exports.getMongoUri = () => {

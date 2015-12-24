@@ -20,3 +20,9 @@ exports.getLawyerByCondition = function(condition, callback){
 exports.lawyerCount = function(callback){
 	return Lawyer.count(callback);
 };
+exports.createLawyer = function(lawyer, callback){
+    return new Lawyer(lawyer).save(function(err, doc){
+        if(doc._doc.password) delete doc._doc.password;
+        callback(err, doc);
+    });
+};
