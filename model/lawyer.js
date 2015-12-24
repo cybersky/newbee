@@ -24,7 +24,9 @@ var lawyerSchema = exports.LawyerSchema = new Schema({
 	lawServiceArea: {type: String },
 	authentication: {type: Boolean, default: false },
 	createAt: {type: Date},
-	updateAt: {type: Date}
+	updateAt: {type: Date},
+
+	openId: {type:String}
 });
 
 lawyerSchema.plugin(plugins.hiddenFields);

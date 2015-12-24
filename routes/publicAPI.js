@@ -167,11 +167,41 @@ router.post('/signup', middleware.uploader(['lawyerIdImage', 'identityImage']) ,
 router.post('/smscode', handleSMSCode);
 router.post('/voicecode', handleVoiceCode);
 
-router.get('/gettestopenid', function(req, res, next){
-    var openId = req.signedCookies.openId || uuid.v1();
-    res.cookie('openId', openId, {maxAge: 24 * 3600 * 1000, signed: true});
-    res.send({rtn:0, data:{openId:openId}});
-});
+
+var createTestUser = function(role){
+
+    return function(req, res, next){
+        var openId = req.signedCookies.openId || uuid.v1();
+        res.cookie('openId', openId, {maxAge: 24 * 3600 * 1000, signed: true});
+        res.cookie('role', role, {maxAge: 24 * 3600 * 1000, signed: true});
+
+        var mongo = require('../clients/mongo.js');
+        var rand = openId.substr(0, 4);
+        mongo.collection(role).update({"openId": openId}, {
+            "openId": openId,
+            "name":'name'+rand,
+            "openInfo": {
+                "openid": openId,
+                "nickname": "nickname"+rand,
+                "sex": 1,
+                "language": "zh_CN",
+                "city": "海淀",
+                "province": "北京",
+                "country": "中国",
+                "headimgurl": "http://wx.qlogo.cn/mmopen/ccvPic0PMFqLM9ibzZWJLsTwuzTMc1nGbjwpZmOgOaPdfQAIRduhWXndtgwDZRuZusCTTPnToqVibibZmZWfzQoy6hcibgicDJbKVl/0",
+                "privilege": [],
+                "unionid": "op3Elt65DCYlvfpwiBk8zJJuwSXk"
+            },
+            "createdAt": new Date(),
+            "updatedAt": new Date()
+        }, {upsert:true});
+
+        res.send({rtn:0, data:{openId:openId, role:role}});
+    }
+};
+
+router.get('/givemeauser', createTestUser('users'));
+router.get('/givemealawyer', createTestUser('lawyers'));
 
 
 //the error handler

@@ -5,18 +5,11 @@ var utils = require('../tools/utils');
 var config = require('../profile/config');
 var auth = require('../middleware/auth');
 
-router.use('/user/*',
-    auth.oauthWXOpenId(config.optionsUser),
-    auth.authWXUser());
+router.use('/user/*', auth.oauthWXUser(config.optionsUser));
 
-router.use('/ly/*',
-    auth.oauthWXOpenId(config.optionsLawyer),
-    auth.authWXUser());
+router.use('/ly/*', auth.oauthWXUser(config.optionsLawyer));
 
-router.use('/test/*',
-    auth.oauthWXOpenId(config.optionsTest),
-    auth.authWXUser());
-
+router.use('/test/*', auth.oauthWXUser(config.optionsTest));
 
 
 router.get('/user/home', function (req, res, next) {

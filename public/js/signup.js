@@ -23,6 +23,8 @@ var submitMobile = function(){
 
     var mobile = $('#inputMobile').val();
     var code = $('#inputCode').val();
+    var name = $('#inputName').val();
+
     if(!/^\d{11}$/.test(mobile)){
         alert('请输入正确的手机号');
         return false;
@@ -32,7 +34,12 @@ var submitMobile = function(){
         return false;
     }
 
-    $.post('/va/user/bindmobile', {mobile:mobile, code:code}, function(data, status){
+    if(!name){
+        alert('请输入您的称谓');
+        return false;
+    }
+
+    $.post('/va/user/bindmobile', {mobile:mobile, code:code, name:name}, function(data, status){
         if(data && data.rtn > 0) return alert(data.message);
         window.location = '/wp/user/home';
     });

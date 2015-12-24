@@ -21,6 +21,7 @@ var bindUserMobile = function (req, res, next) {
 
     var openId = req.signedCookies.openId;
 
+    var name = req.body.name;
     var mobile = req.body.mobile;
     var verifyCode = req.body.code;
 
@@ -38,30 +39,33 @@ var bindUserMobile = function (req, res, next) {
         });
 
         console.log('mobile', mobile, 'verify ok');
+
         var user = mongo.db.collection('users');
 
-        user.findAndModify({openId: openId}, [], {$set: {mobile: mobile}}, {
-            new: true,
-            upsert: true
-        }, function (err, result) {
-            if (err && err.code == '11000') {
-                return res.send({rtn: 1, message: '此手机号码已经被占用'});
-            }
-            if (err) return next(err);
-            console.log('insert into user', result);
-            var id = result.value._id.toString();
-            res.cookie('userId', id, {maxAge: 3600 * 1000, signed: true});
-            res.send({rtn: 0});
-        });
+        user.findAndModify({openId: openId}, [],
+                {$set: {mobile: mobile, name: name}},
+                {new: true, upsert: true},
+
+            function (err, result) {
+                if (err && err.code == '11000') {
+                    return res.send({rtn: 1, message: '此手机号码已经被占用'});
+                }
+                if (err) return next(err);
+                console.log('insert into user', result);
+                var id = result.value._id.toString();
+                res.cookie('userId', id, {maxAge: 3600 * 1000, signed: true});
+                res.send({rtn: 0});
+            });
     });
 };
 
 
 var createCase = function (req, res, next) {
 
-    var openId = req.wxOpenId;
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2', 'lon', 'lat']);
-    userCase.userOpenId = openId;
+
+    userCase.userOpenId = req.wxOpenId;
+    userCase.userInfo = req.currentUser;
 
     async.waterfall([
         function (cb) {
@@ -85,7 +89,7 @@ var createCase = function (req, res, next) {
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
 
-    caseModel.getCase({userOpenId: openId}, {sort:{createdAt: -1, updatedAt: -1}}, function(err, result){
+    caseModel.getCase({userOpenId: openId}, {sort: {createdAt: -1, updatedAt: -1}}, function (err, result) {
         if (err) return next(err);
         res.send({rtn: 0, data: result});
     });
@@ -93,25 +97,23 @@ var getUserCases = function (req, res, next) {
 
 };
 
-var updateCase = function (req, res, next) {
+var deleteCaseByUser = function(req, res, next){
+
+};
+
+var updateCaseByUser = function (req, res, next) {
+
     var openId = req.wxOpenId;
     var caseId = req.params['caseId'];
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
-    if (userCase.price1 && userCase.price1)
-        return next({rtn: config.errorCode.paramError, message: 'either price1 or price2'});
 
-    var updateDoc = {};
-    if (userCase.price1) updateDoc.price1 = userCase.price1;
-    if (userCase.price2) updateDoc.price2 = userCase.price2;
-    if (userCase.caseDesc) updateDoc.caseDesc = userCase.caseDesc;
-    if (userCase.caseTarget) updateDoc.caseTarget = userCase.caseTarget;
-
-    caseModel.updateCase(caseId, updateDoc, function () {
+    caseModel.updateCaseByUser(caseId, openId, userCase, function () {
         if (err) return next(err);
         if (result && result.nModified == 1) {
-            res.send({rtn: 0});
+            return res.send({rtn: 0});
         }
+        res.send({rtn:config.errorCode.paramError, message:'no such case'});
     });
 
 };
@@ -167,10 +169,37 @@ var getLawyerCases = function (req, res, next) {
             caseModel.getCase(query, {sort: sortDoc, limit: pageLength, skip: page * pageLength}, function (err, docs) {
                 res.send({rtn: 0, data: docs});
             });
-
         }
 
     ], next);
+};
+
+
+var createBid = function (req, res, next) {
+    var caseId = req.params.caseId;
+    var bid = _.pick(req.body, ['price1', 'price2', 'comment']);
+
+    bid.lawyerOpenId = req.wxOpenId;
+    bid.lawyerInfo = req.currentUser;
+
+    caseModel.bidCase(caseId, bid, function (err, result) {
+        if(err) return next(err);
+        var id = result.insertedId.toString();
+        res.send({rtn: 0, data: {id: id}});
+    });
+
+};
+
+var deleteBid = function(req, res, next){
+    var bidId = req.params.bidId;
+    var openId = req.wxOpenId;
+
+    caseModel.deleteBid(bidId, openId, function(err, result){
+        if(err) return next(err);
+        if(result.nRemoved ==1){
+            res.send({rtn:0});
+        }
+    });
 
 };
 
@@ -203,13 +232,19 @@ var getJSSDKConfig = function (option) {
 
 router.post('/user/bindmobile', bindUserMobile);
 
-router.post('/user/cases', createCase);
+router.post('/user/cases', auth.prepareLocalUser(config.optionsUser), createCase);
 
 router.get('/user/cases', getUserCases);
 
-router.post('/user/cases/:caseId', updateCase);
+router.post('/user/cases/:caseId', updateCaseByUser);
+
+router.delete('/user/cases/:caseId', deleteCaseByUser);
 
 router.get('/ly/cases', getLawyerCases);
+
+router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsUser), createBid);
+
+router.delete('/ly/bids/:bidId', deleteBid);
 
 router.get('/user/jsconfig', getJSSDKConfig(config.optionsUser));
 
@@ -219,9 +254,9 @@ router.get('/ly/jsconfig', getJSSDKConfig(config.optionsLawyer));
 //the error handler
 router.use(function (err, req, res, next) {
     console.error('private api error:', err);
-    console.error('message', err.message );
+    console.error('message', err.message);
     console.error('stack', err.stack);
-    res.send({rtn: err.rtn || config.errorCode.unknownError, message: err.message || err.toString() });
+    res.send({rtn: err.rtn || config.errorCode.unknownError, message: err.message || err.toString()});
 });
 
 module.exports = router;

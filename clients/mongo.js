@@ -42,9 +42,13 @@ MongoClient.connect(uri, function(err, db) {
     users.createIndex({openId:1}, {unique:true, background:true, sparse:true});
     users.createIndex({mobile:1}, {unique:true, background:true, sparse:true});
 
-    var cases = newbeeDB.collection('lawyers');
+    var cases = newbeeDB.collection('cases');
     cases.createIndex({userOpenId:1}, {background:true});
     cases.createIndex({'location':'2dsphere'}, {});
+
+    var bids = newbeeDB.collection('bids');
+    cases.createIndex({lawyerOpenId:1}, {background:true});
+    cases.createIndex({caseId:1}, {background:true});
 });
 
 
@@ -64,3 +68,6 @@ exports.case = function(){
     return newbeeDB.collection('cases');
 };
 
+exports.bid = function(){
+    return newbeeDB.collection('bids');
+};

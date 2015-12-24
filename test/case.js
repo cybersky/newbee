@@ -32,7 +32,7 @@ describe('let us get started', function(){
 
     describe('create case', function(){
         it('should get the openId signed cookie', function(done){
-            request(testHost + '/ua/gettestopenid', done);
+            request(testHost + '/ua/givemeauser', done);
         });
 
         it('should create 10 case', function(done){
