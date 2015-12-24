@@ -27,7 +27,8 @@ var lawyerSchema = exports.LawyerSchema = new Schema({
 	createAt: {type: Date},
 	updateAt: {type: Date},
 
-	openId: {type:String}
+	openId: {type:String},
+    openInfo: {type: Schema.Types.Mixed}
 });
 
 lawyerSchema.plugin(plugins.hiddenFields);

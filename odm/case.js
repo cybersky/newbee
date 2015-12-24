@@ -157,6 +157,30 @@ exports.getCase = function(query, option){
 
 };
 
+exports.syncCaseBids = function(caseId){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    var cases = mongo.case();
+    var bids = mongo.bid();
+    var bidCount;
+
+    async.waterfall([
+        function(cb){
+            bids.find({caseId:caseId}).sort({createdAt:-1}).toArray(cb);
+        },
+        function(list, cb){
+            bidCount = list.length;
+            cases.update({_id:new ObjectID(caseId)}, {$set:{bids:list}}, cb);
+        },
+        function(result, cb){
+            console.log('sync case', caseId, 'bids', bidCount, 'nMatched', result.nMatched, 'nModified', result.nModified);
+            cb();
+        }
+    ], callback);
+};
+
+
 
 exports.bidCase = function(caseId, bidDoc){
     var callback = arguments[arguments.length-1];
@@ -164,38 +188,27 @@ exports.bidCase = function(caseId, bidDoc){
 
     if(!bidDoc.lawyerOpenId) return callback({rtn:config.errorCode.paramError, message:'lawyerOpenId required'});
     if(!bidDoc.lyInfo) return callback({rtn:config.errorCode.paramError, message:'lawyer info required'});
-    if(bidDoc.price1 && bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.eitherBidPrice});
-    if(!bidDoc.price1 || !bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.noBidPrice});
 
-    var bids = mongo.bid();
+    if(!bidDoc.price1 || !bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.noBidPrice});
+    if(bidDoc.price1 && bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.eitherBidPrice});
+
     var cases = mongo.case();
+    var bids = mongo.bid();
 
     async.waterfall([
         function(cb){
-
+            cases.findOne({_id:new ObjectID(caseId)}, cb);
         },
-        function(cb){
-
+        function(userCase, cb){
+            if(!userCase) return callback({rtn:config.errorCode.paramError, message:locale.noSuchCase+caseId});
+            bidDoc.caseId = caseId;
+            bids.insertOne(bidDoc, cb);
+        },
+        function(result, cb){
+            cb(null, result);
+            exports.syncCaseBids(caseId, console.log);
         }
-
     ], callback);
-
-
-    cases.findOne({_id:new ObjectID(caseId)}, function(err, userCase){
-        if(err) return callback(err);
-        if(!userCase) return callback({rtn:config.errorCode.paramError, message:locale.noSuchCase+caseId});
-
-        bidDoc.caseId = caseId;
-
-        bids.insertOne(bidDoc, function(err, result){
-            if(err) return callback(err);
-            var insertedCount = result.insertedCount;
-            var insertedId = result.insertedId;
-            var ops = result.ops;
-            callback(err, result);
-        });
-    });
-
 };
 
 exports.deleteBid = function(bidId, openId){
@@ -203,8 +216,27 @@ exports.deleteBid = function(bidId, openId){
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
     var bids = mongo.bid();
-    bids.remove({_id:ObjectID(bidId), lawyerOpenId:openId}, function(err, result){
-        if(err) return callback(err);
-        callback(result.nRemoved == 1 ? null : {rtn:config.errorCode.paramError, message:'no such bid: '+bidId});
-    });
+
+    async.waterfall([
+        function(cb){
+            bids.findAndModify();
+
+            bids.remove({_id:ObjectID(bidId), lawyerOpenId:openId}, cb);
+        },
+        function(result, cb){
+            cb(result.nRemoved==1? null:{rtn:config.errorCode.paramError, message:'no such bid: '+bidId});
+            exports.syncCaseBids(caseId, console.log);
+        }
+    ], callback);
+
+};
+
+
+
+exports.targetBid = function(caseId, bidId){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+
+
 };
