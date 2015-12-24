@@ -1,0 +1,8 @@
+1. create first super user for management
+db.operators.insert({username: 'nimda', email:'nimda@newbee.com', password: '7760571df8a06ed693f1558a7094caf3fe676a51', is_admin: true, level: 1});
+// login
+    username: nimda@newbee.com
+    password: 123.com
+
+1. address
+http://domain/ap/signin

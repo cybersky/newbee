@@ -10,6 +10,10 @@
     </div>
 
 
+    <div v-show="display">
+        <h1 style="color: #00B7FF;">&nbsp;&nbsp;&nbsp;暂无案件需要审核 ...</h1>
+    </div>
+
     <div v-repeat="c:contents">
         <a class="btn btn-primary" role="button" data-toggle="collapse" href="#{{c._id}}" aria-expanded="true" aria-controls="{{c._id}}">
             <h5>案例ID: {{c._id}}</h5>
@@ -39,10 +43,13 @@
                 </div>
 
                 <div class="btn-group" style="margin-top: 20px; ">
-                    <button class="btn btn-danger">拒绝</button>
-                    <button class="btn btn-success">通过</button>
+                    <button class="btn btn-danger" v-on="click:onCaseRejected(c._id)">拒绝</button>
+                    <button class="btn btn-success" v-on="click:onCaseSuccess(c._id)">通过</button>
                 </div>
 
+                <div>
+                    <textarea class="form-control" id="rejectedInfo{{c._id}}" data-value="" rows="3" placeholder="请填写拒绝理由"></textarea>
+                </div>
             </div>
         </div>
     </div>

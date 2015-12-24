@@ -66,9 +66,15 @@
     </div>
 
     <div class="btn-group" style="margin-top: 80px;">
-        <button class="btn btn-danger">Rejected</button>
-        <button class="btn btn-success">Success</button>
+        <button class="btn btn-danger" v-on="click:onLawyerRejected(contents._id)">拒绝</button>
+        <button class="btn btn-success" v-on="click:onLawyerSuccess(contents._id)">通过</button>
     </div>
+
+    <br>
+    <div class="form-group">
+        <textarea class="form-control col-sm-6" id="rejectedInfo" data-value="" rows="4" placeholder="请填写拒绝理由"></textarea>
+    </div>
+
 </div>
 
 <% include fragments/footer.ejs %>

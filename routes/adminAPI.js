@@ -43,7 +43,10 @@ var adminLogin = function(req, res, next) {
 };
 router.post('/signin', adminLogin);
 
+
+
 // ============================= lawyer CRUD start================================
+
 var getLawyers  = function(req, res, next){
     var start = req.query['start'] || 0;
     var rows = req.query['rows'] || 10;
@@ -51,11 +54,11 @@ var getLawyers  = function(req, res, next){
     var ct = '';
     async.waterfall([
         function(cb){
-            Lawyer.lawyerCount(cb);
+            Lawyer.lawyerCount({status: config.lawyerStatus.raw.key},cb);
         },
         function(count, cb){
             ct = count;
-            Lawyer.getLawyers(start, rows, cb);
+            Lawyer.getLawyers(start, rows, {status: config.lawyerStatus.raw.key}, cb);
         }
     ], function(err, docs){
         if(err) return res.send(err);
@@ -63,7 +66,7 @@ var getLawyers  = function(req, res, next){
     });
 };
 
-router.get('/lawyer', auth.authOperatorCookie, getLawyers);
+router.get('/lawyer', auth.authOperatorCookie, auth.prepareAdminInfo, getLawyers);
 
 var getLawyer = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
@@ -74,7 +77,32 @@ var getLawyer = function(req, res, next){
         return res.send({rtn: 0, message: '', data: doc});
     });
 };
-router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
+router.get('/lawyer/:lawyerId', auth.authOperatorCookie, auth.prepareAdminInfo, getLawyer);
+
+
+var updateLawyer = function(req, res, next){
+    var lawyerId = req.params['lawyerId'];
+    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: 'lawyer Id can not be empty'});
+
+    var data = {}, action = req.body['action'];
+    if(action == config.lawyerStatus.reject.key){
+        data.status = config.lawyerStatus.reject.key;
+        var reason = req.body['reason'];
+        if(!reason) return res.send({rtn: config.errorCode.paramError, message: 'Rejected reason can not be empty'});
+        data.message = reason;
+    }else if (action == config.lawyerStatus.ok.key){
+        data.status = config.lawyerStatus.ok.key;
+    }else{
+        return res.send({rtn: config.errorCode.paramError, message: 'invalid action keyword'});
+    }
+
+    return Lawyer.updateLawyer(lawyerId, data, function(err, result){
+        if(err) return res.send({rtn: 1, message: err});
+        return res.send({rtn:0, message:'ok', data: result});
+    });
+
+};
+router.put('/lawyer/:lawyerId', auth.authOperatorCookie, auth.prepareAdminInfo, updateLawyer);
 // ============================= lawyer CRUD end================================
 
 
@@ -82,10 +110,10 @@ router.get('/lawyer/:lawyerId', auth.authOperatorCookie, getLawyer);
 // ============================= operator CRUD start============================
 var getOperator = function(req, res, next){
     var operatorId = req.params['operatorId'];
-    if(!operatorId) return res.send({rtn: 1, code: 1, message: 'Invalid operator id'});
+    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: 'Invalid operator id'});
 
     return Operator.getOperatorById(operatorId, function(err, doc){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(err) return res.send({rtn: 1, message: err});
         if(doc._doc.password) delete doc._doc.password;
         return res.send({rtn: 0, code: 0, message: 'ok', data: doc});
     });
@@ -98,7 +126,7 @@ var getOperators = function(req, res, next){
     var rows  = req.query['rows']  || 10;
 
     return Operator.getOperators(start, rows, function(err, docs){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(err) return res.send({rtn: 1, message: err});
         return res.send({rtn: 0, message: 'ok', data: docs});
     });
 };
@@ -117,7 +145,7 @@ var createOperator = function(req, res, next){
     if(!email)          err = 'The email can not be empty';
     if(!level)          err = 'The level can not be empty';
     if(!validator.isEmail(email)) err = 'The email format error';
-    if(err) return res.send({rtn: 1, code: 1, message: config.errorCode.paramError});
+    if(err) return res.send({rtn: config.errorCode.paramError, message: config.errorCode.paramError});
 
     var operatorInfo = {
         username: username, email: email, level: level,
@@ -125,7 +153,7 @@ var createOperator = function(req, res, next){
     };
 
     var callback = function(err, results){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(err) return res.send({rtn: 1, message: err});
         res.send({rtn: 0, message: 'ok', data: results});
     };
     return Operator.createOperator(operatorInfo,  callback);
@@ -147,7 +175,7 @@ var updateOperator = function(req, res, next){
     if(!email) err = '邮箱不能为空';
     if(!validator.isEmail(email)) err = '邮箱格式不合法';
     if(!level || isNaN(level)) err = '非法用户等级';
-    if(err) return res.send({rtn: config.errorCode.paramError, code: 1, message: err});
+    if(err) return res.send({rtn: config.errorCode.paramError, message: err});
 
     var data = {};
     async.waterfall([
@@ -168,7 +196,7 @@ var updateOperator = function(req, res, next){
             return Operator.updateOperator(operatorId, data, cb);
         }
     ], function(err, result){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(err) return res.send({rtn: 1, message: err});
         return res.send({rtn: 0, message: 'ok', data: result});
     });
 
@@ -177,12 +205,12 @@ router.put('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminIn
 
 var removeOperator = function(req, res, next){
     var operatorId = req.params['operatorId'];
-    if(!operatorId) return res.send({rtn: 1, code: 1, message: 'Invalid Operator Id'});
+    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: 'Invalid Operator Id'});
 
-    if(operatorId == req.adminInfo._id) return res.send({rtn:1 , code: 1, message: '无法将自己删除'});
+    if(operatorId == req.adminInfo._id) return res.send({rtn:config.errorCode.paramError, message: '无法将自己删除'});
 
     return Operator.removeOperator(operatorId, function(err, docs){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+        if(err) return res.send({rtn: 1, message: err});
         return res.send({rtn: 0, message: 'ok', data: docs});
     });
 };
@@ -191,21 +219,44 @@ router.delete('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdmi
 
 
 // ============================= case CRUD start ==============================
-var getCase = function(req, res, next){};
+
 var getCases = function(req, res, next){
     var start = req.query['start'] || 0;
     var rows = req.query['rows'] || 10;
 
-    var state = 'raw';//initially state case
-
-    return Case.getCaseByStatus(state, {skin: start, limit: rows}, function(err, cases){
-        if(err) return res.send({rtn: 1, code: 1, message: err});
+    return Case.getCaseByStatus(config.caseStatus.raw.key, {skin: start, limit: rows}, function(err, cases){
+        if(err) return res.send({rtn: 1, message: err});
         return res.send({rtn: 0, message: 'ok', data: cases});
     });
 };
 router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);
-//var getCases = function(req, res, next){};
-//var getCases = function(req, res, next){};
+
+var updateCase = function(req, res, next){
+    var caseId = req.params['caseId'];
+    if(!caseId) return res.send({rtn: config.errorCode.paramError, message: 'invalid case id'});
+
+    var action = req.body['action'];
+    if(!action) return res.send({rtn: config.errorCode.paramError, message: 'Action can not be empty'});
+
+    var data = {};
+    if(action == config.caseStatus.reject.key){
+        data.status =  config.caseStatus.reject.key;
+        var reason = req.body['reason'];
+        if(!reason) return res.send({rtn: config.errorCode.paramError, message: 'Rejected reason can not be empty'});
+        data.message = reason;
+    }else if (action == config.caseStatus.online.key){
+        data.status = config.caseStatus.online.key;
+    }else{
+        return res.send({rtn: config.errorCode.paramError, message: 'invalid action keyword'});
+    }
+
+    return Case.updateCase(caseId, data, function(err, result){
+        if(err) return res.send({rtn: 1, message: err });
+        return res.send({rtn: 0, message: 'ok', data: result});
+    });
+};
+router.put('/case/:caseId', auth.authOperatorCookie, auth.prepareAdminInfo, updateCase);
+
 
 // ============================= case CRUD end ================================
 

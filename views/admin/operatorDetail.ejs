@@ -40,9 +40,11 @@
 
             <div class="form-group">
                 <label for="levels">用户等级</label>
-                <select class="form-control" id="levels" >
+                <select class="form-control" id="levels" v-model="contents.level">
                     <% for(var i= 0, len= levels.length; i < len; i++){%>
-                    <option value="<%= levels[i].level%>"><%= levels[i].level%></option>
+                    <option value="<%= levels[i].level%>">
+                        <%= levels[i].level%>
+                    </option>
                     <%}%>
                 </select>
             </div>

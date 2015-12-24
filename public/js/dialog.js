@@ -6,7 +6,7 @@ var encaseDialog = function (opts) {
     return new BootstrapDialog(opts);
 };
 
-var successTip = errorTip = function (message, timeout, forceRefresh) {
+var successTip = errorTip = function (message, timeout, forceRefresh, href) {
     forceRefresh = forceRefresh || false;
     timeout = timeout || (5 * 1000);
     var msg = {code: 0};
@@ -36,7 +36,7 @@ var successTip = errorTip = function (message, timeout, forceRefresh) {
         dialog.close();
 
         //force refresh
-        if (forceRefresh) window.location.href = window.location.href;
+        if (forceRefresh) window.location.href = href || window.location.href;
     }, timeout);
 };
 

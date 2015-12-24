@@ -3,6 +3,7 @@
  */
 exports.applicationPort = 80;
 exports.uploadPath = __dirname + '/../public/upload';
+exports.switchPhoneVerifyCodeOff = false;
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
 exports.getMongoUri = () => {
@@ -139,6 +140,11 @@ exports.caseStatus = {
     reject:{key:'reject', desc:'案件不符合要求，被运营人员拒绝'}
 };
 
+exports.lawyerStatus = {
+    raw: {key: 'raw', desc: '律师注册初始状态'},
+    reject: {key: 'reject', desc: '律师审核未通过'},
+    ok: {key: 'ok', desc: '律师注册审核通过'}
+};
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
