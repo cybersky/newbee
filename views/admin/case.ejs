@@ -18,23 +18,50 @@
         <a class="btn btn-primary" role="button" data-toggle="collapse" href="#{{c._id}}" aria-expanded="true" aria-controls="{{c._id}}">
             <h5>案例ID: {{c._id}}</h5>
         </a>
+
         <div class="collapse in" id="{{c._id}}">
             <div class="well">
-                <div>
-                    <label for="caseType">案例类型: </label>
-                    <span id="caseType">{{c.caseType}}</span>
-                </div>
-                <br>
+                <div class="media">
+                    <div class="media-left">
+                        <img v-attr="src: c.userInfo.openInfo.headimgurl" style="width: 400px; height: 260px;"/>
+                    </div>
+                    <div class="media-body">
+                        <div class="media-heading">
+                            <h3><a href="#">用户信息</a></h3>
+                        </div>
+                        <br>
+                        <div class="media-right">
+                            <div>
+                                <label for="username">用户姓名:</label>
+                                <span id="username" class="text-muted">{{c.userInfo.openInfo.nickname}}</span><br>
+                            </div>
 
-                <div>
-                    <label for="serviceType">服务类型: </label>
-                    <span id="serviceType">{{c.serviceType}}</span>
-                </div>
-                <br>
+                            <div>
+                                <label for="identityNumber">用户所在地:</label>
+                                    <span id="identityNumber">
+                                        {{c.userInfo.openInfo.country}}&nbsp;
+                                        {{c.userInfo.openInfo.province}}&nbsp;
+                                        {{c.userInfo.openInfo.city}}
+                                    </span>
+                            </div>
 
-                <div>
-                    <label for="price">价格: </label>
-                    <span id="price">{{c.price1}}</span>
+                            <div>
+                                <label for="caseType">案例类型: </label>
+                                <span id="caseType">{{c.caseType}}</span>
+                            </div>
+
+                            <div>
+                                <label for="serviceType">服务类型: </label>
+                                <span id="serviceType">{{c.serviceType}}</span>
+                            </div>
+
+                            <div>
+                                <label for="price">价格: </label>
+                                <span id="price">{{c.price1}}</span>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
 
                 <br>
