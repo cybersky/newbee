@@ -69,7 +69,7 @@ var createCase = function (req, res, next) {
 
     async.waterfall([
         function (cb) {
-            if (userCase.lon && userCase.lat) return cb(null, {lon: userCase.lon, lat: userCase.lat});
+            if (userCase.lon && userCase.lat && !isNaN(Number(userCase.lon)) && !isNaN(Number(userCase.lat)) ) return cb(null, {lon: Number(userCase.lon), lat: Number(userCase.lat) });
             utils.getLocation(openId, 'user', cb);
         },
         function (loc, cb) {
@@ -242,7 +242,7 @@ router.delete('/user/cases/:caseId', deleteCaseByUser);
 
 router.get('/ly/cases', getLawyerCases);
 
-router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsUser), createBid);
+router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 
 router.delete('/ly/bids/:bidId', deleteBid);
 
