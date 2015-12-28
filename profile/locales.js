@@ -15,3 +15,20 @@ exports.lonFormatError = '经度数据错误';
 exports.wxOpenIdError = 'OpenId错误';
 exports.noSuchCase = '无法找到案件';
 exports.noBidPrice = '请选择至少一种竞价方式';
+
+exports.email = {empty: '邮箱不能为空', formatError: '邮箱格式错误', notMatched: '邮箱不存在'};
+exports.password = {
+    empty:'密码不能为空',
+    mistookPwd: '密码错误',
+    notMatched: '密码不匹配'
+};
+exports.lawyer = {emptyId: '律师ID不能为空', rejectMsgEmpty: '拒绝审核理由不能为空'};
+exports.operator = {
+    emptyId: '用户ID不能为空', usernameEmpty: '用户名不能为空',
+    levelEmpty: '用户权限等级不能为空', illegalLevel: '非法用户等级',
+    illegalOperation: '系统不允许此操作'
+};
+
+exports.case = {
+    emptyId: '案件ID不能为空', rejectMsgEmpty: '拒绝审核理由不能为空'
+};
