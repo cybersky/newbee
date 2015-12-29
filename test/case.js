@@ -70,7 +70,6 @@ describe('let us get started', function(){
         });
 
         it('should return 10 cases', function(done){
-
             request(testHost + '/va/user/cases', function(err, resp, body){
                 if(typeof body == 'string'){
                     try{ body = JSON.parse(body); } catch(err){ console.error('error response:', body); }
@@ -83,7 +82,21 @@ describe('let us get started', function(){
 
                 done();
             });
+        });
 
+        it('should return 10 more cases', function(done){
+            request(testHost + '/va/user/cases', function(err, resp, body){
+                if(typeof body == 'string'){
+                    try{ body = JSON.parse(body); } catch(err){ console.error('error response:', body); }
+                }
+                console.log('body', body);
+
+                assert.equal(err, null);
+                assert.equal(body.rtn, 0);
+                assert.equal(body.data.length, 10);
+
+                done();
+            });
         });
 
     });

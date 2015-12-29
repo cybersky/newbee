@@ -13,6 +13,7 @@ var mongo = require('../clients/mongo');
 var locale = require('../profile/locales.js');
 var utils = require('../tools/utils.js');
 var caseModel = require('../odm/case.js');
+var notification = require('../task/notification.js');
 
 router.use(auth.authAPIOpenId());
 
@@ -69,7 +70,9 @@ var createCase = function (req, res, next) {
 
     async.waterfall([
         function (cb) {
-            if (userCase.lon && userCase.lat && !isNaN(Number(userCase.lon)) && !isNaN(Number(userCase.lat)) ) return cb(null, {lon: Number(userCase.lon), lat: Number(userCase.lat) });
+            if (userCase.lon && userCase.lat && !isNaN(Number(userCase.lon)) && !isNaN(Number(userCase.lat)) ){
+                return cb(null, {lon: Number(userCase.lon), lat: Number(userCase.lat) });
+            }
             utils.getLocation(openId, 'user', cb);
         },
         function (loc, cb) {
@@ -94,11 +97,18 @@ var getUserCases = function (req, res, next) {
         res.send({rtn: 0, data: result});
     });
 
-
 };
 
-var deleteCaseByUser = function(req, res, next){
+var cancelCaseByUser = function(req, res, next){
+    var openId = req.wxOpenId;
+    var caseId = req.params['caseId'];
 
+    caseModel.cancelCaseByUser(caseId, openId, function (err) {
+        if (err) return next(err);
+        res.send({rtn: 0});
+
+        notification.noticeStatus2Lawyer(caseId, config.caseStatus.cancel.key);
+    });
 };
 
 var updateCaseByUser = function (req, res, next) {
@@ -108,32 +118,65 @@ var updateCaseByUser = function (req, res, next) {
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
 
-    caseModel.updateCaseByUser(caseId, openId, userCase, function () {
+    caseModel.updateOneCaseByUser(caseId, openId, userCase, function (err, result) {
         if (err) return next(err);
-        if (result && result.nModified == 1) {
-            return res.send({rtn: 0});
-        }
-        res.send({rtn:config.errorCode.paramError, message:'no such case'});
+        res.send({rtn: 0});
+
+        notification.noticeEvent2Lawyer(caseId, config.caseEvent.change.key);
     });
 
 };
 
 
+var targetCaseByUser = function(req, res, next){
+    var openId = req.wxOpenId;
+    var caseId = req.params['caseId'];
+    var bidId = req.body.bidId;
+
+    caseModel.targetCaseByUser(caseId, openId, bidId, function(err){
+        if(err) return next(err);
+        res.send({rtn: 0});
+        notification.noticeStatus2Lawyer(caseId, config.caseStatus.target.key);
+    });
+};
+
+
 var getLawyerCases = function (req, res, next) {
-    var sort = 'updated', page = 0, pageLength = 10, sortDoc;
+    var sort = 'updated', page = 0, pageLength = 10, sortDoc = {};
 
     if (req.query.sort && ['updated', 'geo', 'price'].indexOf(req.query.sort) > 0) {
         sort = req.query.sort;
     }
 
-    if (req.query.page && !isNaN(Number(req.query.page))) {
-        page = req.query.page;
+    if(req.query.sort == 'geo' ){
+        if(!req.query.lon || !req.query.lat) {
+            return next({rtn:config.errorCode.paramError, message:'无法获取您的位置'});
+        }
+        if(isNaN(Number(req.query.lon)) || isNaN(Number(req.query.lat))){
+            return next({rtn:config.errorCode.paramError, message:'您的位置数据有误'});
+        }
     }
+
+    if (req.query.page && !isNaN(Number(req.query.page))) {
+        page = Number(req.query.page);
+    }
+
+    var query = {status: {$in: [config.caseStatus.online.key, config.caseStatus.bid.key]}};
+
     switch (sort) {
         case 'updated':
             sortDoc = {updatedAt: -1, price1: -1};
             break;
         case 'geo':
+            query['location'] = {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [Number(req.query.lon), Number(req.query.lat)]
+                    },
+                    $maxDistance: 10 * 1000
+                }
+            };
             sortDoc = null;
             break;
         case 'price':
@@ -141,51 +184,28 @@ var getLawyerCases = function (req, res, next) {
             break;
     }
 
-    var query = {status: {$in: [config.caseStatus.RAW.key, config.caseStatus.BID.key]}};
+    caseModel.getCase(query, {sort: sortDoc, limit: pageLength, skip: page * pageLength}, function (err, docs) {
+        if(err) return next(err);
+        res.send({rtn: 0, data: docs});
+    });
 
-    async.waterfall([
-        function (cb) {
-            if (sort != 'geo') return cb(null, null);
-            utils.getLocation(req.wxOpenId, 'lawyer', cb);
-        },
-        function (loc, cb) {
-            if (sort == 'geo') {
-                if (!loc || !loc.lon || !loc.lat) return cb({
-                    rtn: config.errorCode.paramError,
-                    message: 'can not location lawyer'
-                });
 
-                query['location'] = {
-                    $near: {
-                        $geometry: {
-                            type: "Point",
-                            coordinates: [loc.lon, loc.lat]
-                        },
-                        $maxDistance: 10 * 1000
-                    }
-                }
-            }
-
-            caseModel.getCase(query, {sort: sortDoc, limit: pageLength, skip: page * pageLength}, function (err, docs) {
-                res.send({rtn: 0, data: docs});
-            });
-        }
-
-    ], next);
 };
 
 
 var createBid = function (req, res, next) {
     var caseId = req.params.caseId;
-    var bid = _.pick(req.body, ['price1', 'price2', 'comment']);
+    var bidDoc = _.pick(req.body, ['price1', 'price2', 'comment']);
 
-    bid.lawyerOpenId = req.wxOpenId;
-    bid.lawyerInfo = req.currentUser;
+    bidDoc.lawyerOpenId = req.wxOpenId;
+    bidDoc.lawyerInfo = req.currentUser;
 
-    caseModel.bidCase(caseId, bid, function (err, result) {
+    caseModel.bidCase(caseId, bidDoc, function (err, result) {
         if(err) return next(err);
         var id = result.insertedId.toString();
         res.send({rtn: 0, data: {id: id}});
+
+        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 
 };
@@ -194,13 +214,22 @@ var deleteBid = function(req, res, next){
     var bidId = req.params.bidId;
     var openId = req.wxOpenId;
 
-    caseModel.deleteBid(bidId, openId, function(err, result){
+    caseModel.deleteBid(bidId, openId, function(err){
         if(err) return next(err);
-        if(result.nRemoved ==1){
-            res.send({rtn:0});
-        }
+        res.send({rtn:0});
+        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
+};
 
+
+var processCaseByLawyer = function(req, res, next){
+    var caseId = req.params.caseId;
+    caseModel.updateOneCase(caseId, {status:config.caseStatus.process}, function(err){
+        if(err) return next(err);
+        res.send({rtn:0});
+
+        notification.noticeStatus2User(caseId, config.caseStatus.process.key);
+    });
 };
 
 
@@ -238,13 +267,17 @@ router.get('/user/cases', getUserCases);
 
 router.post('/user/cases/:caseId', updateCaseByUser);
 
-router.delete('/user/cases/:caseId', deleteCaseByUser);
+router.delete('/user/cases/:caseId', cancelCaseByUser);
+
+router.post('/user/cases/:caseId/target', targetCaseByUser);
 
 router.get('/ly/cases', getLawyerCases);
 
 router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 
 router.delete('/ly/bids/:bidId', deleteBid);
+
+router.post('/ly/cases/:caseId/process', processCaseByLawyer);
 
 router.get('/user/jsconfig', getJSSDKConfig(config.optionsUser));
 

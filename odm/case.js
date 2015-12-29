@@ -9,6 +9,22 @@ var mongo = require('../clients/mongo.js');
 var ObjectID = require('mongodb').ObjectID;
 var _ = require('underscore');
 
+
+var assertModifyOne = function(cb){
+    return function(err, result){
+        if(err) return cb(err);
+        cb( result && result.nModified == 1 ? null : 'Not Modified' );
+    }
+};
+
+var assertMatchOne = function(cb){
+    return function(err, result){
+        if(err) return cb(err);
+        cb( result && result.nMatched == 1 ? null : 'Not Matched' );
+    }
+};
+
+
 exports.createCase = function(userCase){
 
     var callback = arguments[arguments.length-1];
@@ -94,34 +110,56 @@ exports.updateCaseByQuery = function(query, caseDoc){
 
     var caseCollection = mongo.case();
 
-    caseCollection.update(query, {$set:caseDoc}, function(err, result){
-        callback(err, result);
-    });
+    caseCollection.update(query, {$set:caseDoc}, callback);
 };
 
-exports.updateCase = function(caseId, caseDoc) {
+exports.updateOneCase = function(caseId, caseDoc) {
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
-    exports.updateCaseByQuery({_id:new ObjectID(caseId)}, caseDoc, callback);
+    exports.updateCaseByQuery({_id:new ObjectID(caseId)}, caseDoc, assertModifyOne(callback) );
 };
 
 
-exports.updateCaseByUser = function(caseId, userOpenId, caseDoc){
+exports.updateOneCaseByUser = function(caseId, userOpenId, caseDoc){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
-    exports.updateCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, callback);
+    exports.updateCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, assertModifyOne(callback));
 };
 
 
-exports.getCaseByServiceType = function(type){
+exports.cancelCaseByUser = function(caseId, userOpenId){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
+    exports.updateCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, {status:config.caseStatus.cancel.key}, assertModifyOne(callback) );
 };
 
 
-exports.getCaseByCaseType = function(type){
+exports.getCaseByServiceType = function(type, option){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
+    var types = _.pluck(config.userServiceType, 'name');
+    if( types.indexOf(type) < 0 ) return callback({rtn:config.errorCode.paramError, message:'invalid service type'});
+
+    option = option || {};
+    option.sort = option.sort || {createdAt:-1, updatedAt:-1};
+    exports.getCase({serviceType:type}, option, callback);
+};
+
+
+exports.getCaseByCaseType = function(type, option){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    var types = _.pluck(config.userCaseType, 'name');
+    if( types.indexOf(type) < 0 ) return callback({rtn:config.errorCode.paramError, message:'invalid service type'});
+
+    option = option || {};
+    option.sort = option.sort || {createdAt:-1, updatedAt:-1};
+    exports.getCase({caseType:type}, option, callback);
 };
 
 
@@ -157,9 +195,15 @@ exports.getCase = function(query, option){
 
 };
 
+
 exports.syncCaseBids = function(caseId){
     var callback = arguments[arguments.length-1];
-    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+    if(typeof(callback) != 'function'){
+        callback = function(err, result){
+            if(err) return console.error('sync case bids error', err);
+            console.log('sync case ok', caseId, 'bids', bidCount, 'nMatched', result.nMatched, 'nModified', result.nModified);
+        };
+    }
 
     var cases = mongo.case();
     var bids = mongo.bid();
@@ -172,10 +216,6 @@ exports.syncCaseBids = function(caseId){
         function(list, cb){
             bidCount = list.length;
             cases.update({_id:new ObjectID(caseId)}, {$set:{bids:list}}, cb);
-        },
-        function(result, cb){
-            console.log('sync case', caseId, 'bids', bidCount, 'nMatched', result.nMatched, 'nModified', result.nModified);
-            cb();
         }
     ], callback);
 };
@@ -197,16 +237,26 @@ exports.bidCase = function(caseId, bidDoc){
 
     async.waterfall([
         function(cb){
+            //cases.findOneAndUpdate({_id:new ObjectID(caseId)}, {$set:{status:config.caseStatus.bid.key}}, cb);
             cases.findOne({_id:new ObjectID(caseId)}, cb);
         },
         function(userCase, cb){
-            if(!userCase) return callback({rtn:config.errorCode.paramError, message:locale.noSuchCase+caseId});
+            if(!userCase) return cb({rtn:config.errorCode.paramError, message:locale.noSuchCase+caseId});
+
+            if([config.caseStatus.online.key, config.caseStatus.bid.key].indexOf(userCase.status) < 0){
+                return cb({rtn:config.errorCode.paramError, message:'案件已经结束投标'+caseId});
+            }
+
             bidDoc.caseId = caseId;
             bids.insertOne(bidDoc, cb);
         },
+        function(result){
+            bidDoc._id = result.insertedId;
+            cases.updateOne({_id:new ObjectID(caseId)}, {$set:{status:config.caseStatus.bid.key}, $push:{ bids:bidDoc } });
+        },
         function(result, cb){
             cb(null, result);
-            exports.syncCaseBids(caseId, console.log);
+            //exports.syncCaseBids(caseId);
         }
     ], callback);
 };
@@ -215,28 +265,41 @@ exports.deleteBid = function(bidId, openId){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
+    var cases = mongo.case();
     var bids = mongo.bid();
 
     async.waterfall([
         function(cb){
-            bids.findAndModify();
-
-            bids.remove({_id:ObjectID(bidId), lawyerOpenId:openId}, cb);
+            //bids.findAndModify();
+            bids.findOneAndDelete({_id:ObjectID(bidId), lawyerOpenId:openId}, cb);
+            //bids.remove({_id:ObjectID(bidId), lawyerOpenId:openId}, cb);
         },
-        function(result, cb){
-            cb(result.nRemoved==1? null:{rtn:config.errorCode.paramError, message:'no such bid: '+bidId});
-            exports.syncCaseBids(caseId, console.log);
+        function(bidDoc, cb){
+            //cb(result.nRemoved == 1 ? null:{rtn:config.errorCode.paramError, message:'no such bid: '+bidId});
+            cases.update({_id:ObjectID(bidDoc.caseId)}, {$pull:{bids:{ _id:ObjectID(bidId) }}});
+            //exports.syncCaseBids(caseId);
         }
-    ], callback);
+    ], assertModifyOne(callback));
 
 };
 
 
 
-exports.targetBid = function(caseId, bidId){
+exports.targetCaseByUser = function(caseId, bidId){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
+    var cases = mongo.case();
+    var bids = mongo.bid();
 
+    async.waterfall([
+        function(cb){
+            bids.findOne({_id:ObjectID(bidId)}, cb);
+        },
+        function(bid, cb){
+            if(!bid) return next({rtn:config.errorCode.paramError, message:locale.noSuchBid+bidId});
+            cases.updateOne({_id:ObjectID(caseId)}, {$set:{target:bid}}, cb);
+        }
+    ], assertModifyOne(callback) );
 
 };

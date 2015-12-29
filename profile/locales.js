@@ -14,4 +14,5 @@ exports.latFormatError = '纬度数据错误';
 exports.lonFormatError = '经度数据错误';
 exports.wxOpenIdError = 'OpenId错误';
 exports.noSuchCase = '无法找到案件';
+exports.noSuchBid = '无法找到竞标';
 exports.noBidPrice = '请选择至少一种竞价方式';

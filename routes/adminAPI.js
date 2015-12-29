@@ -250,7 +250,7 @@ var updateCase = function(req, res, next){
         return res.send({rtn: config.errorCode.paramError, message: 'invalid action keyword'});
     }
 
-    return Case.updateCase(caseId, data, function(err, result){
+    return Case.updateOneCase(caseId, data, function(err, result){
         if(err) return res.send({rtn: 1, message: err });
         return res.send({rtn: 0, message: 'ok', data: result});
     });

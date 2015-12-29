@@ -136,8 +136,15 @@ exports.caseStatus = {
     cancel:{key:'cancel', desc:'客户取消案件'},
     target:{key:'target', desc:'客户已经选择了投标律师'},
     process:{key:'process', desc:'案件开始受理案件，进展中'},
-    close:{key:'close', desc:'案件关闭'},
+    dispute:{key:'dispute', desc:'律师和用户发生纠纷状态'},
+    closeu:{key:'close', desc:'案件由用户关闭'},
+    closel:{key:'close', desc:'案件由律师关闭'},
     reject:{key:'reject', desc:'案件不符合要求，被运营人员拒绝'}
+};
+
+exports.caseEvent = {
+    change:{key:'change', desc:'案件的描述或者悬赏发生改变'},
+    comment:{key:'comment', desc:'案件有人评论'}
 };
 
 exports.lawyerStatus = {
