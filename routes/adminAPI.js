@@ -12,25 +12,25 @@ var Lawyer = require('../odm/admin/lawyer');
 var config  = require('../profile/config');
 var auth   = require('../middleware/auth');
 var Case    = require('../odm/case');
-
+var locales = require('../profile/locales');
 
 
 var adminLogin = function(req, res, next) {
     var email = req.body['email'] || '';
     var pass  = req.body['password'] || '';
 
-    if(!email) return res.send({rtn: 1, code: 1, message: 'Email can not be empty'});
-    if(!validator.isEmail(email)) return res.send({rtn: 1, code: 1, message:'Email format error'});
-    if(!pass)  return res.send({rtn: 1, code: 1, message: 'Password can not be empty'});
+    if(!email) return res.send({rtn: 1, code: 1, message: locales.email.empty});
+    if(!validator.isEmail(email)) return res.send({rtn: 1, code: 1, message:locales.email.formatError});
+    if(!pass)  return res.send({rtn: 1, code: 1, message: locales.password.empty});
 
     async.waterfall([
         function(cb){
             Operator.getOperatorByCondition({email: email}, cb);
         },
         function(docs, cb){
-            if(!docs) return cb({rtn: 1, code: 1, notice:'emailNotice' ,message: 'The Email you typed do not matched'});
+            if(!docs) return cb({rtn: 1, code: 1, notice:'emailNotice' ,message: locales.email.notMatched});
             if(secure.sha1(pass, 'utf-8') != docs.password) {
-                return cb({rtn: 1, code: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
+                return cb({rtn: 1, code: 1, notice: 'passwordNotice', message: locales.password.mistookPwd});
             }
             cb(null, docs);
         }
@@ -70,7 +70,7 @@ router.get('/lawyer', auth.authOperatorCookie, auth.prepareAdminInfo, getLawyers
 
 var getLawyer = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
-    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: 'lawyer id can not be empty'});
+    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: locales.lawyer.emptyId});
     Lawyer.getOneLawyer(lawyerId, function(err, doc){
         if(err) return res.send({rtn: 1, message: err});
         if(doc._doc.password) delete doc._doc.password;
@@ -82,18 +82,19 @@ router.get('/lawyer/:lawyerId', auth.authOperatorCookie, auth.prepareAdminInfo, 
 
 var updateLawyer = function(req, res, next){
     var lawyerId = req.params['lawyerId'];
-    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: 'lawyer Id can not be empty'});
+    if(!lawyerId) return res.send({rtn: config.errorCode.paramError, message: locales.lawyer.emptyId});
 
     var data = {}, action = req.body['action'];
     if(action == config.lawyerStatus.reject.key){
         data.status = config.lawyerStatus.reject.key;
         var reason = req.body['reason'];
-        if(!reason) return res.send({rtn: config.errorCode.paramError, message: 'Rejected reason can not be empty'});
+        if(!reason) return res.send({rtn: config.errorCode.paramError, message: locales.lawyer.rejectMsgEmpty});
         data.message = reason;
     }else if (action == config.lawyerStatus.ok.key){
         data.status = config.lawyerStatus.ok.key;
     }else{
-        return res.send({rtn: config.errorCode.paramError, message: 'invalid action keyword'});
+        //this is non-normally action, unless the request send from non-browser
+        return res.send({rtn: config.errorCode.paramError, message: '无效关键词, 您的操作异常'});
     }
 
     return Lawyer.updateLawyer(lawyerId, data, function(err, result){
@@ -110,7 +111,7 @@ router.put('/lawyer/:lawyerId', auth.authOperatorCookie, auth.prepareAdminInfo, 
 // ============================= operator CRUD start============================
 var getOperator = function(req, res, next){
     var operatorId = req.params['operatorId'];
-    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: 'Invalid operator id'});
+    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: locales.operator.emptyId});
 
     return Operator.getOperatorById(operatorId, function(err, doc){
         if(err) return res.send({rtn: 1, message: err});
@@ -140,12 +141,12 @@ var createOperator = function(req, res, next){
     var cpt         = _.trim(req.body['cpassword']);
 
     var err;
-    if(password != cpt) err = 'The password is not matched with confirm password';
-    if(!username)       err = 'The username can not be empty';
-    if(!email)          err = 'The email can not be empty';
-    if(!level)          err = 'The level can not be empty';
-    if(!validator.isEmail(email)) err = 'The email format error';
-    if(err) return res.send({rtn: config.errorCode.paramError, message: config.errorCode.paramError});
+    if(password != cpt) err = locales.password.notMatched;
+    if(!username)       err = locales.operator.usernameEmpty;
+    if(!email)          err = locales.email.empty;
+    if(!level)          err = locales.operator.levelEmpty;
+    if(!validator.isEmail(email)) err = locales.email.formatError;
+    if(err) return res.send({rtn: config.errorCode.paramError, message: err});
 
     var operatorInfo = {
         username: username, email: email, level: level,
@@ -169,12 +170,12 @@ var updateOperator = function(req, res, next){
     var level = req.body['level'];
 
     var err;
-    if(!operatorId) err = '用户ID不能为空';
-    if(password != cpassword) err = '两次密码不匹配';
-    if(!username) err = '用户名不能为空';
-    if(!email) err = '邮箱不能为空';
-    if(!validator.isEmail(email)) err = '邮箱格式不合法';
-    if(!level || isNaN(level)) err = '非法用户等级';
+    if(!operatorId) err = locales.operator.emptyId;
+    if(password != cpassword) err = locales.password.notMatched;
+    if(!username) err = locales.operator.usernameEmpty;
+    if(!email) err = locales.email.empty;
+    if(!validator.isEmail(email)) err = locales.email.formatError;
+    if(!level || isNaN(level)) err = locales.operator.illegalLevel;
     if(err) return res.send({rtn: config.errorCode.paramError, message: err});
 
     var data = {};
@@ -205,9 +206,10 @@ router.put('/operator/:operatorId', auth.authOperatorCookie, auth.prepareAdminIn
 
 var removeOperator = function(req, res, next){
     var operatorId = req.params['operatorId'];
-    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: 'Invalid Operator Id'});
+    if(!operatorId) return res.send({rtn: config.errorCode.paramError, message: locales.operator.emptyId});
 
-    if(operatorId == req.adminInfo._id) return res.send({rtn:config.errorCode.paramError, message: '无法将自己删除'});
+    if(operatorId == req.adminInfo._id)
+        return res.send({rtn:config.errorCode.paramError, message: locales.operator.illegalOperation});
 
     return Operator.removeOperator(operatorId, function(err, docs){
         if(err) return res.send({rtn: 1, message: err});
@@ -233,21 +235,21 @@ router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);
 
 var updateCase = function(req, res, next){
     var caseId = req.params['caseId'];
-    if(!caseId) return res.send({rtn: config.errorCode.paramError, message: 'invalid case id'});
+    if(!caseId) return res.send({rtn: config.errorCode.paramError, message: locales.case.emptyId});
 
     var action = req.body['action'];
-    if(!action) return res.send({rtn: config.errorCode.paramError, message: 'Action can not be empty'});
+    if(!action) return res.send({rtn: config.errorCode.paramError, message: '无效关键词, 您的操作异常'});
 
     var data = {};
     if(action == config.caseStatus.reject.key){
         data.status =  config.caseStatus.reject.key;
         var reason = req.body['reason'];
-        if(!reason) return res.send({rtn: config.errorCode.paramError, message: 'Rejected reason can not be empty'});
+        if(!reason) return res.send({rtn: config.errorCode.paramError, message: locales.case.rejectMsgEmpty});
         data.message = reason;
     }else if (action == config.caseStatus.online.key){
         data.status = config.caseStatus.online.key;
     }else{
-        return res.send({rtn: config.errorCode.paramError, message: 'invalid action keyword'});
+        return res.send({rtn: config.errorCode.paramError, message: '无效关键词, 您的操作异常'});
     }
 
     return Case.updateOneCase(caseId, data, function(err, result){
