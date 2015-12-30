@@ -81,8 +81,7 @@ var createCase = function (req, res, next) {
             }
             caseModel.createCase(userCase, cb);
         },
-        function (result) {
-            var id = result.insertedId.toString();
+        function (id) {
             res.send({rtn: 0, data: {id: id}});
         }
     ], next);
@@ -128,20 +127,50 @@ var updateCaseByUser = function (req, res, next) {
 };
 
 
-var targetCaseByUser = function(req, res, next){
+var updateCaseStatus = function(req, res, next){
     var openId = req.wxOpenId;
     var caseId = req.params['caseId'];
-    var bidId = req.body.bidId;
+    var status = req.body.status;
 
-    caseModel.targetCaseByUser(caseId, openId, bidId, function(err){
-        if(err) return next(err);
-        res.send({rtn: 0});
-        notification.noticeStatus2Lawyer(caseId, config.caseStatus.target.key);
-    });
+    switch (status){
+        case config.caseStatus.target.key:
+            var bidId = req.body.bidId;
+
+            caseModel.targetCaseByUser(caseId, openId, bidId, function(err){
+                if(err) return next(err);
+                res.send({rtn: 0});
+                notification.noticeStatus2Lawyer(caseId, config.caseStatus.target.key);
+            });
+            break;
+        case config.caseStatus.closeu.key:
+            caseModel.updateOneCaseByUser(caseId, openId, {status:config.caseStatus.closeu.key}, function(err){
+                if(err) return next(err);
+                res.send({rtn:0});
+                notification.noticeStatus2Lawyer(caseId, config.caseStatus.closeu.key);
+            });
+            break;
+
+        case config.caseStatus.disputeu.key:
+            caseModel.updateOneCaseByUser(caseId, openId, {status:config.caseStatus.disputeu.key}, function(err){
+                if(err) return next(err);
+                res.send({rtn:0});
+
+                notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
+                notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
+
+            });
+            break;
+
+            break;
+    }
+
+
 };
 
 
-var getLawyerCases = function (req, res, next) {
+
+
+var findLawyerCases = function (req, res, next) {
     var sort = 'updated', page = 0, pageLength = 10, sortDoc = {};
 
     if (req.query.sort && ['updated', 'geo', 'price'].indexOf(req.query.sort) > 0) {
@@ -193,6 +222,16 @@ var getLawyerCases = function (req, res, next) {
 };
 
 
+var getLawyerBidCases = function(req, res, next){
+    var openId = req.wxOpenId;
+
+    caseModel.getLawyerBidCases(openId, function(err, list){
+        if(err) return next(err);
+        res.send({rtn:0, data:list});
+    });
+};
+
+
 var createBid = function (req, res, next) {
     var caseId = req.params.caseId;
     var bidDoc = _.pick(req.body, ['price1', 'price2', 'comment']);
@@ -200,14 +239,23 @@ var createBid = function (req, res, next) {
     bidDoc.lawyerOpenId = req.wxOpenId;
     bidDoc.lawyerInfo = req.currentUser;
 
-    caseModel.bidCase(caseId, bidDoc, function (err, result) {
+    caseModel.bidCase(caseId, bidDoc, function (err, id) {
         if(err) return next(err);
-        var id = result.insertedId.toString();
         res.send({rtn: 0, data: {id: id}});
-
         notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 
+};
+
+var updateBid = function(req, res, next){
+    var bidId = req.params.bidId;
+    var openId = req.wxOpenId;
+    var bidDoc = _.pick(req.body, ['price1', 'price2', 'comment']);
+
+    caseModel.updateBid(bidId, bidDoc, openId, function(err){
+        if(err) return next(err);
+        res.send({rtn:0});
+    });
 };
 
 var deleteBid = function(req, res, next){
@@ -222,14 +270,23 @@ var deleteBid = function(req, res, next){
 };
 
 
-var processCaseByLawyer = function(req, res, next){
+var updateCaseByLawyer = function(req, res, next){
+
+    var openId = req.wxOpenId;
     var caseId = req.params.caseId;
-    caseModel.updateOneCase(caseId, {status:config.caseStatus.process}, function(err){
+    var status = req.body.status;
+
+    if([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)){
+        return callback({rtn:config.errorCode.paramError, message:'invalid status'});
+    }
+
+    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function(){
         if(err) return next(err);
         res.send({rtn:0});
 
-        notification.noticeStatus2User(caseId, config.caseStatus.process.key);
+        notification.noticeStatus2User(caseId, status);
     });
+
 };
 
 
@@ -258,6 +315,7 @@ var getJSSDKConfig = function (option) {
 
 };
 
+/************* For Weixin page User API ********************/
 
 router.post('/user/bindmobile', bindUserMobile);
 
@@ -269,18 +327,26 @@ router.post('/user/cases/:caseId', updateCaseByUser);
 
 router.delete('/user/cases/:caseId', cancelCaseByUser);
 
-router.post('/user/cases/:caseId/target', targetCaseByUser);
+router.post('/user/cases/:caseId/status', updateCaseStatus);
 
-router.get('/ly/cases', getLawyerCases);
+
+/************* For Weixin page Lawyer API ********************/
+
+router.get('/ly/cases', findLawyerCases);
 
 router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 
 router.delete('/ly/bids/:bidId', deleteBid);
 
-router.post('/ly/cases/:caseId/process', processCaseByLawyer);
+router.post('/ly/:caseId/:bidId', updateBid);
 
+router.post('/ly/cases/:caseId/status', updateCaseByLawyer);
+
+router.get('/ly/bids', getLawyerBidCases);
+
+
+/************* For Weixin page JSSDK Config  ********************/
 router.get('/user/jsconfig', getJSSDKConfig(config.optionsUser));
-
 router.get('/ly/jsconfig', getJSSDKConfig(config.optionsLawyer));
 
 

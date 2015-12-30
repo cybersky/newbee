@@ -35,6 +35,10 @@ exports.noticeStatus2Lawyer = function(caseId, newStatus, oldStatus){
     }
 };
 
+exports.noticeStatus2Operator = function(caseId, newStatus, oldStatus){
+
+};
+
 exports.noticeEvent2User = function(caseId, event){
 
     switch(event){

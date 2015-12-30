@@ -172,7 +172,7 @@ router.post('/voicecode', handleVoiceCode);
 var createTestUser = function(role){
 
     return function(req, res, next){
-        var openId = req.signedCookies.openId || uuid.v1();
+        var openId = uuid.v1();
         res.cookie('openId', openId, {maxAge: 24 * 3600 * 1000, signed: true});
         res.cookie('role', role, {maxAge: 24 * 3600 * 1000, signed: true});
 
