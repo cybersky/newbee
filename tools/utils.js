@@ -169,7 +169,7 @@ exports.getQRCode = function (option, sceneId, callback) {
         throw new Error('invalid callback');
     }
 
-    if(! (sceneId > 0 && sceneId < 10000)) return callback(new Error('sceneId 1-10000'));
+    if(! (sceneId > 0 && sceneId < config.maxQRScene)) return callback(new Error('sceneId out of range 1-'+config.maxQRScene));
 
     async.waterfall([
         function (cb) {
