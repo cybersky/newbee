@@ -64,6 +64,11 @@ app.use('/aa', adminAPI);
 app.use('/ws', wxService);
 app.use('/wp', wxPage);
 
+if( config.openTestAPI ){
+    console.warn('application open test API');
+    app.use('/ts', require('./routes/backAPI'));
+}
+
 console.log('The Node.js version is', process.version);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

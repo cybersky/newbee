@@ -4,6 +4,7 @@
 exports.applicationPort = 80;
 exports.uploadPath = __dirname + '/../public/upload';
 exports.switchPhoneVerifyCodeOff = false;
+exports.openTestAPI = false;
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
 exports.getMongoUri = () => {
@@ -150,16 +151,26 @@ exports.caseEvent = {
 
 exports.lawyerStatus = {
     raw: {key: 'raw', desc: '律师注册初始状态'},
-    reject: {key: 'reject', desc: '律师审核未通过'},
-    ok: {key: 'ok', desc: '律师注册审核通过'}
+    subscribe: {key: 'subscribe', desc: '律师已经绑定了律政新蜂公众号'},
+    ok: {key: 'ok', desc: '律师注册审核通过'},
+    reject: {key: 'reject', desc: '律师审核未通过'}
 };
+
+
+exports.redisKey = {
+    QRSceneGenerator:'qrcode:sceneId:generator',
+    QRSceneId:'qrcode:sceneId:'
+};
+
+exports.maxQRScene = 100000;
+
 
 exports.sessionCookieMaxAge = 1000 * 60 * 60 * 24 * 30;
 //use override.js to override default config values.
 
 var overrideDefault = '/opt/config/newbee/override.js';
 
-(() =>{
+(function(){
     var fs = require('fs');
 	var overrideLocation;
 	var override = {};

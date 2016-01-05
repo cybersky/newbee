@@ -33,6 +33,7 @@ exports.prepareLocalUser = function(option){
         col.findOne({openId: req.wxOpenId}, function(err, user){
             if(err) return next(err);
             req.currentUser = user;
+            req.userRole = option.roleCollection;
             next();
         });
     };

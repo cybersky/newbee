@@ -168,6 +168,18 @@ var updateCaseStatus = function(req, res, next){
 };
 
 
+var commentCase = function(req, res, next){
+    var caseId = req.params['caseId'];
+    var userInfo = req.currentUser;
+    var userRole = req.userRole;
+    var comment = req.body.comment;
+
+    caseModel.commentCase(caseId, comment, userInfo, userRole, function(err){
+        if(err) return next(err);
+        res.send({rtn:0});
+    });
+};
+
 
 
 var findLawyerCases = function (req, res, next) {
@@ -329,6 +341,8 @@ router.delete('/user/cases/:caseId', cancelCaseByUser);
 
 router.post('/user/cases/:caseId/status', updateCaseStatus);
 
+router.post('/user/cases/:caseId/comments', commentCase);
+
 
 /************* For Weixin page Lawyer API ********************/
 
@@ -343,6 +357,8 @@ router.post('/ly/:caseId/:bidId', updateBid);
 router.post('/ly/cases/:caseId/status', updateCaseByLawyer);
 
 router.get('/ly/bids', getLawyerBidCases);
+
+router.post('/ly/cases/:caseId/comments', commentCase);
 
 
 /************* For Weixin page JSSDK Config  ********************/

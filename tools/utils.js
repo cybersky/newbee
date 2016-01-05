@@ -66,6 +66,35 @@ exports.getWXAPITicket = function (option, type, callback) {
     ], callback);
 };
 
+
+exports.getCallbackIP = function(option, callback){
+
+    if(typeof arguments[arguments.length-1] != 'function'){
+        throw new Error('invalid callback');
+    }
+
+    async.waterfall([
+        function(cb){
+            exports.getWXAccessToken(option, cb);
+        },
+        function(token, cb){
+            request('https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token='+token, cb);
+        },
+        function(resp, body){
+            var result = body;
+            if(typeof body == string){
+                try{ result = JSON.parse(body); } catch(e){ return callback({rtn:config.errorCode.serviceError, message:'invalid response '+body}); }
+            }
+            if(result.errcode > 0){
+                return callback({rtn:config.errorCode.serviceError, message:result.errmsg})
+            }
+            cb(null, result.ip_list);//return the array
+        }
+    ], callback);
+
+
+};
+
 exports.getJSAPIConfig = function(option, url, callback){
 
     if(typeof arguments[arguments.length-1] != 'function'){
@@ -101,6 +130,36 @@ exports.getJSAPIConfig = function(option, url, callback){
     ], callback);
 
 
+};
+
+
+exports.getQRCodeForLawyer = function(lawyerId, callback){
+    if(typeof arguments[arguments.length-1] != 'function'){
+        throw new Error('invalid callback');
+    }
+
+    var mongodb = require('../clients/mongo.js');
+    var lawyers = mongodb.lawyer();
+    var generatedSceneId;
+
+    async.waterfall([
+        function(cb){
+            lawyers.findOne({_id:ObjectID(lawyerId), status:config.lawyerStatus.raw})
+        },
+        function(lawyer, cb){
+            if(!lawyer) return callback('invalid lawyer status or no such lawyer id');
+
+            redis.client.incr(config.redisKey.QRSceneGenerator, cb);
+        },
+        function(sceneId, cb){
+            generatedSceneId = (sceneId + 1) % config.maxQRScene;
+            redis.client.set(config.redisKey.QRSceneId+generatedSceneId, lawyerId, cb);
+        },
+        function(result, cb){
+            exports.getQRCode(config.optionsLawyer, generatedSceneId, cb);
+        }
+
+    ], callback);
 };
 
 

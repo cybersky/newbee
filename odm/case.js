@@ -8,26 +8,33 @@ var locale = require('../profile/locales.js');
 var mongo = require('../clients/mongo.js');
 var ObjectID = require('mongodb').ObjectID;
 var _ = require('underscore');
+var uuid = require('node-uuid');
 
+var assertModifyMany = function(cb, count){
+    return function(err, result){
+        if(err) return cb(err);
+        cb( result && result.modifiedCount == count ? null : 'Not All Modified' );
+    }
+};
 
 var assertModifyOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        cb( result && result.nModified == 1 ? null : 'Not Modified' );
+        cb( result && result.modifiedCount == 1 ? null : 'Not Modified' );
     }
 };
 
 var assertMatchOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        cb( result && result.nMatched == 1 ? null : 'Not Matched' );
+        cb( result && result.matchedCount == 1 ? null : 'Not Matched' );
     }
 };
 
 var assertUpsertOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        result && result.nUpserted == 1 ? cb(null, result.upsertedId.toString()) : cb('Not Upserted');
+        result && result.upsertedCount == 1 ? cb(null, result.upsertedId.toString()) : cb('Not Upserted');
     }
 };
 
@@ -35,7 +42,7 @@ var assertUpsertOne = function(cb){
 var assertInsertOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        result && result.nInserted == 1 ? cb(null, result.insertedId.toString()) : cb('Not Inserted');
+        result && result.insertedCount == 1 ? cb(null, result.insertedId.toString()) : cb('Not Inserted');
     };
 };
 
@@ -59,17 +66,30 @@ exports.createCase = function(userCase){
     if (userCase.price1 && userCase.price2)
         return callback({rtn: config.errorCode.paramError, message: locale.eitherPrice});
 
-    if (userCase.price1 && isNaN(Number(userCase.price1)))
-        return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    if (userCase.price1){
+        userCase.price1 = Number(userCase.price1);
+        if(isNaN(userCase.price1))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
 
-    if (userCase.price2 && !isNaN(Number(userCase.price2)) && ( Number(userCase.price2) < 0 || Number(userCase.price2) > 100) )
-        return callback({rtn: config.errorCode.paramError, message: locale.price2FormatError});
+    if (userCase.price2 ){
+        userCase.price2 = Number(userCase.price2);
+        if(isNaN(userCase.price2) || userCase.price2 < 0 || userCase.price2 > 100)
+            return callback({rtn: config.errorCode.paramError, message: locale.price2FormatError});
+    }
 
-    if (userCase.lon && isNaN(Number(userCase.lon)))
-        return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    if (userCase.lon){
+        userCase.lon = Number(userCase.lon);
+        if(isNaN(userCase.lon))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
 
-    if (userCase.lat && isNaN(Number(userCase.lat)))
-        return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    if (userCase.lat){
+        userCase.lat = Number(userCase.lat);
+        if(isNaN(userCase.lat))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
+
 
     if(!userCase.userOpenId){
         return callback({rtn: config.errorCode.paramError, message: locale.wxOpenIdError});
@@ -93,7 +113,7 @@ exports.createCase = function(userCase){
     caseCollection.insertOne(userCase, assertInsertOne(callback));
 };
 
-exports.updateCaseByQuery = function(query, caseDoc){
+exports.updateOneCaseByQuery = function(query, caseDoc){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
@@ -112,22 +132,36 @@ exports.updateCaseByQuery = function(query, caseDoc){
     if (caseDoc.price1 && caseDoc.price2)
         return callback({rtn: config.errorCode.paramError, message: locale.eitherPrice});
 
-    if (caseDoc.price1 && isNaN(Number(caseDoc.price1)))
-        return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
 
-    if (caseDoc.price2 && !isNaN(Number(caseDoc.price2)) && ( Number(caseDoc.price2) < 0 || Number(caseDoc.price2) > 100) )
-        return callback({rtn: config.errorCode.paramError, message: locale.price2FormatError});
+    if (caseDoc.price1){
+        caseDoc.price1 = Number(caseDoc.price1);
+        if(isNaN(caseDoc.price1))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
 
-    if (caseDoc.lon && isNaN(Number(caseDoc.lon)))
-        return callback({rtn: config.errorCode.paramError, message: locale.lonFormatError});
+    if (caseDoc.price2 ){
+        caseDoc.price2 = Number(caseDoc.price2);
+        if(isNaN(caseDoc.price2) || caseDoc.price2 < 0 || caseDoc.price2 > 100)
+            return callback({rtn: config.errorCode.paramError, message: locale.price2FormatError});
+    }
 
-    if (caseDoc.lat && isNaN(Number(caseDoc.lat)))
-        return callback({rtn: config.errorCode.paramError, message: locale.latFormatError});
+    if (caseDoc.lon){
+        caseDoc.lon = Number(caseDoc.lon);
+        if(isNaN(caseDoc.lon))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
+
+    if (caseDoc.lat){
+        caseDoc.lat = Number(caseDoc.lat);
+        if(isNaN(caseDoc.lat))
+            return callback({rtn: config.errorCode.paramError, message: locale.price1FormatError});
+    }
+
 
     caseDoc.updatedAt = new Date();
     var caseCollection = mongo.case();
 
-    caseCollection.update(query, {$set:caseDoc}, callback);
+    caseCollection.updateOne(query, {$set:caseDoc}, callback);
 };
 
 exports.updateOneCase = function(caseId, caseDoc) {
@@ -135,7 +169,7 @@ exports.updateOneCase = function(caseId, caseDoc) {
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
     caseDoc.updatedAt = new Date();
-    exports.updateCaseByQuery({_id:new ObjectID(caseId)}, caseDoc, assertModifyOne(callback) );
+    exports.updateOneCaseByQuery({_id:new ObjectID(caseId)}, caseDoc, assertModifyOne(callback) );
 };
 
 
@@ -144,7 +178,7 @@ exports.updateOneCaseByUser = function(caseId, userOpenId, caseDoc){
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
     caseDoc.updatedAt = new Date();
-    exports.updateCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, assertModifyOne(callback));
+    exports.updateOneCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, assertModifyOne(callback));
 };
 
 exports.updateCaseStatusByLawyer = function(caseId, lawyerOpenId, status){
@@ -156,7 +190,7 @@ exports.updateCaseStatusByLawyer = function(caseId, lawyerOpenId, status){
     }
 
     caseDoc = {status:status, updatedAt: new Date()};
-    exports.updateCaseByQuery({_id:ObjectID(caseId), 'target.lawyerOpenId':lawyerOpenId}, caseDoc, assertModifyOne(callback));
+    exports.updateOneCaseByQuery({_id:ObjectID(caseId), 'target.lawyerOpenId':lawyerOpenId}, caseDoc, assertModifyOne(callback));
 };
 
 
@@ -165,7 +199,7 @@ exports.cancelCaseByUser = function(caseId, userOpenId){
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
     var caseDoc = {status:config.caseStatus.cancel.key, updatedAt: new Date()};
-    exports.updateCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, assertModifyOne(callback) );
+    exports.updateOneCaseByQuery({_id:new ObjectID(caseId), userOpenId:userOpenId}, caseDoc, assertModifyOne(callback) );
 };
 
 
@@ -382,4 +416,27 @@ exports.targetCaseByUser = function(caseId, bidId){
         }
     ], assertModifyOne(callback) );
 
+};
+
+
+
+exports.commentCase = function(caseId, comment, userInfo, userRole){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    var cases = mongo.case();
+
+    var commentObj = {text:comment, id:uuid.v1(), user:userInfo, role:userRole};
+    cases.updateOne({_id:ObjectID(caseId)}, {$push:{comments:commentObj}}, assertModifyOne(callback));
+};
+
+
+exports.batchOnline = function(caseIds){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    var cases = mongo.case();
+    var caseObjectIds = _.map(caseIds, caseId => ObjectID(caseId));
+
+    cases.updateMany({_id:{$in:caseObjectIds}, status:'raw'}, {$set:{status:'online'}}, assertModifyMany(callback, caseIds.length));
 };
