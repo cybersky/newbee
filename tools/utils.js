@@ -144,7 +144,7 @@ exports.getQRCodeForLawyer = function(lawyerId, callback){
 
     async.waterfall([
         function(cb){
-            lawyers.findOne({_id:ObjectID(lawyerId), status:config.lawyerStatus.raw})
+            lawyers.findOne({_id:ObjectID(lawyerId), status:config.lawyerStatus.raw}, cb);
         },
         function(lawyer, cb){
             if(!lawyer) return callback('invalid lawyer status or no such lawyer id');

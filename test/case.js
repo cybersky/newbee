@@ -287,7 +287,7 @@ var createUserCase = function(option, callback){
 
         request(option, assertBody(function(err, result){
             caseIds.push(result.data.id);
-            setTimeout(cb, _.random(200, 1000));
+            setTimeout(cb, _.random(500, 1500));
         }));
 
     }, callback);

@@ -185,7 +185,7 @@ var commentCase = function(req, res, next){
 var findLawyerCases = function (req, res, next) {
     var sort = 'updated', page = 0, pageLength = 10, sortDoc = {};
 
-    if (req.query.sort && ['updated', 'geo', 'price'].indexOf(req.query.sort) > 0) {
+    if (req.query.sort && ['updated', 'geo', 'price1', 'price2'].indexOf(req.query.sort) > 0) {
         sort = req.query.sort;
     }
 
@@ -220,8 +220,11 @@ var findLawyerCases = function (req, res, next) {
             };
             sortDoc = null;
             break;
-        case 'price':
+        case 'price1':
             sortDoc = {price1: -1, updatedAt: -1};
+            break;
+        case 'price2':
+            sortDoc = {price2: -1, updatedAt: -1};
             break;
     }
 
