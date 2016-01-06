@@ -5,6 +5,7 @@ var utils = require('../tools/utils');
 var config = require('../profile/config');
 var redis = require('../clients/redis.js');
 var mongodb = require('../clients/mongo.js');
+var ObjectID = require('mongodb').ObjectID;
 
 
 var handleMessage = function (req, res, type) {
