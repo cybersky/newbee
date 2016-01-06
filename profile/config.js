@@ -20,6 +20,14 @@ exports.cookieConfig = {
 		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
 	}
 };
+exports.lawyerSignUpToken = {
+    name: 'signToken',
+    privateKey: '!@#_{signupToken}-=asd21',
+    options: {
+        path: '/', expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true
+    }
+};
 exports.operatorCookie = {
 	name: 'opToken',
 	privateKey: '!@#_{operatorToken}-=321',

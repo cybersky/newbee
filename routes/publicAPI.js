@@ -20,6 +20,11 @@ validator.authId = function(id){
     return re.test(id);
 };
 
+
+var distributeSignUpToken = function(lawyerInfo, res , callback){
+    if(!lawyerInfo) return false;
+};
+
 var lawyerRegister = function(req, res, next){
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({rtn: 1, code: 1 , message: 'Missing lawyer id image'});
@@ -38,6 +43,7 @@ var lawyerRegister = function(req, res, next){
     lawyer.lawyerLocation   = _.trim(req.body['lawyerLocation']);
     lawyer.lawServiceArea   = _.trim(req.body['lawServiceArea']);
 
+    lawyer.status           = 'raw';//default
 
     var err = '';
     if(!lawyer.username) err			= '用户名不能为空';
@@ -85,6 +91,8 @@ var lawyerRegister = function(req, res, next){
         }
     ], function(err, docs){
         if(err) return res.send({rtn: 1, message: err});
+        var token = secure.md5(docs._id+config.lawyerSignUpToken.privateKey);
+        res.cookie(config.lawyerSignUpToken.name, String(Date.now())+':'+docs._id+':'+token, config.lawyerSignUpToken.options);
         res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });
 };
@@ -102,7 +110,7 @@ var updateLawyer = function(req, res, next){};
 var deleteLawyer = function(req, res, next){};
 
 
-var lawyerSignin = (req, res, next) => {
+var lawyerSignin = function(req, res, next){
     var email = req.body['email'] || '';
     var pass  = req.body['password'] || '';
 
@@ -110,27 +118,28 @@ var lawyerSignin = (req, res, next) => {
     if(!validator.isEmail(email)) return res.send({rtn: 1, code: 1, message:'Email format error'});
     if(!pass)  return res.send({rtn: 1, code: 1, message: 'Password can not be empty'});
 
-    async.waterfall([
-        (cb) => {
-            Lawyer.getLawyerByCondition({email: email}, cb);
-        },
-        (docs, cb) => {
-            if(!docs) return cb({rtn: 1, code: 1,notice:'emailNotice' ,message: 'The Email you typed do not matched'});
-            if(secure.sha1(pass, 'utf-8') != docs.password) {
-                return cb({rtn: 1, code: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
-            }
-            cb(null, docs);
+    Lawyer.getLawyerByCondition({email: email}, function(err, docs){
+        if(err) return res.send({rtn: 1, message: err});
+
+
+        if(docs.status == 'raw') {
+            var signUpToken = secure.md5(docs._id+config.lawyerSignUpToken.privateKey);
+            res.cookie(config.lawyerSignUpToken.name,
+                String(Date.now())+':'+docs._id+':'+signUpToken,
+                config.lawyerSignUpToken.options
+            );
+            return res.send({rtn: 0, message: 'ok', refer: '/up/subscribe'});
         }
-    ], (err, docs) => {
-        if(err) return res.send(err);
-        //login success and distributing the cookie
-        //var token = secure.md5(email+config.cookie.privateKey);
-        //String(Date.now())+':'+email+':'+docs._id+':'+token
+
+        if(!docs) return res.send({rtn: 1, code: 1,notice:'emailNotice' ,message: 'The Email you typed do not matched'});
+        if(secure.sha1(pass, 'utf-8') != docs.password) {
+            return res.send({rtn: 1, code: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
+        }
+
         var token = secure.md5(email+config.cookieConfig.privateKey);
         res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });
-
 };
 
 var handleLawyerVoiceCode = function(req, res, next){
@@ -154,6 +163,42 @@ var handleSMSCode = function(req, res, next){
 
 };
 
+var getQRCode = function(req, res, next){
+    var signUpToken = req.cookies[config.lawyerSignUpToken.name];
+    var arr = signUpToken.split(':');
+    var id = arr[1];
+
+    if(secure.md5(id+config.lawyerSignUpToken.privateKey) != arr[2])
+        return res.send({rtn: 1, message: 'illegal query'});
+
+    utils.getQRCodeForLawyer(id.toString(), function(err, lawyerQRCode){
+        if(err) return res.send({rtn: 1, message: err});
+        res.send({rtn: 0, message: '', data: lawyerQRCode});
+    });
+};
+
+var getLawyerStatus = function(req, res, next){
+    var signUpToken = req.cookies[config.lawyerSignUpToken.name];
+    var arr = signUpToken.split(':');
+    var id = arr[1];
+
+    if(secure.md5(id+config.lawyerSignUpToken.privateKey) != arr[2])
+        return res.send({rtn: 1, message: 'illegal query'});
+
+    Lawyer.getOneLawyer(id, function(err, doc){
+        if(err) return res.send({rtn: 1, message: err});
+        res.send({rtn: 0, message: '', status: doc.status});
+    });
+};
+
+var clearSignUpToken = function(req, res, next){
+    res.clearCookie(config.lawyerSignUpToken.name);
+    return res.send({rtn:0, message: 'ok'});
+};
+router.get('/lawyer/clearsignup', clearSignUpToken);
+
+router.get('/lawyer/status', getLawyerStatus);
+router.get('/lawyer/qrcode', getQRCode);
 
 //router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
@@ -205,7 +250,6 @@ var createTestUser = function(role){
 
 router.get('/givemeauser', createTestUser('users'));
 router.get('/givemealawyer', createTestUser('lawyers'));
-
 
 //the error handler
 router.use(function(err, req, res, next){
