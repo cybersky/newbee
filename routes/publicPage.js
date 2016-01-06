@@ -6,6 +6,7 @@ var express = require('express');
 var router = express.Router();
 var config  = require('../profile/config');
 var auth    = require('../middleware/auth');
+var Lawyer  = require('../odm/lawyer');
 
 var lawyerSignup = function(req, res, next){
     return res.render('lawyer/signup', {options: {}, services: config.userCaseType});
@@ -24,8 +25,7 @@ var lawyerSignOut = function(req, res, next){
 };
 
 var subscribe = function(req, res, next){
-    var id = req.query['id'];
-    return res.render('lawyer/subscribe', {id: id || ''});
+    return res.render('lawyer/subscribe');
 };
 
 router.get('/subscribe', subscribe);
@@ -43,7 +43,19 @@ router.get('/signout', lawyerSignOut);
 
 
 router.get('/', function(req, res, next){
-    return res.render('index');
+    var cookie = req.cookies[config.cookieConfig.name];
+    if(cookie){
+        var arr = cookie.split(':');
+        var id = arr[2];
+        Lawyer.getOneLawyer(id, function(err, doc){
+            if(err) {
+                return res.render('index', {lawyerInfo: err});
+            }
+            return res.render('index', {lawyerInfo: doc});
+        });
+    }else{
+        return res.render('index');
+    }
 });
 
 module.exports = router;
