@@ -13,7 +13,7 @@ var lawyerSignup = function(req, res, next){
 };
 
 var lawyerSignin = function(req, res, next){
-    if(req.cookies[config.lawyerSignUpToken.name])
+    if(req.signedCookies[config.cookieConfig.name])
         return res.redirect('/up/subscribe');
 
     return res.render('lawyer/signin', {options: {}});
@@ -25,7 +25,9 @@ var lawyerSignOut = function(req, res, next){
 };
 
 var subscribe = function(req, res, next){
-    return res.render('lawyer/subscribe');
+    Lawyer.getOneLawyer(req.signedCookies[config.cookieConfig.name], function(err, doc){
+        return res.render('lawyer/subscribe', {lawyerInfo: doc});
+    });
 };
 
 router.get('/subscribe', subscribe);
@@ -43,14 +45,10 @@ router.get('/signout', lawyerSignOut);
 
 
 router.get('/', function(req, res, next){
-    var cookie = req.cookies[config.cookieConfig.name];
+    var cookie = req.signedCookies[config.cookieConfig.name];
     if(cookie){
-        var arr = cookie.split(':');
-        var id = arr[2];
-        Lawyer.getOneLawyer(id, function(err, doc){
-            if(err) {
-                return res.render('index', {lawyerInfo: err});
-            }
+        Lawyer.getOneLawyer(cookie, function(err, doc){
+            if(doc.status == 'raw') return res.redirect('/up/subscribe');
             return res.render('index', {lawyerInfo: doc});
         });
     }else{

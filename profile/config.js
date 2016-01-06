@@ -17,7 +17,7 @@ exports.cookieConfig = {
 	privateKey: '123_[newBeeToken]-!@#',
 	options: {
 		path: '/', expires: Date.now() + 1000 * 60 * 60 * 24 * 30,
-		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
+		maxAge: 30 * 24 * 60 * 60 * 1000, signed: true
 	}
 };
 exports.lawyerSignUpToken = {

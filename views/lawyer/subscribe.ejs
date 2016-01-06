@@ -7,11 +7,17 @@
 <script type="application/javascript">
     $(function(){
         var url = '/ua/lawyer/qrcode';
+        var div = document.getElementById('qrCode');
         $.get(url, function(result){
-            var img = document.createElement('img');
-            img.src = result.data;
-            var div = document.getElementById('qrCode');
-            div.appendChild(img);
+            if(result.rtn == 0){
+                var img = document.createElement('img');
+                img.src = result.data;
+                return div.appendChild(img);
+            }
+
+            var p = document.createElement('h2');
+            p.innerHTML = 'Error:' + result.message;
+            return div.appendChild(p);
         });
     });
 
@@ -20,9 +26,7 @@
 
         $.get(url, function(result){
             if(result.status == 'subscribe'){
-                clearInterval(setId);
-                $.get('/ua/lawyer/clearsignup', console.log);
-                window.location.href = '/up/signin';
+                return window.location.href = '/';
             }
         });
     }

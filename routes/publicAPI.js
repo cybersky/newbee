@@ -20,11 +20,6 @@ validator.authId = function(id){
     return re.test(id);
 };
 
-
-var distributeSignUpToken = function(lawyerInfo, res , callback){
-    if(!lawyerInfo) return false;
-};
-
 var lawyerRegister = function(req, res, next){
     var files = req.files || {};
     if(!files['lawyerIdImage']) return res.send({rtn: 1, code: 1 , message: 'Missing lawyer id image'});
@@ -91,24 +86,10 @@ var lawyerRegister = function(req, res, next){
         }
     ], function(err, docs){
         if(err) return res.send({rtn: 1, message: err});
-        var token = secure.md5(docs._id+config.lawyerSignUpToken.privateKey);
-        res.cookie(config.lawyerSignUpToken.name, String(Date.now())+':'+docs._id+':'+token, config.lawyerSignUpToken.options);
+        res.cookie(config.cookieConfig.name, docs._id, config.cookieConfig.options);
         res.send({rtn: 0, code:0, message:'Create Lawyer successful', data: docs});
     });
 };
-
-var getOneLawyer = function(req, res, next){
-    var LawyerId = _.trim(req.params['lawyerId']) || '';
-    if(!LawyerId) return res.send({rtn: 1, message:'Missing param LawyerId'});
-
-    Lawyer.getOneLawyer(LawyerId, function(err, docs){
-        if(err) return res.send({rtn: 1, message:err});
-        res.send({rtn: 0, message: '', data: docs});
-    });
-};
-var updateLawyer = function(req, res, next){};
-var deleteLawyer = function(req, res, next){};
-
 
 var lawyerSignin = function(req, res, next){
     var email = req.body['email'] || '';
@@ -123,11 +104,7 @@ var lawyerSignin = function(req, res, next){
 
 
         if(docs.status == 'raw') {
-            var signUpToken = secure.md5(docs._id+config.lawyerSignUpToken.privateKey);
-            res.cookie(config.lawyerSignUpToken.name,
-                String(Date.now())+':'+docs._id+':'+signUpToken,
-                config.lawyerSignUpToken.options
-            );
+            res.cookie(config.cookieConfig.name, docs._id, config.cookieConfig.options);
             return res.send({rtn: 0, message: 'ok', refer: '/up/subscribe'});
         }
 
@@ -136,8 +113,7 @@ var lawyerSignin = function(req, res, next){
             return res.send({rtn: 1, code: 1, notice: 'passwordNotice', message: 'The password you typed do not matched, Please try again'});
         }
 
-        var token = secure.md5(email+config.cookieConfig.privateKey);
-        res.cookie(config.cookieConfig.name, String(Date.now())+':'+email+':'+docs._id+':'+token, config.cookieConfig.options);
+        res.cookie(config.cookieConfig.name,  docs._id, config.cookieConfig.options);
         return res.send({ rtn: 0, message: 'OK', refer: '/'});
     });
 };
@@ -164,12 +140,8 @@ var handleSMSCode = function(req, res, next){
 };
 
 var getQRCode = function(req, res, next){
-    var signUpToken = req.cookies[config.lawyerSignUpToken.name];
-    var arr = signUpToken.split(':');
-    var id = arr[1];
-
-    if(secure.md5(id+config.lawyerSignUpToken.privateKey) != arr[2])
-        return res.send({rtn: 1, message: 'illegal query'});
+    var id = req.signedCookies[config.cookieConfig.name];
+    if(!id) return res.send({rtn: 1, message:'access deny'});
 
     utils.getQRCodeForLawyer(id.toString(), function(err, lawyerQRCode){
         if(err) return res.send({rtn: 1, message: err});
@@ -177,13 +149,21 @@ var getQRCode = function(req, res, next){
     });
 };
 
-var getLawyerStatus = function(req, res, next){
-    var signUpToken = req.cookies[config.lawyerSignUpToken.name];
-    var arr = signUpToken.split(':');
-    var id = arr[1];
 
-    if(secure.md5(id+config.lawyerSignUpToken.privateKey) != arr[2])
-        return res.send({rtn: 1, message: 'illegal query'});
+var getOneLawyer = function(req, res, next){
+    var LawyerId = _.trim(req.params['lawyerId']) || '';
+    if(!LawyerId) return res.send({rtn: 1, message:'Missing param LawyerId'});
+
+    Lawyer.getOneLawyer(LawyerId, function(err, docs){
+        if(err) return res.send({rtn: 1, message:err});
+        res.send({rtn: 0, message: '', data: docs});
+    });
+};
+
+
+var getLawyerStatus = function(req, res, next){
+    var id = req.signedCookies[config.cookieConfig.name];
+    if(!id) return res.send({rtn: 1, message:'access deny'});
 
     Lawyer.getOneLawyer(id, function(err, doc){
         if(err) return res.send({rtn: 1, message: err});
@@ -191,19 +171,11 @@ var getLawyerStatus = function(req, res, next){
     });
 };
 
-var clearSignUpToken = function(req, res, next){
-    res.clearCookie(config.lawyerSignUpToken.name);
-    return res.send({rtn:0, message: 'ok'});
-};
-router.get('/lawyer/clearsignup', clearSignUpToken);
-
 router.get('/lawyer/status', getLawyerStatus);
 router.get('/lawyer/qrcode', getQRCode);
 
 //router.get('/lawyer', getLawyers);
 router.get('/lawyer/:lawyerId', getOneLawyer);
-router.put('/lawyer/:lawyerId', updateLawyer);
-router.delete('/lawyer/:lawyerId', deleteLawyer);
 router.post('/lawyer/voicecode', handleLawyerVoiceCode);
 
 router.post('/signin', lawyerSignin);
