@@ -5,6 +5,7 @@ var utils = require('../tools/utils');
 var config = require('../profile/config');
 var redis = require('../clients/redis.js');
 var mongodb = require('../clients/mongo.js');
+var ObjectID = require('mongodb').ObjectID;
 
 
 var handleMessage = function (req, res, type) {
@@ -79,11 +80,11 @@ var activateQRSceneCode4Lawyer = function (sceneId, obj, res) {
 };
 
 
-var handleSubscribeEvent = function(sceneId, type, obj, res){
+var handleSubscribeEvent = function(eventKey, type, obj, res){
 
     switch (type){
         case 'lawyer':
-            //eventKey = qrscene_123123
+            //eventKey = qrscene_123123 qrscene_3
             if ( eventKey && eventKey.indexOf('qrscene_') == 0) {
                 var qrSceneId = Number(eventKey.substr('qrscene_'.length));
                 if( isNaN(qrSceneId) ) return console.error('invalid sceneId', eventKey);
@@ -105,12 +106,13 @@ var handleLocationEvent = function(obj, type){
     var lat = obj.Latitude;
     var lon = obj.Longitude;
     var p = obj.Precision;
+    var openId = obj.FromUserName;
 
     var rk = ['location', type, openId].join(":");
     var val = JSON.stringify({lat: lat, lon: lon, p: p});
     //console.log('update', openId, 'location', lat, lon, p);
     redis.client.set(rk, val, function (err, result) {
-        console.log('update', obj.FromUserName, 'location', lat, lon, p, err, result);
+        console.log('update', openId, 'location', lat, lon, p, err, result);
     });
 };
 
