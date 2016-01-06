@@ -79,11 +79,11 @@ var activateQRSceneCode4Lawyer = function (sceneId, obj, res) {
 };
 
 
-var handleSubscribeEvent = function(sceneId, type, obj, res){
+var handleSubscribeEvent = function(eventKey, type, obj, res){
 
     switch (type){
         case 'lawyer':
-            //eventKey = qrscene_123123
+            //eventKey = qrscene_123123 qrscene_3
             if ( eventKey && eventKey.indexOf('qrscene_') == 0) {
                 var qrSceneId = Number(eventKey.substr('qrscene_'.length));
                 if( isNaN(qrSceneId) ) return console.error('invalid sceneId', eventKey);

@@ -183,7 +183,15 @@ var commentCase = function(req, res, next){
 
 
 var findLawyerCases = function (req, res, next) {
-    var sort = 'updated', page = 0, pageLength = 10, sortDoc = {};
+    var sort = 'updated', page = 0, pageLength = 10, sortDoc = {}, caseType, serviceType;
+
+    if( req.query.caseType && _.pluck(config.userCaseType, 'name').indexOf(req.query.caseType) >= 0){
+        caseType = req.query.caseType;
+    }
+
+    if( req.query.serviceType && _.pluck(config.userServiceType, 'name').indexOf(req.query.serviceType) >= 0){
+        serviceType = req.query.serviceType;
+    }
 
     if (req.query.sort && ['updated', 'geo', 'price1', 'price2'].indexOf(req.query.sort) > 0) {
         sort = req.query.sort;
@@ -204,6 +212,9 @@ var findLawyerCases = function (req, res, next) {
 
     var query = {status: {$in: [config.caseStatus.online.key, config.caseStatus.bid.key]}};
 
+    if(caseType) query['caseType'] = caseType;
+    if(serviceType) query['serviceType'] = serviceType;
+
     switch (sort) {
         case 'updated':
             sortDoc = {updatedAt: -1, price1: -1};
@@ -215,10 +226,11 @@ var findLawyerCases = function (req, res, next) {
                         type: "Point",
                         coordinates: [Number(req.query.lon), Number(req.query.lat)]
                     },
-                    $maxDistance: 10 * 1000
+                    $maxDistance: 1000 * 1000,
+                    $minDistance: 0
                 }
             };
-            sortDoc = null;
+            sortDoc = {};//$near automatically sort by distance
             break;
         case 'price1':
             sortDoc = {price1: -1, updatedAt: -1};
