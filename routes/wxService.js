@@ -106,12 +106,13 @@ var handleLocationEvent = function(obj, type){
     var lat = obj.Latitude;
     var lon = obj.Longitude;
     var p = obj.Precision;
+    var openId = obj.FromUserName;
 
     var rk = ['location', type, openId].join(":");
     var val = JSON.stringify({lat: lat, lon: lon, p: p});
     //console.log('update', openId, 'location', lat, lon, p);
     redis.client.set(rk, val, function (err, result) {
-        console.log('update', obj.FromUserName, 'location', lat, lon, p, err, result);
+        console.log('update', openId, 'location', lat, lon, p, err, result);
     });
 };
 
