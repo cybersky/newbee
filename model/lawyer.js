@@ -22,7 +22,7 @@ var lawyerSchema = exports.LawyerSchema = new Schema({
 	lawyerIdFilename: { type: String },//lawyer id image name
 	lawyerLocation: {type: String },
 	lawServiceArea: {type: String },
-	status: {type: String, default: 'raw'},
+	status: {type: String},
     message: {type: String },
 	createAt: {type: Date},
 	updateAt: {type: Date},

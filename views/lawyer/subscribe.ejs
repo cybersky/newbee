@@ -1,0 +1,32 @@
+<% include ./fragments/header.ejs %>
+
+<div id="qrCode" class="thumbnail">
+
+</div>
+
+<script type="application/javascript">
+    var id = <%- JSON.stringify(id)%>;
+    $(function(){
+        var url = '/ua/lawyer/qrcode';
+        $.get(url, function(result){
+            var img = document.createElement('img');
+            img.src = result.data;
+            var div = document.getElementById('qrCode');
+            div.appendChild(img);
+        });
+    });
+
+    var getStatus = function(){
+        var url = '/ua/lawyer/status';
+
+        $.get(url, function(result){
+            if(result.status == 'subscribe'){
+                clearInterval(setId);
+                $.get('/ua/lawyer/clearsignup', console.log);
+                window.location.href = '/up/signin';
+            }
+        });
+    }
+    var setId = setInterval(getStatus, 1000 * 3);
+</script>
+<% include ./fragments/footer.ejs %>

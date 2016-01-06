@@ -7,19 +7,28 @@ var router = express.Router();
 var config  = require('../profile/config');
 var auth    = require('../middleware/auth');
 
-var lawyerSignup = (req, res, next) => {
-    return res.render('lawyer/signup', {options: {}});
+var lawyerSignup = function(req, res, next){
+    return res.render('lawyer/signup', {options: {}, services: config.userCaseType});
 };
 
-var lawyerSignin = (req, res, next) => {
+var lawyerSignin = function(req, res, next){
+    if(req.cookies[config.lawyerSignUpToken.name])
+        return res.redirect('/up/subscribe');
+
     return res.render('lawyer/signin', {options: {}});
 };
 
-var lawyerSignOut = (req, res, next) => {
+var lawyerSignOut = function(req, res, next){
     res.clearCookie(config.cookieConfig.name, {path: config.cookieConfig.options.path});
     return res.redirect('/');
 };
 
+var subscribe = function(req, res, next){
+    var id = req.query['id'];
+    return res.render('lawyer/subscribe', {id: id || ''});
+};
+
+router.get('/subscribe', subscribe);
 //lawyers register
 router.get('/signup', lawyerSignup);
 
@@ -33,7 +42,7 @@ router.get('/signin', function(req, res, next){
 router.get('/signout', lawyerSignOut);
 
 
-router.get('/', (req, res, next) => {
+router.get('/', function(req, res, next){
     return res.render('index');
 });
 

@@ -4,6 +4,7 @@ var request = require('request');
 var config = require('../profile/config');
 var m = require('moment');
 var secure = require('../tools/secret');
+var ObjectID = require('mongodb').ObjectID;
 
 
 exports.createURL = function (urlPattern, options) {
@@ -144,7 +145,7 @@ exports.getQRCodeForLawyer = function(lawyerId, callback){
 
     async.waterfall([
         function(cb){
-            lawyers.findOne({_id:ObjectID(lawyerId), status:config.lawyerStatus.raw}, cb);
+            lawyers.findOne({_id:ObjectID(lawyerId), status:config.lawyerStatus.raw.key}, cb);
         },
         function(lawyer, cb){
             if(!lawyer) return callback('invalid lawyer status or no such lawyer id');

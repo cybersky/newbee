@@ -69,9 +69,13 @@
 
 			<div class="form-group">
 				<label for="lawServiceArea" class="control-label col-sm-4">法律擅长领域</label>
-				<div class="col-sm-4">
-					<input type="text" id="lawServiceArea" name="lawServiceArea" class="form-control">
-				</div>
+                <div class="col-sm-4">
+                    <select id="lawServiceArea" class="form-control">
+                        <%for(var i=0; i< services.length; i++){%>
+                        <option value="<%=services[i].label%>"><%=services[i].label%></option>
+                        <%}%>
+                    </select>
+                </div>
 			</div>
 
 			<div class="form-group">
@@ -164,7 +168,7 @@
 
 			var err = (res.code || res.rtn) && (res.code > 0 || res.rtn > 0) ? true : false;
 			if (this.status == 200 && !err) {
-				return successTip({code: 0, message: '注册成功'}, 1000 * 2, true);
+				return successTip({code: 0, message: '注册成功, 跳转至扫描二维码订阅'}, 1000 * 2, true, '/up/subscribe?id='+res.data._id);
 				//return self.clearInput(['title', 'description', 'image', 'start', 'end']);
 			}
 			return errorTip(this.responseXML || this.responseText);
