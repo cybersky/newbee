@@ -54,11 +54,11 @@ var getLawyers  = function(req, res, next){
     var ct = '';
     async.waterfall([
         function(cb){
-            Lawyer.lawyerCount({status: config.lawyerStatus.raw.key},cb);
+            Lawyer.lawyerCount({status: config.lawyerStatus.subscribe.key},cb);
         },
         function(count, cb){
             ct = count;
-            Lawyer.getLawyers(start, rows, {status: config.lawyerStatus.raw.key}, cb);
+            Lawyer.getLawyers(start, rows, {status: config.lawyerStatus.subscribe.key}, cb);
         }
     ], function(err, docs){
         if(err) return res.send(err);
