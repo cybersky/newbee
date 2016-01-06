@@ -228,6 +228,10 @@ var getCases = function(req, res, next){
 
     return Case.getCaseByStatus(config.caseStatus.raw.key, {skin: start, limit: rows}, function(err, cases){
         if(err) return res.send({rtn: 1, message: err});
+        for(var i = 0, len = cases.length; i < len; i++){
+            cases[i].caseType = _.findWhere(config.userCaseType, {name: cases[i].caseType}).label;
+            cases[i].serviceType = _.findWhere(config.userServiceType, {name: cases[i].serviceType}).label;
+        }
         return res.send({rtn: 0, message: 'ok', data: cases});
     });
 };
