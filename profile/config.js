@@ -7,7 +7,7 @@ exports.switchPhoneVerifyCodeOff = false;
 exports.openTestAPI = false;
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
-exports.getMongoUri = () => {
+exports.getMongoUri = function(){
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
 
