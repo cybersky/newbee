@@ -47,8 +47,9 @@ MongoClient.connect(uri, function(err, db) {
     cases.createIndex({'location':'2dsphere'}, {});
 
     var bids = newbeeDB.collection('bids');
-    cases.createIndex({lawyerOpenId:1}, {background:true});
-    cases.createIndex({caseId:1}, {background:true});
+    bids.createIndex({lawyerOpenId:1}, {background:true});
+    bids.createIndex({caseId:1}, {background:true});
+    bids.createIndex({caseId:1, lawyerOpenId:1}, {background:true, unique:true, sparse:false});
 });
 
 

@@ -70,10 +70,16 @@ var createCase = function (req, res, next) {
 
     async.waterfall([
         function (cb) {
-            if (userCase.lon && userCase.lat && !isNaN(Number(userCase.lon)) && !isNaN(Number(userCase.lat)) ){
-                return cb(null, {lon: Number(userCase.lon), lat: Number(userCase.lat) });
+            if(userCase.lon && userCase.lat){
+
+                userCase.lon = Number(userCase.lon);
+                userCase.lat = Number(userCase.lat);
+
+                if(!isNaN(userCase.lon) && !isNaN(userCase.lat) ){
+                    return cb(null, {lon: userCase.lon, lat: userCase.lat });
+                }
             }
-            utils.getLocation(openId, 'user', cb);
+            utils.getLocation(req.wxOpenId, 'user', cb);
         },
         function (loc, cb) {
             if (loc && loc.lon && loc.lat) {
@@ -117,7 +123,7 @@ var updateCaseByUser = function (req, res, next) {
     var userCase = _.pick(req.body, ['caseType', 'serviceType', 'caseDesc', 'caseTarget', 'price1', 'price2']);
 
 
-    caseModel.updateOneCaseByUser(caseId, openId, userCase, function (err, result) {
+    caseModel.updateOneCaseByUser(caseId, openId, userCase, function (err) {
         if (err) return next(err);
         res.send({rtn: 0});
 
@@ -297,6 +303,16 @@ var deleteBid = function(req, res, next){
 };
 
 
+var getOneCaseForLawyer = function(req, res, next){
+    var caseId = req.params.caseId;
+
+    caseModel.getOneCase(caseId, function(err, value){
+        if(err) return next(err);
+        res.send({rtn:0, data:value});
+    });
+};
+
+
 var updateCaseByLawyer = function(req, res, next){
 
     var openId = req.wxOpenId;
@@ -307,7 +323,7 @@ var updateCaseByLawyer = function(req, res, next){
         return callback({rtn:config.errorCode.paramError, message:'invalid status'});
     }
 
-    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function(){
+    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function(err){
         if(err) return next(err);
         res.send({rtn:0});
 
@@ -369,6 +385,8 @@ router.delete('/ly/bids/:bidId', deleteBid);
 
 router.post('/ly/:caseId/:bidId', updateBid);
 
+router.get('/ly/cases/:caseId', getOneCaseForLawyer);
+
 router.post('/ly/cases/:caseId/status', updateCaseByLawyer);
 
 router.get('/ly/bids', getLawyerBidCases);
@@ -383,9 +401,7 @@ router.get('/ly/jsconfig', getJSSDKConfig(config.optionsLawyer));
 
 //the error handler
 router.use(function (err, req, res, next) {
-    console.error('private api error:', err);
-    console.error('message', err.message);
-    console.error('stack', err.stack);
+    console.error('Error: api', req.path, 'error:', err, 'message:', err.message, 'stack:', err.stack);
     res.send({rtn: err.rtn || config.errorCode.unknownError, message: err.message || err.toString()});
 });
 

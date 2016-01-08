@@ -153,7 +153,7 @@ exports.getQRCodeForLawyer = function(lawyerId, callback){
             redis.client.incr(config.redisKey.QRSceneGenerator, cb);
         },
         function(sceneId, cb){
-            generatedSceneId = (sceneId + 1) % config.maxQRScene;
+            generatedSceneId = sceneId % config.maxQRScene + 1;
             redis.client.set(config.redisKey.QRSceneId+generatedSceneId, lawyerId, cb);
         },
         function(result, cb){
@@ -259,7 +259,7 @@ exports.getLocation = function (openId, type, cb) {
             try {
                 cb(null, JSON.parse(result));
             } catch (ex) {
-                return cb(new Error('error parse loc:' + result));
+                return cb(null, null);
             }
         }
     );

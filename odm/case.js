@@ -9,32 +9,33 @@ var mongo = require('../clients/mongo.js');
 var ObjectID = require('mongodb').ObjectID;
 var _ = require('underscore');
 var uuid = require('node-uuid');
+var async = require('async');
 
 var assertModifyMany = function(cb, count){
     return function(err, result){
         if(err) return cb(err);
-        cb( result && result.modifiedCount == count ? null : 'Not All Modified' );
+        cb( result && result.modifiedCount == count ? null : 'Not All Modified, Expect:' + count + 'Actual:' + result.modifiedCount + ' MatchedCount:' + result.matchedCount  );
     }
 };
 
 var assertModifyOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        cb( result && result.modifiedCount == 1 ? null : 'Not Modified' );
+        cb( result && result.modifiedCount == 1 ? null : 'Not Modified, Expect:1 Actual:' + result.modifiedCount + ' MatchedCount:' + result.matchedCount );
     }
 };
 
 var assertMatchOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        cb( result && result.matchedCount == 1 ? null : 'Not Matched' );
+        cb( result && result.matchedCount == 1 ? null : 'Not Matched, Expect:1 Actual:' + result.matchedCount  + ' MatchedCount:' + result.matchedCount);
     }
 };
 
 var assertUpsertOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        result && result.upsertedCount == 1 ? cb(null, result.upsertedId.toString()) : cb('Not Upserted');
+        result && result.upsertedCount == 1 ? cb(null, result.upsertedId.toString()) : cb('Not Upserted, Expect:1 Actual:' + result.upsertedCount);
     }
 };
 
@@ -42,9 +43,10 @@ var assertUpsertOne = function(cb){
 var assertInsertOne = function(cb){
     return function(err, result){
         if(err) return cb(err);
-        result && result.insertedCount == 1 ? cb(null, result.insertedId.toString()) : cb('Not Inserted');
+        result && result.insertedCount == 1 ? cb(null, result.insertedId.toString()) : cb('Not Inserted, Expect:1 Actual:' + result.insertedCount);
     };
 };
+
 
 exports.createCase = function(userCase){
 
@@ -96,6 +98,8 @@ exports.createCase = function(userCase){
     }
 
     userCase.status = config.caseStatus.raw.key;
+    userCase.bidCount = 0;
+    userCase.bids = [];
     userCase.createdAt = new Date();
     userCase.updatedAt = new Date();
 
@@ -189,7 +193,7 @@ exports.updateCaseStatusByLawyer = function(caseId, lawyerOpenId, status){
         return callback({rtn:config.errorCode.paramError, message:'invalid status'});
     }
 
-    caseDoc = {status:status, updatedAt: new Date()};
+    var caseDoc = {status:status, updatedAt: new Date()};
     exports.updateOneCaseByQuery({_id:ObjectID(caseId), 'target.lawyerOpenId':lawyerOpenId}, caseDoc, assertModifyOne(callback));
 };
 
@@ -262,12 +266,21 @@ exports.getCase = function(query, option){
 };
 
 
+exports.getOneCase = function(caseId){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    var caseCollection = mongo.case();
+
+    caseCollection.findOne({_id:ObjectID(caseId)}, callback);
+};
+
+
 exports.syncCaseBids = function(caseId){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function'){
-        callback = function(err, result){
+        callback = function(err){
             if(err) return console.error('sync case bids error', err);
-            console.log('sync case ok', caseId, 'nMatched', result.nMatched, 'nModified', result.nModified);
         };
     }
 
@@ -279,7 +292,9 @@ exports.syncCaseBids = function(caseId){
             bids.find({caseId:caseId}).sort({updatedAt:-1}).toArray(cb);
         },
         function(list, cb){
-            cases.update({_id:new ObjectID(caseId)}, {$set:{bids:list}}, assertModifyOne(cb));
+            cases.updateOne({_id:new ObjectID(caseId)}, {$set:{bids:list}}, assertModifyOne(function(err){
+                cb(err);
+            }));
         }
     ], callback);
 };
@@ -291,9 +306,9 @@ exports.bidCase = function(caseId, bidDoc){
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
     if(!bidDoc.lawyerOpenId) return callback({rtn:config.errorCode.paramError, message:'lawyerOpenId required'});
-    if(!bidDoc.lyInfo) return callback({rtn:config.errorCode.paramError, message:'lawyer info required'});
+    if(!bidDoc.lawyerInfo) return callback({rtn:config.errorCode.paramError, message:'lawyer info required'});
 
-    if(!bidDoc.price1 || !bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.noBidPrice});
+    if(!bidDoc.price1 && !bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.noBidPrice});
     if(bidDoc.price1 && bidDoc.price2) return callback({rtn:config.errorCode.paramError, message:locale.eitherBidPrice});
 
     var cases = mongo.case();
@@ -313,10 +328,10 @@ exports.bidCase = function(caseId, bidDoc){
                 return cb({rtn:config.errorCode.paramError, message:'案件已经结束投标'+caseId});
             }
 
-            bids.find({caseId:caseId, lawyerOpenId:bidDoc.lawyerOpenId}, cb);
+            bids.findOne({caseId:caseId, lawyerOpenId:bidDoc.lawyerOpenId}, cb);
         },
         function(bid, cb){
-            if(bid) return cb({rtn:config.errorCode.paramError, message:'重复投标'});
+            if(bid) return cb({rtn:config.errorCode.paramError, message:'此案您已经投标成功'});
 
             bidDoc.caseId = caseId;
             bidDoc.createdAt = new Date();
