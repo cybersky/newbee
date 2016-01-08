@@ -252,6 +252,9 @@ $(function(){
             onPage           : function (event, page) {
                 event.preventDefault();
 
+                this.pc = Math.ceil(this.total / this.pageSize);
+                this.pc = isNaN(this.pc) ? []: this.pc;
+
                 if (page === 'prev') {
                     --this.page;
                     this.page = this.page < 0 ? 0 : this.page;
@@ -305,5 +308,8 @@ $(function(){
 
     if(window.options.action === 'none') return;
     if(window.options.action === 'findOne') return profile.vue.findOne();
+    if(window.pageSize) {
+        profile.vue.pageSize = window.pageSize;
+    }
     return profile.vue.refreshModel();
 });

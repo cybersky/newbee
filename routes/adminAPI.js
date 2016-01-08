@@ -226,13 +226,22 @@ var getCases = function(req, res, next){
     var start = req.query['start'] || 0;
     var rows = req.query['rows'] || 10;
 
-    return Case.getCaseByStatus(config.caseStatus.raw.key, {skin: start, limit: rows}, function(err, cases){
+    var total;
+    async.waterfall([
+        function(cb){
+            Case.countCaseByStatus(config.caseStatus.raw.key, cb);
+        },
+        function(count, cb){
+            total = count;
+            Case.getCaseByStatus(config.caseStatus.raw.key, {skip: start, limit: rows}, cb);
+        }
+    ], function(err, cases){
         if(err) return res.send({rtn: 1, message: err});
         for(var i = 0, len = cases.length; i < len; i++){
             cases[i].caseType = _.findWhere(config.userCaseType, {name: cases[i].caseType}).label;
             cases[i].serviceType = _.findWhere(config.userServiceType, {name: cases[i].serviceType}).label;
         }
-        return res.send({rtn: 0, message: 'ok', data: cases});
+        return res.send({rtn: 0, message: 'ok',  total: total, data: cases});
     });
 };
 router.get('/cases', auth.authOperatorCookie, auth.prepareAdminInfo, getCases);

@@ -133,11 +133,13 @@ exports.userCaseType = [
 
 exports.userCaseRank = [
     {name: '1', label: '1', value: 1},
-    {name: '2', label: '2', value: 1},
-    {name: '3', label: '3', value: 1},
-    {name: '4', label: '4', value: 1},
-    {name: '5', label: '5', value: 1}
+    {name: '2', label: '2', value: 2},
+    {name: '3', label: '3', value: 3},
+    {name: '4', label: '4', value: 4},
+    {name: '5', label: '5', value: 5}
 ];
+
+exports.pageSizeController = {cases: 4, lawyer: 5, operator: 5};
 
 exports.userServiceType = [
     {name:'xxfw', label:'线下实体服务'},

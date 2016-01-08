@@ -17,7 +17,7 @@ var signOut = function(req, res, next){
 
 var manager = function(req, res, next){
     return res.render('admin/manager', {
-        options: {target: 'manager'},
+        options: {target: 'manager'}, pageSize: config.pageSizeController.operator,
         adminInfo: req.adminInfo
     });
 };
@@ -50,7 +50,7 @@ var operatorDetail = function(req, res, next){
 var _case = function(req, res, next){
     return res.render('admin/case', {
         options:{ target: 'case'}, adminInfo: req.adminInfo,
-        rank: config.userCaseRank
+        rank: config.userCaseRank, pageSize: config.pageSizeController.cases
     });
 };
 

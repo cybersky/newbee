@@ -55,7 +55,11 @@ var lawyerRegister = function(req, res, next){
 
     async.waterfall([
         function(cb){
-            if(config.switchPhoneVerifyCodeOff) return cb(null);
+            if(config.switchPhoneVerifyCodeOff) {
+                //set status as subscribe for testCase
+                lawyer.status = 'subscribe';
+                return cb(null);//skipped cellphone auth
+            }
             if(!lawyer.verifyCode) return res.send({rtn: 1, message:'验证码不能为空'});
             redisClient.get([config.redisPrefix.verifyCode, lawyer.phoneNumber].join(':'), function(err, result){
                 if(err) return cb(err);
