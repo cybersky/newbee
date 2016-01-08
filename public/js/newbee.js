@@ -97,8 +97,9 @@ $(function(){
                 if(!caseId) return errorTip({code: 1, message: 'CaseId不能为空'}, 1000 * 3);
                 var self = this;
                 var action = 'online';
+                var rank = $('#rank').val();
 
-                var nc = new this.model({id: caseId, action: action});
+                var nc = new this.model({id: caseId, action: action, rank: rank});
                 nc.save(function(result){
                     if(result.rtn != 0){
                         return errorTip(result, 1000 * 5);

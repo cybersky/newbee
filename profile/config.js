@@ -131,6 +131,14 @@ exports.userCaseType = [
     {name:'gsfw', label:'公司法务纠纷'}
 ];
 
+exports.userCaseRank = [
+    {name: '1', label: '1', value: 1},
+    {name: '2', label: '2', value: 1},
+    {name: '3', label: '3', value: 1},
+    {name: '4', label: '4', value: 1},
+    {name: '5', label: '5', value: 1}
+];
+
 exports.userServiceType = [
     {name:'xxfw', label:'线下实体服务'},
     {name:'ffzx', label:'付费咨询'},

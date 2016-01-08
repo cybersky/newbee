@@ -244,7 +244,11 @@ var updateCase = function(req, res, next){
     var action = req.body['action'];
     if(!action) return res.send({rtn: config.errorCode.paramError, message: '无效关键词, 您的操作异常'});
 
+    var rank = req.body['rank'];
+    if(!rank || isNaN(rank)) return res.send({rtn: config.errorCode.paramError, message: '等级参数错误'});
+
     var data = {};
+    data.rank = rank;
     if(action == config.caseStatus.reject.key){
         data.status =  config.caseStatus.reject.key;
         var reason = req.body['reason'];

@@ -48,7 +48,10 @@ var operatorDetail = function(req, res, next){
 };
 
 var _case = function(req, res, next){
-    return res.render('admin/case', {options:{ target: 'case'}, adminInfo: req.adminInfo});
+    return res.render('admin/case', {
+        options:{ target: 'case'}, adminInfo: req.adminInfo,
+        rank: config.userCaseRank
+    });
 };
 
 router.get('/signin', function(req, res, next){

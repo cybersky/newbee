@@ -45,6 +45,15 @@
                 <span id="price">{{c.price1}}(元)</span>
             </div>
             <p>{{c.caseDesc}}</p>
+
+            <div class="form-group">
+                <select id="rank" class="form-control">
+                    <%for(var i =0; i<rank.length; i++){%>
+                    <option value="<%=rank[i].value%>">案例等级(<%=rank[i].label%>)</option>
+                    <%}%>
+                </select>
+            </div>
+
             <div>
                 <textarea class="form-control" id="rejectedInfo{{c._id}}" data-value="" rows="3" placeholder="请填写拒绝理由"></textarea>
             </div>
