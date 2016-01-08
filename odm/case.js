@@ -455,3 +455,8 @@ exports.batchOnline = function(caseIds){
 
     cases.updateMany({_id:{$in:caseObjectIds}, status:'raw'}, {$set:{status:'online'}}, assertModifyMany(callback, caseIds.length));
 };
+
+exports.countCaseByStatus = function(status, callback){
+    if(!status) return new Error('status can not be empty');
+    return mongo.case().count({status: status}, callback);
+};

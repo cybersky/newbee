@@ -7,7 +7,7 @@ exports.switchPhoneVerifyCodeOff = false;
 exports.openTestAPI = false;
 
 exports.mongodb = {host: '10.128.130.213', port: 27017, dbName: 'newbee'};
-exports.getMongoUri = () => {
+exports.getMongoUri = function(){
 	return 'mongodb://'+exports.mongodb.host+':'+exports.mongodb.port+'/'+ exports.mongodb.dbName;
 };
 
@@ -17,7 +17,7 @@ exports.cookieConfig = {
 	privateKey: '123_[newBeeToken]-!@#',
 	options: {
 		path: '/', expires: Date.now() + 1000 * 60 * 60 * 24 * 30,
-		maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true
+		maxAge: 30 * 24 * 60 * 60 * 1000, signed: true
 	}
 };
 exports.lawyerSignUpToken = {
@@ -130,6 +130,16 @@ exports.userCaseType = [
     {name:'zqzw', label:'债权债务纠纷'},
     {name:'gsfw', label:'公司法务纠纷'}
 ];
+
+exports.userCaseRank = [
+    {name: '1', label: '1', value: 1},
+    {name: '2', label: '2', value: 2},
+    {name: '3', label: '3', value: 3},
+    {name: '4', label: '4', value: 4},
+    {name: '5', label: '5', value: 5}
+];
+
+exports.pageSizeController = {cases: 4, lawyer: 5, operator: 5};
 
 exports.userServiceType = [
     {name:'xxfw', label:'线下实体服务'},

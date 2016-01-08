@@ -1,6 +1,7 @@
 <%include fragments/header.ejs%>
 <script type="text/javascript" xmlns="http://www.w3.org/1999/html">
     var options = <%-JSON.stringify(options)%>;
+    var pageSize = <%=pageSize%>;
 </script>
 
 
@@ -34,5 +35,15 @@
             </div>
         </div>
     </div>
+
+    <div class="panel-footer" style="margin-top: 50px;">
+        <nav>
+            <ul class="pager">
+                <li><a id='prev' href="#" v-on="click:onPage($event, 'prev')">Previous</a></li>
+                <li><a id='next' href="#" v-on="click:onPage($event, 'next')">Next</a></li>
+            </ul>
+        </nav>
+    </div>
+
 </div>
 <% include fragments/footer.ejs %>

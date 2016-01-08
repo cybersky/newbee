@@ -1,6 +1,7 @@
 <% include ./fragments/header.ejs %>
 <script type="text/javascript" xmlns="http://www.w3.org/1999/html">
     var options = <%-JSON.stringify(options)%>;
+    var pageSize = <%=pageSize %>;
 </script>
 
 <div class="col-sm-9 col-md-10 col-md-offset-1 main" id="caseDiv">
@@ -13,75 +14,67 @@
     <div v-show="display">
         <h1 style="color: #00B7FF;">&nbsp;&nbsp;&nbsp;暂无案件需要审核 ...</h1>
     </div>
-
-    <div v-repeat="c:contents">
-        <a class="btn btn-primary" role="button" data-toggle="collapse" href="#{{c._id}}" aria-expanded="true" aria-controls="{{c._id}}">
-            <h5>案例ID: {{c._id}}</h5>
-        </a>
-
-        <div class="collapse in" id="{{c._id}}">
-            <div class="well">
-                <div class="media">
-                    <div class="media-left">
-                        <img v-attr="src: c.userInfo.openInfo.headimgurl" style="width: 400px; height: 260px;"/>
-                    </div>
-                    <div class="media-body">
-                        <div class="media-heading">
-                            <h3><a href="#">用户信息</a></h3>
-                        </div>
-                        <br>
-                        <div class="media-right">
-                            <div>
-                                <label for="username">用户姓名:</label>
-                                <span id="username" class="text-muted">{{c.userInfo.openInfo.nickname}}</span><br>
-                            </div>
-
-                            <div>
-                                <label for="identityNumber">用户所在地:</label>
-                                    <span id="identityNumber">
-                                        {{c.userInfo.openInfo.country}}&nbsp;
-                                        {{c.userInfo.openInfo.province}}&nbsp;
-                                        {{c.userInfo.openInfo.city}}
-                                    </span>
-                            </div>
-
-                            <div>
-                                <label for="caseType">案例类型: </label>
-                                <span id="caseType">{{c.caseType}}</span>
-                            </div>
-
-                            <div>
-                                <label for="serviceType">服务类型: </label>
-                                <span id="serviceType">{{c.serviceType}}</span>
-                            </div>
-
-                            <div>
-                                <label for="price">价格: </label>
-                                <span id="price">{{c.price1}}</span>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <br>
+    <div class="panel-body">
+        <div class="row-fluid" v-repeat="c:contents">
+            <div class="col-md-6">
                 <div>
-                    {{c.caseDesc}}
+                    <label for="username">用户姓名:</label>
+                    <span id="username" class="text-muted">{{c.userInfo.openInfo.nickname}}</span><br>
                 </div>
 
-                <div class="btn-group" style="margin-top: 20px; ">
-                    <button class="btn btn-danger" v-on="click:onCaseRejected(c._id)">拒绝</button>
-                    <button class="btn btn-success" v-on="click:onCaseSuccess(c._id)">通过</button>
+                <div>
+                    <label for="identityNumber">用户所在地:</label>
+                <span id="identityNumber">
+                    {{c.userInfo.openInfo.country}}&nbsp;
+                    {{c.userInfo.openInfo.province}}&nbsp;
+                    {{c.userInfo.openInfo.city}}
+                </span>
+                </div>
+
+                <div>
+                    <label for="caseType">案例类型: </label>
+                    <span id="caseType">{{c.caseType}}</span>
+                </div>
+
+                <div>
+                    <label for="serviceType">服务类型: </label>
+                    <span id="serviceType">{{c.serviceType}}</span>
+                </div>
+
+                <div>
+                    <label for="price">价格: </label>
+                    <span id="price">{{c.price1}}(元)</span>
+                </div>
+                <p>{{c.caseDesc}}</p>
+
+                <div class="form-group">
+                    <select id="rank" class="form-control">
+                        <%for(var i =0; i<rank.length; i++){%>
+                        <option value="<%=rank[i].value%>">案例等级(<%=rank[i].label%>)</option>
+                        <%}%>
+                    </select>
                 </div>
 
                 <div>
                     <textarea class="form-control" id="rejectedInfo{{c._id}}" data-value="" rows="3" placeholder="请填写拒绝理由"></textarea>
                 </div>
+                <div class="btn-group" style="margin-bottom: 50px;">
+                    <button class="btn btn-danger" v-on="click:onCaseRejected(c._id)">拒绝</button>
+                    <button class="btn btn-success" v-on="click:onCaseSuccess(c._id)">通过</button>
+                </div>
+
             </div>
         </div>
     </div>
 
-
+    <div class="panel-footer">
+        <nav>
+            <ul class="pager">
+                <li><a id='prev' href="#" v-on="click:onPage($event, 'prev')">Previous</a></li>
+                <li><a id='next' href="#" v-on="click:onPage($event, 'next')">Next</a></li>
+            </ul>
+        </nav>
+    </div>
 </div>
 
 <% include ./fragments/footer.ejs %>
