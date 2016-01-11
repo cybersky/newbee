@@ -172,7 +172,7 @@ describe('let us start', function () {
 
                 request({url: testHost + '/va/ly/cases', jar: ly.jar, qs: qs}, assertBody(function (err, body) {
                     if (err) return assert.ifError(err);
-                    console.log(ly.openId, 'get', body.data.length + ' cases sort by ' + qs.sort, 'caseType', qs.caseType, 'serviceType', qs.serviceType);
+                    console.log(ly.info.name, 'get', body.data.length + ' cases sort by ' + qs.sort, 'caseType', qs.caseType, 'serviceType', qs.serviceType);
 
                     _.each(body.data, function (item) {
                         var distance = qs.lon && qs.lat ? geolib.getDistance(
@@ -196,7 +196,6 @@ describe('let us start', function () {
             var caseUnion = [];
             var totalCount = 0;
 
-
             async.each(lyJar, function (ly, cb) {
 
                 totalCount += ly.cases.length;
@@ -206,7 +205,7 @@ describe('let us start', function () {
                     console.warn('duplicated case found, total:', totalCount, 'union', caseUnion.length);
                 }
 
-                console.log('lawyer', ly.openId, 'has cases', ly.cases.length);
+                console.log('lawyer', ly.info.name, 'has cases', ly.cases.length);
                 console.log('case union count:', caseUnion.length, 'cases', caseUnion);
 
                 async.each(ly.cases, function (item, cb1) {
@@ -221,9 +220,8 @@ describe('let us start', function () {
 
                             var biderList = _.pluck(bids, 'lawyerOpenId');
 
-                            console.log('lawyer', ly.openId, 'found case', caseId, 'bid count', biderList.length, 'by', biderList);
                             if( biderList.indexOf(ly.openId) >= 0 ){
-                                console.log('lawyer already bid', caseId, 'skip');
+                                console.log('lawyer', ly.info.name ,'already bid', caseId, 'SKIP');
                                 return cb1();
                             }
 
@@ -243,6 +241,10 @@ describe('let us start', function () {
                             request(option, assertBody(cb));
                         },
                         function(body, cb){
+                            //fetch again to confirm bid succeed.
+                            request({url: testHost + '/va/ly/cases/'+ caseId, jar:ly.jar}, assertBody(cb));
+                        },
+                        function(body, cb){
                             var bids = body.data.bids;
 
                             if( bids && bids.length > 0 ) {
@@ -251,12 +253,15 @@ describe('let us start', function () {
                                     throw new Error('bid not succeed');
                                 }
 
-                                console.log('lawyer found case', caseId, 'bids', bidList.length, 'by', bidList);
+                                ly.local = ly.local || {};
+                                ly.local.bidCases = ly.local.bidCases || [];
+                                ly.local.bidCases.push(caseId);
+
+                                console.log('lawyer', ly.info.name, 'bid case', caseId, 'ok, bids count', bidList.length);
 
                                 return cb();
                             }
                         }
-
 
                     ], cb1);
 
@@ -265,6 +270,29 @@ describe('let us start', function () {
             }, done);
 
         });
+
+
+        it('should get lawyers bid case', function(done){
+            async.each(lyJar, function (ly, cb) {
+
+                async.waterfall([
+                    function(cb){
+                        request({url:testHost + '/va/ly/bids', jar:ly.jar}, assertBody(cb));
+                    },
+                    function(list, cb){
+                        var caseIds1 = _.map(list.data, c => c._id);
+                        var caseIds2 = ly.local.bidCases;
+
+                        assert.equal(_.difference(caseIds1, caseIds2).length, 0);
+                        cb();
+                    }
+                ], cb);
+
+
+            }, done);
+
+        });
+
 
     });
 

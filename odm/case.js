@@ -299,6 +299,28 @@ exports.syncCaseBids = function(caseId){
 };
 
 
+exports.syncCaseComments = function(caseId){
+    var callback = arguments[arguments.length-1];
+    if(typeof(callback) != 'function'){
+        callback = function(err){
+            if(err) return console.error('sync case comments error', err);
+        };
+    }
+
+    var cases = mongo.case();
+    var comments = mongo.comment();
+
+    async.waterfall([
+        function(cb){
+            comments.find({caseId:caseId}).sort({updatedAt:-1}).toArray(cb);
+        },
+        function(list, cb){
+            //TODO: should be assertModifyOne???
+            cases.updateOne({_id:new ObjectID(caseId)}, {$set:{comments:list, commentCount:list.length}}, assertMatchOne(cb));
+        }
+    ], callback);
+};
+
 
 exports.bidCase = function(caseId, bidDoc){
     var callback = arguments[arguments.length-1];
@@ -401,13 +423,13 @@ exports.getLawyerBidCases = function(openId){
 
     async.waterfall([
         function(cb){
-            bids.find({lawyerOpenId:openId}).sort({createdAt:-1}).toArray(cb);
+            bids.find({lawyerOpenId:openId}).sort({updatedAt:-1}).toArray(cb);
         },
         function(bids, cb){
             if(!bids || bids.length == 0) return cb(null, bids);
 
-            var caseIds = _.pick(bids, 'caseId').map( caseId => ObjectID(caseId) );
-            cases.find({_id:{$in:caseIds}}, cb);
+            var caseIds = _.map(bids, bid => ObjectID(bid.caseId));
+            cases.find({_id:{$in:caseIds}}).toArray(cb);
         }
 
     ], callback);
@@ -434,14 +456,33 @@ exports.targetCaseByUser = function(caseId, bidId){
 
 
 
-exports.commentCase = function(caseId, comment, userInfo, userRole){
+exports.commentCase = function(caseId, comment, userInfo, userRole, to){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
-    var cases = mongo.case();
+    if(!caseId) return callback({rtn:config.errorCode.paramError, message:'no caseId found'});
+    if(!comment) return callback({rtn:config.errorCode.paramError, message:'no comment found'});
+    if(comment.length > 500) return callback({rtn:config.errorCode.paramError, message:'comment text larger than 500'});
+    if(!userInfo) return callback({rtn:config.errorCode.paramError, message:'no userInfo found'});
+    if(!userRole) return callback({rtn:config.errorCode.paramError, message:'no userRole found'});
 
-    var commentObj = {text:comment, id:uuid.v1(), user:userInfo, role:userRole};
-    cases.updateOne({_id:ObjectID(caseId)}, {$push:{comments:commentObj}}, assertModifyOne(callback));
+
+    var comments = mongo.comment();
+    var commentId;
+
+    async.waterfall([
+        function(cb){
+            comments.insertOne({caseId:caseId, text:comment, user:userInfo, role:userRole, to:to}, assertInsertOne(cb));
+        },
+        function(commentId, cb){
+            exports.syncCaseComments(caseId, cb);
+        },
+        function(cb){
+            cb(null, commentId);
+        }
+
+    ], callback);
+
 };
 
 
