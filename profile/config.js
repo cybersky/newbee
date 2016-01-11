@@ -123,7 +123,7 @@ exports.operatorLevel = [
 exports.userCaseType = [
     {name:'xsbh', label:'刑事辩护'},
     {name:'lhjf', label:'离婚纠纷'},
-    {name:'fwjf', label:'房屋租赁,买卖,拆迁纠纷'},
+    {name:'fwjf', label:'房屋租赁、买卖、拆迁纠纷'},
     {name:'jtsg', label:'交通事故纠纷'},
     {name:'ldgs', label:'劳动工伤纠纷'},
     {name:'htjf', label:'合同纠纷'},
