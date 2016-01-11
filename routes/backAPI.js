@@ -16,6 +16,7 @@ var config  = require('../profile/config');
 var utils   = require('../tools/utils');
 var uuid = require('node-uuid');
 var caseModel = require('../odm/case.js');
+var mongo = require('../clients/mongo.js');
 
 
 var createTestUser = function(role){
@@ -28,8 +29,7 @@ var createTestUser = function(role){
         var nameList = ["马旭", "马振川", "王万宾", "王小珂", "王文京", "王尔乘", "王全", "王安顺", "王岐山", "王青海", "王炳深", "王晓初", "王铮", "王蓉蓉", "巨晓林", "方新", "邓中翰", "冯乐平", "朱良玉", "朱惠刚", "刘忠军", "刘晓晨", "刘新成", "闫傲霜", "池强", "苏辉", "杜德印", "李士祥", "李大进", "李昭玲", "李超钢", "杨晓超", "吴正宪", "吴世雄", "吴碧霞", "怀进鹏", "张大勇", "张和平", "陈立国", "陈吉宁", "陈雨露", "欧阳泽华", "欧阳淞", "周其凤", "周毅"];
         var name = _.sample(nameList);
 
-        var mongo = require('../clients/mongo.js');
-        mongo.collection(role).update({"openId": openId}, {
+        var userDoc = {
             "openId": openId,
             "name":name,
             "openInfo": {
@@ -46,9 +46,27 @@ var createTestUser = function(role){
             },
             "createdAt": new Date(),
             "updatedAt": new Date()
-        }, {upsert:true});
+        };
 
-        res.send({rtn:0, data:{openId:openId, role:role}});
+        if( role == 'lawyers' ){
+            userDoc = _.extend(userDoc, {
+                lawyerId:uuid.v1(),
+                email:uuid.v1()+'@abc.com',
+                phoneNumber:13000000000 + _.random(1000000000),
+                identityNumber:220000000000000000 + _.random(1000000000000000)
+            });
+        }
+
+        mongo.collection(role).updateOne({"openId": openId}, userDoc, {upsert:true}, function(err, result){
+            if(err) return next(err);
+
+            userDoc.role = role;
+            if(result.upsertedCount == 1) return res.send({rtn:0, data:userDoc});
+
+            res.send({rtn:config.errorCode.serviceError, message:'test user not created' + result.toString()});
+        });
+
+
     }
 };
 
@@ -72,7 +90,7 @@ router.post('/online/cases', onlineCases);
 router.use(function(err, req, res, next){
     if(err){
         console.error(err);
-        res.send({rtn:config.errorCode.unknownError, message:err});
+        res.send({rtn:config.errorCode.unknownError, message:err && err.toString()});
     }
 });
 

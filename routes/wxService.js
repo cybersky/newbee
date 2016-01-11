@@ -73,7 +73,7 @@ var activateQRSceneCode4Lawyer = function (sceneId, obj, res) {
             var lawyer = result.value;
             if( result.ok == 1 ){
                 if(err) return console.error(err);
-                res.text('欢迎你来到律政新蜂平台，'+lawyer.username+'律师！接下来您需要等待审核通过，然后就可以在平台竞标案件，好好努力！' );
+                res.text('您好！'+lawyer.username+'律师，欢迎来到律政新蜂平台！您的微信服务号已经绑定成功，接下来您需要等待审核通过，然后就可以在平台竞标案件，好好努力！' );
             }
         });
     });

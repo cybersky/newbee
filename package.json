@@ -30,6 +30,7 @@
     "node-weixin-jssdk": "^0.2.1",
     "redis": "~2.2.5",
     "request": "^2.67.0",
+    "request-promise": "^1.0.2",
     "serve-favicon": "~2.3.0",
     "underscore": "^1.8.3",
     "urllib": "^2.5.0",
@@ -38,5 +39,8 @@
     "vhost": "^3.0.2",
     "web-errors": "^0.1.5",
     "weixin-service": "^1.0.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.11.3"
   }
 }

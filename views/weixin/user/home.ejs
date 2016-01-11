@@ -5,15 +5,7 @@
 </script>
 
 <div data-role="page" id="page0">
-    <div data-role="header">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#page0" class="ui-btn-active ui-state-persist">悬赏办案</a></li>
-                <li><a href="#page1">我的案件</a></li>
-                <li><a href="#page2">我的律师</a></li>
-            </ul>
-        </div>
-    </div>
+
     <div data-role="content">
         <form action="/va/user/cases" method="post" id="caseForm">
 
@@ -45,21 +37,21 @@
                 <div data-role="tabs" id="tabs">
                     <p>悬赏方式</p>
 
-                    <div data-role="navbar">
+                    <div data-role="navbar" id="priceType">
                         <ul>
-                            <li><a href="#one" data-ajax="false" class="ui-btn-active">按照金额</a></li>
-                            <li><a href="#two" data-ajax="false">按照比例</a></li>
+                            <li><a href="#priceone" data-ajax="false" class="ui-btn-active" data-price-type="1">按照金额</a></li>
+                            <li><a href="#pricetwo" data-ajax="false" data-price-type="2">按照比例</a></li>
                         </ul>
                           
                     </div>
-                    <div id="one" class="ui-body-d ui-content">
+                    <div id="priceone" class="ui-body-d ui-content">
                         <!-- <h3 class="ui-bar ui-bar-a ui-corner-all">Heading</h3> -->
                         <div class="ui-body ui-body-a ui-corner-all">
-                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value=""
+                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value="">
                             <p style="font-size: 0.8em;color: dimgrey">您可以通过悬赏一个固定的金额总数来悬赏招募律师</p>
                         </div>
                     </div>
-                    <div id="two" class="ui-body-d ui-content">
+                    <div id="pricetwo" class="ui-body-d ui-content">
                         <div class="ui-body ui-body-a ui-corner-all">
                             <label for="price2">悬赏比例(%)</label>
                             <input type="range" name="price2" id="price2" value="0" min="0" max="100" data-highlight="true">
@@ -72,25 +64,35 @@
             </div>
             <label><input type="checkbox" name="reportLocation" id="reportLocation">上报地址以便律师找到我</label>
 
-            <input data-role="button" type="submit" data-theme="b" value="倾诉完毕，立即悬赏">
+            <input data-role="button" data-icon="check" type="submit" value="倾诉完毕，立即悬赏">
 
+
+            <a href="#popupBasic" data-rel="popup" class="ui-btn ui-corner-all ui-shadow ui-btn-inline" data-transition="pop">Basic Popup</a>
+            <div data-role="popup" id="popupBasic">
+                <p>This is a completely basic popup, no options set.</p>
+            </div>
+
+            <!--
             <a data-role="button" id="testButton">test nav page</a>
             <a data-role="button" id="getNetworkButton">test js sdk</a>
+            -->
         </form>
+    </div>
+
+    <div data-role="footer" data-position="fixed" data-theme="b">
+        <div data-role="navbar" style="margin: -1px;">
+            <ul>
+                <li><a href="#page0" data-icon="grid" class="ui-btn-active ui-state-persist">悬赏办案</a></li>
+                <li><a href="#page1" data-icon="star">我的案件</a></li>
+                <li><a href="#page2" data-icon="gear">我的律师</a></li>
+            </ul>
+        </div>
     </div>
 
 </div>
 
 <div data-role="page" id="pCaseOK">
-    <div data-role="header">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#page0" class="ui-btn-active ui-state-persist">悬赏办案</a></li>
-                <li><a href="#page1">我的案件</a></li>
-                <li><a href="#page2">我的律师</a></li>
-            </ul>
-        </div>
-    </div>
+
     <div data-role="content">
         <h1>悬赏成功！</h1>
         <p>
@@ -119,20 +121,22 @@
         </div>
 
     </div>
+
+    <div data-role="footer" data-position="fixed" data-theme="b">
+        <div data-role="navbar" style="margin: -1px;">
+            <ul>
+                <li><a href="#page0" data-icon="grid" class="ui-btn-active ui-state-persist">悬赏办案</a></li>
+                <li><a href="#page1" data-icon="star">我的案件</a></li>
+                <li><a href="#page2" data-icon="gear">我的律师</a></li>
+            </ul>
+        </div>
+    </div>
+
 </div>
 
 
 <div data-role="page" id="page1">
 
-    <div data-role="header">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#page0">悬赏办案</a></li>
-                <li><a href="#page1" class="ui-btn-active ui-state-persist">我的案件</a></li>
-                <li><a href="#page2">我的律师</a></li>
-            </ul>
-        </div>
-    </div>
 
     <div data-role="content">
 
@@ -149,20 +153,20 @@
     </div>
     <!-- /content -->
 
+    <div data-role="footer" data-position="fixed" data-theme="b">
+        <div data-role="navbar" style="margin: -1px;">
+            <ul>
+                <li><a href="#page0" data-icon="grid">悬赏办案</a></li>
+                <li><a href="#page1" data-icon="star" class="ui-btn-active ui-state-persist">我的案件</a></li>
+                <li><a href="#page2" data-icon="gear">我的律师</a></li>
+            </ul>
+        </div>
+    </div>
+
 </div>
 <!-- /page -->
 
 <div data-role="page" id="pCaseDetail">
-
-    <div data-role="header">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#page0">悬赏办案</a></li>
-                <li><a href="#page1" class="ui-btn-active ui-state-persist">我的案件</a></li>
-                <li><a href="#page2">我的律师</a></li>
-            </ul>
-        </div>
-    </div>
 
     <div data-role="content">
         <h1>案件编号 903929382342</h1>
@@ -176,25 +180,37 @@
             这里应该是一个案件描述，萨里的风景啊斯洛伐克就是大方；滤镜阿萨德离开房间撒地方了立刻将受到法律卡觉得舒服是邓丽君咖啡
         </p>
     </div>
+
+
+    <div data-role="footer" data-position="fixed" data-theme="b">
+        <div data-role="navbar" style="margin: -1px;">
+            <ul>
+                <li><a href="#page0" data-icon="grid">悬赏办案</a></li>
+                <li><a href="#page1" data-icon="star" class="ui-btn-active ui-state-persist">我的案件</a></li>
+                <li><a href="#page2" data-icon="gear">我的律师</a></li>
+            </ul>
+        </div>
+    </div>
+
 </div>
 
 
 <div data-role="page" id="page2">
 
-    <div data-role="header">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#page0">悬赏办案</a></li>
-                <li><a href="#page1">我的案件</a></li>
-                <li><a href="#page2" class="ui-btn-active ui-state-persist">我的律师</a></li>
-            </ul>
-        </div>
-    </div>
-
     <div data-role="content">
         您暂时没有律师，赶快去选一个律师吧
     </div>
     <!-- /content -->
+
+    <div data-role="footer" data-position="fixed" data-theme="b">
+        <div data-role="navbar" style="margin: -1px;">
+            <ul>
+                <li><a href="#page0" data-icon="grid">悬赏办案</a></li>
+                <li><a href="#page1" data-icon="star">我的案件</a></li>
+                <li><a href="#page2" data-icon="gear" class="ui-btn-active ui-state-persist">我的律师</a></li>
+            </ul>
+        </div>
+    </div>
 
 </div>
 <!-- /page -->

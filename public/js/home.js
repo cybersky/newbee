@@ -2,6 +2,14 @@
  * Created by zhaohailong on 12/15/15.
  */
 
+new Vue({
+    el: 'form#caseForm',
+    data: {
+        caseType:'',
+    }
+});
+
+
 var clearRaiseCase = function () {
     $('#caseType').val('');
     $('#serviceType').val('');
@@ -70,8 +78,8 @@ $(function () {
         var serviceType = $('#serviceType').val();
         var caseDesc = $('#caseDesc').val();
         var caseTarget = $('#caseTarget').val();
-        var price1 = $('#price1').val();
-        var price2 = $('#price2').val();
+
+        var priceType = $('#priceType ul li.ui-state-active a').data('priceType');
 
         var self = this;
 
@@ -79,10 +87,26 @@ $(function () {
             caseType: caseType,
             serviceType: serviceType,
             caseDesc: caseDesc,
-            caseTarget: caseTarget,
-            price1: price1,
-            price2: price2
+            caseTarget: caseTarget
         };
+
+        switch (priceType){
+            case 1:
+                body.price1 = $('#price1').val();
+                if(!(body.price1 > 0)){
+                    alert('没有悬赏金额不行哦');
+                    return false;
+                }
+                break;
+            case 2:
+                body.price2 = $('#price2').val();
+                if(!(body.price2 > 0)){
+                    alert('没有悬赏比例不行哦');
+                    return false;
+                }
+                break;
+        }
+
 
         if(window.nbLocation && window.nbLocation.lon) body.lon = window.nbLocation.lon;
         if(window.nbLocation && window.nbLocation.lat) body.lat = window.nbLocation.lat;

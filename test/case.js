@@ -8,13 +8,14 @@ var config = require('../profile/config.js');
 var _ = require('underscore');
 var moment = require('moment');
 var geolib = require('geolib');
+var rp = require('request-promise');
 
 request = request.defaults({jar: true});
 var testHost = 'http://localhost:8080';
 
-var userCount = 10;
+var userCount = 5;
 var lawyerCount = 5;
-var caseCount = 5;
+var caseCount = 10;
 
 var userJar = [];
 var lyJar = [];
@@ -71,7 +72,8 @@ describe('let us start', function () {
         it('should create <' + caseCount + ' case for each user', function (done) {
 
             async.each(userJar, function (item, cb) {
-                var count = _.random(1, caseCount);
+                //var count = _.random(1, caseCount);
+                count = caseCount;
                 item.caseCount = count;
                 createUserCase({jar: item.jar, count: count, caseIds: caseIds}, cb);
             }, done);
@@ -144,8 +146,11 @@ describe('let us start', function () {
         it('should give me ' + lawyerCount + ' lawyers', function (done) {
             async.each(_.range(lawyerCount), function (item, cb) {
                 var jar = request.jar();
-                lyJar.push({jar: jar});
-                request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(cb));
+                request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function(err, body){
+                    if(err) throw new Error(err);
+                    lyJar.push({jar: jar, openId:body.data.openId});
+                    cb();
+                }));
             }, done)
         });
 
@@ -167,7 +172,7 @@ describe('let us start', function () {
 
                 request({url: testHost + '/va/ly/cases', jar: ly.jar, qs: qs}, assertBody(function (err, body) {
                     if (err) return assert.ifError(err);
-                    console.log('get', body.data.length + ' cases sort by ' + qs.sort, 'caseType', qs.caseType, 'serviceType', qs.serviceType);
+                    console.log(ly.openId, 'get', body.data.length + ' cases sort by ' + qs.sort, 'caseType', qs.caseType, 'serviceType', qs.serviceType);
 
                     _.each(body.data, function (item) {
                         var distance = qs.lon && qs.lat ? geolib.getDistance(
@@ -175,7 +180,7 @@ describe('let us start', function () {
                             {latitude: item.lat, longitude: item.lon}
                         ) : 0;
 
-                        console.log(item._id, 'price1', item.price1, 'updated', item.updatedAt, 'distance', distance, 'caseType', item.caseType, 'serviceType', item.serviceType);
+                        //console.log(item._id, 'price1', item.price1, 'updated', item.updatedAt, 'distance', distance, 'caseType', item.caseType, 'serviceType', item.serviceType);
                     });
 
                     ly.cases = body.data;
@@ -188,22 +193,134 @@ describe('let us start', function () {
 
         it('should bid some cases for each lawyer', function (done) {
 
-            async.forEachOf(lyJar, function (ly, key, cb) {
+            var caseUnion = [];
+            var totalCount = 0;
 
-                async.each(ly.cases, function (item, cb) {
-                    var caseId = item._id;
-                    var body = {
-                        price1: item.price1 + _.random(-100, 100),
-                        comment: 'this is my bid, and price'
-                    };
+            /*
+            var ly = lyJar[0];
+            var item = ly.cases[0];
+            var caseId = item._id;
 
-                    request({
+            async.waterfall([
+                function(cb){
+                    var option = {
                         url: testHost + '/va/ly/'+caseId+'/bids',
                         method: 'post',
                         jar: ly.jar,
                         json: true,
-                        body: body
-                    }, assertBody(cb));
+                        body: {
+                            price1: item.price1 + _.random(-100, 100),
+                            comment: 'this is my bid, and price'
+                        }
+                    };
+                    request(option, assertBody(cb));
+                },
+                function(body, cb){
+                    var option = {
+                        url: testHost + '/va/ly/'+caseId+'/bids',
+                        method: 'post',
+                        jar: ly.jar,
+                        json: true,
+                        body: {
+                            price1: item.price1 + _.random(-100, 100),
+                            comment: 'this is my bid, and price'
+                        }
+                    };
+                    request(option, assertBody(cb));
+                }
+
+            ], done);
+
+            return;
+            */
+
+            async.each(lyJar, function (ly, cb) {
+
+                totalCount += ly.cases.length;
+                caseUnion = _.union(caseUnion, _.map(ly.cases, c => c._id));
+
+                if(caseUnion.length  < totalCount){
+                    console.warn('duplicated case found, total:', totalCount, 'union', caseUnion.length);
+                }
+
+                console.log('lawyer', ly.openId, 'has cases', ly.cases.length);
+                console.log('case union count:', caseUnion.length, 'cases', caseUnion);
+
+                async.each(ly.cases, function (item, cb1) {
+                    var caseId = item._id;
+
+                    async.waterfall([
+                        function(cb){
+                            request({url: testHost + '/va/ly/cases/'+ caseId, jar:ly.jar}, assertBody(cb));
+                        },
+                        function(body, cb){
+                            var bids = body.data.bids;
+
+                            var biderList = _.pluck(bids, 'lawyerOpenId');
+
+                            console.log('lawyer', ly.openId, 'found case', caseId, 'bid count', biderList.length, 'by', biderList);
+                            if( biderList.indexOf(ly.openId) >= 0 ){
+                                console.log('lawyer already bid', caseId, 'skip');
+                                return cb1();
+                            }
+
+                            console.log('lawyer', ly.openId, 'bid case', caseId);
+
+                            var option = {
+                                url: testHost + '/va/ly/'+caseId+'/bids',
+                                method: 'post',
+                                jar: ly.jar,
+                                json: true,
+                                body: {
+                                    price1: item.price1 + _.random(-100, 100),
+                                    comment: 'this is my bid, and price'
+                                }
+                            };
+                            request(option, assertBody(cb));
+                        },
+                        function(body, cb){
+                            var option = {
+                                url: testHost + '/va/ly/'+caseId+'/bids',
+                                method: 'post',
+                                jar: ly.jar,
+                                json: true,
+                                body: {
+                                    price1: item.price1 + _.random(-100, 100),
+                                    comment: 'this is my bid, and price'
+                                }
+                            };
+                            request(option, assertBody(cb));
+                        },
+                        function(body, cb){
+                            var option = {
+                                url: testHost + '/va/ly/'+caseId+'/bids',
+                                method: 'post',
+                                jar: ly.jar,
+                                json: true,
+                                body: {
+                                    price1: item.price1 + _.random(-100, 100),
+                                    comment: 'this is my bid, and price'
+                                }
+                            };
+                            request(option, assertBody(cb));
+                        },
+                        function(body, cb){
+                            var bids = body.data.bids;
+
+                            if( bids && bids.length > 0 ) {
+                                var bidList = _.pluck(bids, 'lawyerOpenId');
+                                if( bidList.indexOf(ly.openId) < 0 ){
+                                    throw new Error('bid not succeed');
+                                }
+
+                                console.log('lawyer found case', caseId, 'bids', bidList.length, 'by', bidList);
+
+                                return cb();
+                            }
+                        }
+
+
+                    ], cb1);
 
                 }, cb);
 
