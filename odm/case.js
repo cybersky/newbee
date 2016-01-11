@@ -292,9 +292,8 @@ exports.syncCaseBids = function(caseId){
             bids.find({caseId:caseId}).sort({updatedAt:-1}).toArray(cb);
         },
         function(list, cb){
-            cases.updateOne({_id:new ObjectID(caseId)}, {$set:{bids:list}}, assertModifyOne(function(err){
-                cb(err);
-            }));
+            //TODO: should be assertModifyOne
+            cases.updateOne({_id:new ObjectID(caseId)}, {$set:{bids:list, bidCount:list.length}}, assertMatchOne(cb));
         }
     ], callback);
 };

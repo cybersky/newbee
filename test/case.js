@@ -148,7 +148,7 @@ describe('let us start', function () {
                 var jar = request.jar();
                 request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function(err, body){
                     if(err) throw new Error(err);
-                    lyJar.push({jar: jar, openId:body.data.openId});
+                    lyJar.push({jar: jar, openId:body.data.openId, info:body.data});
                     cb();
                 }));
             }, done)
@@ -196,43 +196,6 @@ describe('let us start', function () {
             var caseUnion = [];
             var totalCount = 0;
 
-            /*
-            var ly = lyJar[0];
-            var item = ly.cases[0];
-            var caseId = item._id;
-
-            async.waterfall([
-                function(cb){
-                    var option = {
-                        url: testHost + '/va/ly/'+caseId+'/bids',
-                        method: 'post',
-                        jar: ly.jar,
-                        json: true,
-                        body: {
-                            price1: item.price1 + _.random(-100, 100),
-                            comment: 'this is my bid, and price'
-                        }
-                    };
-                    request(option, assertBody(cb));
-                },
-                function(body, cb){
-                    var option = {
-                        url: testHost + '/va/ly/'+caseId+'/bids',
-                        method: 'post',
-                        jar: ly.jar,
-                        json: true,
-                        body: {
-                            price1: item.price1 + _.random(-100, 100),
-                            comment: 'this is my bid, and price'
-                        }
-                    };
-                    request(option, assertBody(cb));
-                }
-
-            ], done);
-
-            return;
-            */
 
             async.each(lyJar, function (ly, cb) {
 
@@ -265,6 +228,7 @@ describe('let us start', function () {
                             }
 
                             console.log('lawyer', ly.openId, 'bid case', caseId);
+                            var newPrice = item.price1 + _.random(-100, 100);
 
                             var option = {
                                 url: testHost + '/va/ly/'+caseId+'/bids',
@@ -272,34 +236,8 @@ describe('let us start', function () {
                                 jar: ly.jar,
                                 json: true,
                                 body: {
-                                    price1: item.price1 + _.random(-100, 100),
-                                    comment: 'this is my bid, and price'
-                                }
-                            };
-                            request(option, assertBody(cb));
-                        },
-                        function(body, cb){
-                            var option = {
-                                url: testHost + '/va/ly/'+caseId+'/bids',
-                                method: 'post',
-                                jar: ly.jar,
-                                json: true,
-                                body: {
-                                    price1: item.price1 + _.random(-100, 100),
-                                    comment: 'this is my bid, and price'
-                                }
-                            };
-                            request(option, assertBody(cb));
-                        },
-                        function(body, cb){
-                            var option = {
-                                url: testHost + '/va/ly/'+caseId+'/bids',
-                                method: 'post',
-                                jar: ly.jar,
-                                json: true,
-                                body: {
-                                    price1: item.price1 + _.random(-100, 100),
-                                    comment: 'this is my bid, and price'
+                                    price1:newPrice,
+                                    comment: 'lawyer '+ ly.info.name +' bid at price '+ newPrice
                                 }
                             };
                             request(option, assertBody(cb));

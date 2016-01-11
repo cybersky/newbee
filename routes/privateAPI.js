@@ -333,6 +333,19 @@ var updateCaseByLawyer = function(req, res, next){
 };
 
 
+var suggestLawyerCases = function(req, res, next){
+
+};
+
+
+
+
+
+/**
+        Weixin Config API Below
+ */
+
+
 var getJSSDKConfig = function (option) {
 
     return function (req, res, next) {
@@ -378,6 +391,8 @@ router.post('/user/cases/:caseId/comments', commentCase);
 /************* For Weixin page Lawyer API ********************/
 
 router.get('/ly/cases', findLawyerCases);
+
+router.get('/ly/cases/suggest', suggestLawyerCases);
 
 router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 
