@@ -70,7 +70,7 @@
 			<div class="form-group">
 				<label for="lawServiceArea" class="control-label col-sm-4">法律擅长领域</label>
                 <div class="col-sm-4">
-                    <select id="lawServiceArea" class="form-control">
+                    <select id="lawServiceArea" class="form-control" multiple="multiple">
                         <%for(var i=0; i< services.length; i++){%>
                         <option value="<%=services[i].label%>"><%=services[i].label%></option>
                         <%}%>
@@ -107,6 +107,11 @@
 </div>
 </body>
 <script>
+
+    //initial multiple select
+    $(function(){
+        $('#lawServiceArea').multiselect();
+    });
 
     $(function(){
         $('#getVerifyCode').click(function(){

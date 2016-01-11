@@ -11,8 +11,8 @@ var fs  = require('fs');
 request = request.defaults({jar:true});
 var host = 'http://localhost:8080';
 
-var identityFile = __dirname + '/id.jpg';
-var lawyerIdFile = __dirname + '/avatar.jpg';
+var identityFile = __dirname + '/avatar.jpg';
+var lawyerIdFile = __dirname + '/id.jpg';
 var emailPostfix = '@newbee.com';
 var password = cpassword = '123.com';
 
