@@ -62,6 +62,14 @@ var getLawyers  = function(req, res, next){
         }
     ], function(err, docs){
         if(err) return res.send(err);
+        _.map(docs, function(doc){
+            var resp = [];
+            var types = doc.lawServiceArea.split(',');
+            types.forEach(function(type){
+                resp.push(_.find(config.userCaseType, {name: type}).label);
+            });
+            doc._doc.lawServiceArea = resp.join(',');
+        });
         res.send({rtn: 0, message: '', total: ct, data: docs});
     });
 };
@@ -74,6 +82,12 @@ var getLawyer = function(req, res, next){
     Lawyer.getOneLawyer(lawyerId, function(err, doc){
         if(err) return res.send({rtn: 1, message: err});
         if(doc._doc.password) delete doc._doc.password;
+        var types = doc.lawServiceArea.split(',');
+        var resp = [];
+        types.forEach(function(type){
+            resp.push(_.find(config.userCaseType, {name: type}).label);
+        });
+        doc.lawServiceArea = resp.join(',');
         return res.send({rtn: 0, message: '', data: doc});
     });
 };

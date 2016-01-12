@@ -10,7 +10,7 @@
 
     <div class="media">
         <div class="media-left">
-            <img v-attr="src: contents.identityFilename" style="width: 400px; height: 260px;"/>
+            <img :src="contents.identityFilename" style="width: 400px; height: 260px;"/>
         </div>
         <div class="media-body">
             <div class="media-heading">
@@ -34,7 +34,7 @@
 
     <div class="media">
         <div class="media-left">
-            <img v-attr="src: contents.lawyerIdFilename" style="width: 400px; height: 260px;"/>
+            <img :src="contents.lawyerIdFilename" style="width: 400px; height: 260px;"/>
         </div>
         <div class="media-body">
             <div class="media-heading">
@@ -66,8 +66,8 @@
     </div>
 
     <div class="btn-group" style="margin-top: 80px;">
-        <button class="btn btn-danger" v-on="click:onLawyerRejected(contents._id)">拒绝</button>
-        <button class="btn btn-success" v-on="click:onLawyerSuccess(contents._id)">通过</button>
+        <button class="btn btn-danger" v-on:click="onLawyerRejected(contents._id)">拒绝</button>
+        <button class="btn btn-success" v-on:click="onLawyerSuccess(contents._id)">通过</button>
     </div>
 
     <br>

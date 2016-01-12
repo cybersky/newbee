@@ -452,7 +452,8 @@ exports.batchOnline = function(caseIds){
     var cases = mongo.case();
     var caseObjectIds = _.map(caseIds, caseId => ObjectID(caseId));
 
-    cases.updateMany({_id:{$in:caseObjectIds}, status:'raw'}, {$set:{status:'online'}}, assertModifyMany(callback, caseIds.length));
+    var ranks = [1, 2, 3, 4, 5];
+    cases.updateMany({_id:{$in:caseObjectIds}, status:'raw'}, {$set:{status:'online', rank: _.sample(ranks)}}, assertModifyMany(callback, caseIds.length));
 };
 
 exports.countCaseByStatus = function(status, callback){

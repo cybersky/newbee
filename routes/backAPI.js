@@ -28,6 +28,8 @@ var createTestUser = function(role){
 
         var nameList = ["马旭", "马振川", "王万宾", "王小珂", "王文京", "王尔乘", "王全", "王安顺", "王岐山", "王青海", "王炳深", "王晓初", "王铮", "王蓉蓉", "巨晓林", "方新", "邓中翰", "冯乐平", "朱良玉", "朱惠刚", "刘忠军", "刘晓晨", "刘新成", "闫傲霜", "池强", "苏辉", "杜德印", "李士祥", "李大进", "李昭玲", "李超钢", "杨晓超", "吴正宪", "吴世雄", "吴碧霞", "怀进鹏", "张大勇", "张和平", "陈立国", "陈吉宁", "陈雨露", "欧阳泽华", "欧阳淞", "周其凤", "周毅"];
         var name = _.sample(nameList);
+        var lawServiceArea = _.sample(config.userCaseType) || {};
+        var ranks = [1, 2 ,3 ,4, 5];
 
         var userDoc = {
             "openId": openId,
@@ -44,6 +46,8 @@ var createTestUser = function(role){
                 "privilege": [],
                 "unionid": "op3Elt65DCYlvfpwiBk8zJJuwSXk"
             },
+            lawServiceArea: _.sample(config.userCaseType).name + ',' +_.sample(config.userCaseType).name,
+            status: 'subscribe',
             "createdAt": new Date(),
             "updatedAt": new Date()
         };

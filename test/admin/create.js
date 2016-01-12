@@ -6,6 +6,7 @@ var async = require('async');
 var request = require('request');
 var config = require('../../profile/config');
 var fs  = require('fs');
+var _ = require('lodash');
 
 
 request = request.defaults({jar:true});
@@ -19,39 +20,39 @@ var password = cpassword = '123.com';
 var names = [
     {
         name: 'Alex', id: '220723199004119215', lawyerId: '11101200211721756',
-        phoneNumber: '13681051569', lawyerLocation:'山东青岛', lawServiceArea:'公司法务纠纷'
+        phoneNumber: '13681051569', lawyerLocation:'山东青岛', lawServiceArea:_.sample(config.userCaseType).name + ',' + _.sample(config.userCaseType).name
     },
     {
         name: 'Daniels', id: '361022198702218395', lawyerId: '11101201211721756',
-        phoneNumber: '15117979508', lawyerLocation:'北京', lawServiceArea:'公司法务纠纷'
+        phoneNumber: '15117979508', lawyerLocation:'北京', lawServiceArea:_.sample(config.userCaseType).name + ',' + _.sample(config.userCaseType).name
     },
     {
         name: 'Bob', id: '510921198210288151', lawyerId: '15101211211720756',
-        phoneNumber: '13693597508', lawyerLocation:'上海', lawServiceArea:'债权债务纠纷'
+        phoneNumber: '13693597508', lawyerLocation:'上海', lawServiceArea:_.sample(config.userCaseType).name
     },
     {
         name: 'Adam', id: '520526198908195194', lawyerId: '11101211211721757',
-        phoneNumber: '13693600276', lawyerLocation:'山西', lawServiceArea:'合同纠纷'
+        phoneNumber: '13693600276', lawyerLocation:'山西', lawServiceArea:_.sample(config.userCaseType).name
     },
     {
         name: 'Lambert', id: '610801198803037457', lawyerId: '14101211200621756',
-        phoneNumber: '15010190185', lawyerLocation:'湖南', lawServiceArea:'房屋租赁,买卖,拆迁纠纷'
+        phoneNumber: '15010190185', lawyerLocation:'湖南', lawServiceArea:_.sample(config.userCaseType).name
     },
     {
         name: 'Kelly', id: '370681199203238293', lawyerId: '11101211211720056',
-        phoneNumber: '15010190785', lawyerLocation:'American', lawServiceArea:'劳动工伤纠纷'
+        phoneNumber: '15010190785', lawyerLocation:'American', lawServiceArea:_.sample(config.userCaseType).name
     },
     {
         name: 'James', id: '130302197910095310', lawyerId: '12101211211722016',
-        phoneNumber: '15010191290', lawyerLocation:'French', lawServiceArea:'离婚纠纷'
+        phoneNumber: '15010191290', lawyerLocation:'French', lawServiceArea:_.sample(config.userCaseType).name
     },
     {
         name: 'Peter', id: '140181197810252792', lawyerId: '11101211211720836',
-        phoneNumber: '13717659396', lawyerLocation:'天津', lawServiceArea:'交通事故纠纷'
+        phoneNumber: '13717659396', lawyerLocation:'天津', lawServiceArea:_.sample(config.userCaseType).name + ',' + _.sample(config.userCaseType).name
     },
     {
         name: 'Tom', id: '542625198604046493', lawyerId: '11101211211721756',
-        phoneNumber: '15910702776', lawyerLocation:'福建', lawServiceArea:'刑事辩护'
+        phoneNumber: '15910702776', lawyerLocation:'福建', lawServiceArea:_.sample(config.userCaseType).name
     }
 ];
 /*

@@ -1,6 +1,5 @@
 var express = require('express');
 var router = express.Router();
-var Lawyer = require('../odm/lawyer');
 var async = require('async');
 var _ = require('lodash');
 var validator = require('validator');
@@ -333,12 +332,22 @@ var updateCaseByLawyer = function(req, res, next){
 };
 
 
+/*
+* get cases order by rank & recommending cases to lawyer
+* */
+
 var suggestLawyerCases = function(req, res, next){
+    var service = req.currentUser.lawServiceArea;
+    if(!service) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
+    var types = service.split(',');
 
+    if(types.length <= 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
+
+    caseModel.getCase({caseType: {$in: types}}, {sort: {rank: -1, createdAt: -1}}, function(err, result){
+        if(err) return next({rtn: config.errorCode.serviceError, message: err});
+        return res.send({rtn: 0, message: '', data: result});
+    });
 };
-
-
-
 
 
 /**
@@ -392,7 +401,7 @@ router.post('/user/cases/:caseId/comments', commentCase);
 
 router.get('/ly/cases', findLawyerCases);
 
-router.get('/ly/cases/suggest', suggestLawyerCases);
+router.get('/ly/cases/suggest',auth.prepareLocalUser(config.optionsLawyer), suggestLawyerCases);
 
 router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 

@@ -12,9 +12,9 @@
         <h1 style="color: #00B7FF;">&nbsp;&nbsp;&nbsp;暂无注册律师需要审核 ...</h1>
     </div>
 
-    <div class="media" v-repeat="c:contents">
+    <div class="media" v-for="c in contents">
         <div class="media-left">
-            <img v-attr="src: c.identityFilename" style="width: 400px; height: 260px;"/>
+            <img :src="c.identityFilename" style="width: 400px; height: 260px;"/>
         </div>
 
         <div class="media-body">
@@ -39,8 +39,8 @@
     <div class="panel-footer" style="margin-top: 50px;">
         <nav>
             <ul class="pager">
-                <li><a id='prev' href="#" v-on="click:onPage($event, 'prev')">Previous</a></li>
-                <li><a id='next' href="#" v-on="click:onPage($event, 'next')">Next</a></li>
+                <li><a id='prev' href="#" v-on:click="onPage($event, 'prev')">Previous</a></li>
+                <li><a id='next' href="#" v-on:click="onPage($event, 'next')">Next</a></li>
             </ul>
         </nav>
     </div>

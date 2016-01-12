@@ -13,8 +13,8 @@
 
     <div class="panel">
         <div class="panel-heading">
-            <button class="btn btn-success" id="update" v-on="click:onUpdateOperator(contents._id)">保存</button>
-            <button class="btn btn-danger" id="remove" v-on="click:onDelOperator(contents._id)">删除</button>
+            <button class="btn btn-success" id="update" v-on:click="onUpdateOperator(contents._id)">保存</button>
+            <button class="btn btn-danger" id="remove" v-on:click="onDelOperator(contents._id)">删除</button>
         </div>
 
         <div id="iptForm" class="panel-body col-sm-5">

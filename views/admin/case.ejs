@@ -15,7 +15,7 @@
         <h1 style="color: #00B7FF;">&nbsp;&nbsp;&nbsp;暂无案件需要审核 ...</h1>
     </div>
     <div class="panel-body">
-        <div class="row-fluid" v-repeat="c:contents">
+        <div class="row-fluid" v-for="c in contents">
             <div class="col-md-6">
                 <div>
                     <label for="username">用户姓名:</label>
@@ -59,8 +59,8 @@
                     <textarea class="form-control" id="rejectedInfo{{c._id}}" data-value="" rows="3" placeholder="请填写拒绝理由"></textarea>
                 </div>
                 <div class="btn-group" style="margin-bottom: 50px;">
-                    <button class="btn btn-danger" v-on="click:onCaseRejected(c._id)">拒绝</button>
-                    <button class="btn btn-success" v-on="click:onCaseSuccess(c._id)">通过</button>
+                    <button class="btn btn-danger" v-on:click="onCaseRejected(c._id)">拒绝</button>
+                    <button class="btn btn-success" v-on:click="onCaseSuccess(c._id)">通过</button>
                 </div>
 
             </div>
@@ -70,8 +70,8 @@
     <div class="panel-footer">
         <nav>
             <ul class="pager">
-                <li><a id='prev' href="#" v-on="click:onPage($event, 'prev')">Previous</a></li>
-                <li><a id='next' href="#" v-on="click:onPage($event, 'next')">Next</a></li>
+                <li><a id='prev' href="#" v-on:click="onPage($event, 'prev')">Previous</a></li>
+                <li><a id='next' href="#" v-on:click="onPage($event, 'next')">Next</a></li>
             </ul>
         </nav>
     </div>
