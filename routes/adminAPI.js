@@ -62,14 +62,16 @@ var getLawyers  = function(req, res, next){
         }
     ], function(err, docs){
         if(err) return res.send(err);
-        _.map(docs, function(doc){
-            var resp = [];
-            var types = doc.lawServiceArea.split(',');
-            types.forEach(function(type){
-                resp.push(_.find(config.userCaseType, {name: type}).label);
+        if(docs.length > 0){
+            _.map(docs, function(doc){
+                var resp = [];
+                var types = doc.lawServiceArea.split(',');
+                types.forEach(function(type){
+                    resp.push(_.find(config.userCaseType, {name: type}).label);
+                });
+                doc._doc.lawServiceArea = resp.join(',');
             });
-            doc._doc.lawServiceArea = resp.join(',');
-        });
+        }
         res.send({rtn: 0, message: '', total: ct, data: docs});
     });
 };

@@ -4,6 +4,10 @@
 var Lawyer  = require('../../model/lawyer').Lawyer;
 
 exports.getLawyers =  function(start, rows, query, callback){
+    if(isNaN(start) || isNaN(rows)) return callback(new Error('Params start & rows must be a digit'));
+
+    start = Number(start) || 0;
+    rows  = Number(rows)  || 10;
     return Lawyer.find(query || {}).skip(start).limit(rows).exec(callback);
 };
 
