@@ -15,8 +15,11 @@ exports.createOperator = function(operatorInfo, callback){
 };
 
 exports.getOperators= function(start, rows, callback){
-	start = start || 0;
-	rows  = rows  || 10;
+
+    if(isNaN(start) || isNaN(rows)) return callback(new Error('Params start & rows must be a digit'));
+
+	start = Number(start) || 0;
+	rows  = Number(rows)  || 10;
 	return Operator.find().skip(start).limit(rows).exec(callback);
 };
 exports.getOperatorById = function(operatorId, callback){
