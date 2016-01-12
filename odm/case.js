@@ -382,6 +382,7 @@ exports.updateBid = function(bidId, bidDoc, openId){
 
     var bids = mongo.bid();
     bidDoc.updatedAt = new Date();
+    var bid;
 
     async.waterfall([
         function(cb){
@@ -389,7 +390,11 @@ exports.updateBid = function(bidId, bidDoc, openId){
         },
         function(result, cb){
             if(!result.value) return cb({rtn:config.errorCode.paramError, message:locale.noSuchBid});
+            bid = result.value;
             exports.syncCaseBids(result.value.caseId, cb);
+        },
+        function(cb){
+            cb(null, bid.caseId);
         }
     ], callback);
 
@@ -399,16 +404,21 @@ exports.deleteBid = function(bidId, openId){
     var callback = arguments[arguments.length-1];
     if(typeof(callback) != 'function') throw new Error('callback should be function.');
 
-
     var bids = mongo.bid();
+    var bidDoc = {updatedAt:new Date(), deleted:true};
+    var bid;
 
     async.waterfall([
         function(cb){
-            bids.findOneAndDelete({_id:ObjectID(bidId), lawyerOpenId:openId}, cb);
+            bids.findOneAndUpdate({_id:ObjectID(bidId), lawyerOpenId:openId}, {$set:bidDoc},  cb);
         },
         function(result, cb){
             if(!result.value) return cb({rtn:config.errorCode.paramError, message:locale.noSuchBid});
+            bid = result.value;
             exports.syncCaseBids(result.value.caseId, cb);
+        },
+        function(cb){
+            cb(null, bid.caseId);
         }
     ], callback);
 
@@ -421,6 +431,8 @@ exports.getLawyerBidCases = function(openId){
     var bids = mongo.bid();
     var cases = mongo.case();
 
+    var bidsList;
+
     async.waterfall([
         function(cb){
             bids.find({lawyerOpenId:openId}).sort({updatedAt:-1}).toArray(cb);
@@ -428,8 +440,16 @@ exports.getLawyerBidCases = function(openId){
         function(bids, cb){
             if(!bids || bids.length == 0) return cb(null, bids);
 
+            bidsList = bids;
             var caseIds = _.map(bids, bid => ObjectID(bid.caseId));
             cases.find({_id:{$in:caseIds}}).toArray(cb);
+        },
+        function(cases, cb){
+            //we have to build the map to keep id in order.
+            var caseMap = {};
+            _.each(cases, c => caseMap[c._id.toString()] = c );
+            _.each(bidsList, b => b.case = caseMap[b.caseId]);
+            cb(null, bidsList);
         }
 
     ], callback);

@@ -146,9 +146,9 @@ describe('let us start', function () {
         it('should give me ' + lawyerCount + ' lawyers', function (done) {
             async.each(_.range(lawyerCount), function (item, cb) {
                 var jar = request.jar();
-                request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function(err, body){
-                    if(err) throw new Error(err);
-                    lyJar.push({jar: jar, openId:body.data.openId, info:body.data});
+                request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function (err, body) {
+                    if (err) throw new Error(err);
+                    lyJar.push({jar: jar, openId: body.data.openId, info: body.data});
                     cb();
                 }));
             }, done)
@@ -201,7 +201,7 @@ describe('let us start', function () {
                 totalCount += ly.cases.length;
                 caseUnion = _.union(caseUnion, _.map(ly.cases, c => c._id));
 
-                if(caseUnion.length  < totalCount){
+                if (caseUnion.length < totalCount) {
                     console.warn('duplicated case found, total:', totalCount, 'union', caseUnion.length);
                 }
 
@@ -212,16 +212,16 @@ describe('let us start', function () {
                     var caseId = item._id;
 
                     async.waterfall([
-                        function(cb){
-                            request({url: testHost + '/va/ly/cases/'+ caseId, jar:ly.jar}, assertBody(cb));
+                        function (cb) {
+                            request({url: testHost + '/va/ly/cases/' + caseId, jar: ly.jar}, assertBody(cb));
                         },
-                        function(body, cb){
+                        function (body, cb) {
                             var bids = body.data.bids;
 
                             var biderList = _.pluck(bids, 'lawyerOpenId');
 
-                            if( biderList.indexOf(ly.openId) >= 0 ){
-                                console.log('lawyer', ly.info.name ,'already bid', caseId, 'SKIP');
+                            if (biderList.indexOf(ly.openId) >= 0) {
+                                console.log('lawyer', ly.info.name, 'already bid', caseId, 'SKIP');
                                 return cb1();
                             }
 
@@ -229,27 +229,27 @@ describe('let us start', function () {
                             var newPrice = item.price1 + _.random(-100, 100);
 
                             var option = {
-                                url: testHost + '/va/ly/'+caseId+'/bids',
+                                url: testHost + '/va/ly/' + caseId + '/bids',
                                 method: 'post',
                                 jar: ly.jar,
                                 json: true,
                                 body: {
-                                    price1:newPrice,
-                                    comment: 'lawyer '+ ly.info.name +' bid at price '+ newPrice
+                                    price1: newPrice,
+                                    comment: 'lawyer ' + ly.info.name + ' bid at price ' + newPrice
                                 }
                             };
                             request(option, assertBody(cb));
                         },
-                        function(body, cb){
+                        function (body, cb) {
                             //fetch again to confirm bid succeed.
-                            request({url: testHost + '/va/ly/cases/'+ caseId, jar:ly.jar}, assertBody(cb));
+                            request({url: testHost + '/va/ly/cases/' + caseId, jar: ly.jar}, assertBody(cb));
                         },
-                        function(body, cb){
+                        function (body, cb) {
                             var bids = body.data.bids;
 
-                            if( bids && bids.length > 0 ) {
+                            if (bids && bids.length > 0) {
                                 var bidList = _.pluck(bids, 'lawyerOpenId');
-                                if( bidList.indexOf(ly.openId) < 0 ){
+                                if (bidList.indexOf(ly.openId) < 0) {
                                     throw new Error('bid not succeed');
                                 }
 
@@ -272,33 +272,99 @@ describe('let us start', function () {
         });
 
 
-        it('should get lawyers bid case', function(done){
+        it('should get lawyers bid cases', function (done) {
             async.each(lyJar, function (ly, cb) {
 
                 async.waterfall([
-                    function(cb){
-                        request({url:testHost + '/va/ly/bids', jar:ly.jar}, assertBody(cb));
+                    function (cb) {
+                        request({url: testHost + '/va/ly/bids', jar: ly.jar}, assertBody(cb));
                     },
-                    function(list, cb){
-                        var caseIds1 = _.map(list.data, c => c._id);
+                    function (list, cb) {
+                        var caseIds1 = _.map(list.data, c => c.caseId);
                         var caseIds2 = ly.local.bidCases;
 
                         assert.equal(_.difference(caseIds1, caseIds2).length, 0);
+                        ly.bids = list.data;
                         cb();
                     }
                 ], cb);
-
 
             }, done);
 
         });
 
 
+        it('should change lawyer bid price&comment', function (done) {
+
+            async.each(lyJar, function (ly, cb) {
+
+                async.each(ly.bids, function (bid, cb) {
+
+                    var newbid = {price1: bid.price1 + _.random(1, 100), comment: bid.comment + 'append by update'};
+
+                    request({
+                        url: testHost + '/va/ly/bids/' + bid._id,
+                        body: newbid,
+                        json: true,
+                        method: 'post',
+                        jar: ly.jar
+                    }, assertBody(cb));
+
+                }, cb);
+
+            }, done);
+
+        });
+
+
+        it('should delete the first one lawyer bid', function(done){
+            var ly = lyJar[0];
+
+            async.each(ly.bids, function (bid, cb) {
+
+                request({
+                    url: testHost + '/va/ly/bids/' + bid._id,
+                    method: 'delete',
+                    jar: ly.jar
+                }, assertBody(cb));
+
+            }, done);
+        });
+
     });
 
     describe('let users target their lawyers', function () {
-        it('should', function (done) {
-            done();
+
+        it('should get the cases for users', function (done) {
+            async.each(userJar, function(user, cb){
+                request({url:testHost+'/va/user/cases', jar:user.jar}, assertBody(function(err, result){
+                    user.cases = result.data;
+                    cb();
+                }));
+            }, done);
+        });
+
+
+        it('should choose target lawyer for bids', function(done){
+            async.each(userJar, function(user, cb){
+
+                async.each(ly.cases, function(c, cb){
+                    if(c.bids.length == 0){
+                        console.log('case', c._id, 'no bids, skip');
+                        return cb();
+                    }
+
+                    var targetBid = c.bids[ _.random(0, c.bids.length-1) ];
+
+
+
+                });
+
+                request({url:testHost+'/va/user/cases', jar:user.jar}, assertBody(function(err, result){
+                    user.cases = result.data;
+                    cb();
+                }));
+            }, done);
         });
     });
 
@@ -324,11 +390,11 @@ var getServiceType = function () {
 };
 
 var getCaseDesc = function () {
-    return "As of jQuery 1.5, all of jQuery's Ajax methods return a superset of the XMLHTTPRequest object. This jQuery XHR object, or jqXHR, returned by $.get() implements the Promise interface, giving it all the properties, methods, and behavior of a Promise (see Deferred object for more information). The jqXHR.done() (for success), jqXHR.fail() (for error), and jqXHR.always() (for completion, whether success or error) methods take a function argument that is called when the request terminates. For information about the arguments this function receives, see the jqXHR Object section of the $.ajax() documentation.";
+    return "这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述，这是我悬赏案件的描述。";
 };
 
 var getCaseTarget = function () {
-    return "The Promise interface also allows jQuery's Ajax methods, including $.get(), to chain multiple .done(), .fail(), and .always() callbacks on a single request, and even to assign these callbacks after the request may have completed. If the request is already complete, the callback is fired immediately.";
+    return "这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求，这是我悬赏案件的诉求。";
 };
 
 var getCasePrice1 = function () {

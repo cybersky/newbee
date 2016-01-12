@@ -284,9 +284,10 @@ var updateBid = function(req, res, next){
     var openId = req.wxOpenId;
     var bidDoc = _.pick(req.body, ['price1', 'price2', 'comment']);
 
-    caseModel.updateBid(bidId, bidDoc, openId, function(err){
+    caseModel.updateBid(bidId, bidDoc, openId, function(err, caseId){
         if(err) return next(err);
         res.send({rtn:0});
+        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 };
 
@@ -294,7 +295,7 @@ var deleteBid = function(req, res, next){
     var bidId = req.params.bidId;
     var openId = req.wxOpenId;
 
-    caseModel.deleteBid(bidId, openId, function(err){
+    caseModel.deleteBid(bidId, openId, function(err, caseId){
         if(err) return next(err);
         res.send({rtn:0});
         notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
