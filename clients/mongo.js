@@ -50,6 +50,13 @@ MongoClient.connect(uri, function(err, db) {
     bids.createIndex({lawyerOpenId:1}, {background:true});
     bids.createIndex({caseId:1}, {background:true});
     bids.createIndex({caseId:1, lawyerOpenId:1}, {background:true, unique:true, sparse:false});
+
+
+    var comments = newbeeDB.collection('comments');
+    comments.createIndex({lawyerOpenId:1}, {background:true});
+    comments.createIndex({caseId:1}, {background:true});
+    comments.createIndex({caseId:1, lawyerOpenId:1}, {background:true, unique:true, sparse:false});
+
 });
 
 
@@ -71,4 +78,9 @@ exports.case = function(){
 
 exports.bid = function(){
     return newbeeDB.collection('bids');
+};
+
+
+exports.comment = function(){
+    return newbeeDB.collection('comments');
 };
