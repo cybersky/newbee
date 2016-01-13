@@ -79,7 +79,9 @@ var onlineCases = function(req, res, next){
     var caseIds = req.body.caseIds.split(',');
     if(!caseIds.length) return next({rtn:config.errorCode.paramError, message:'empty case id list'});
 
-    caseModel.batchOnline(caseIds, function(err){
+    var rankPair = _.map(caseIds, caseId => ({caseId:caseId, rank:_.sample(_.range(1,5))}));
+
+    caseModel.batchOnline(rankPair, function(err){
         if(err) return next(err);
         res.send({rtn:0});
     });

@@ -96,7 +96,7 @@ var createCase = function (req, res, next) {
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
 
-    caseModel.getCase({userOpenId: openId}, {sort: {createdAt: -1, updatedAt: -1}}, function (err, result) {
+    caseModel.getUserCases(openId, function (err, result) {
         if (err) return next(err);
         res.send({rtn: 0, data: result});
     });
@@ -338,13 +338,16 @@ var updateCaseByLawyer = function(req, res, next){
 * */
 
 var suggestLawyerCases = function(req, res, next){
+    var lawyer = req.currentUser;
+    if( !lawyer) return next({rtn: config.errorCode.paramError, message: '未找到律师数据'});
+
     var service = req.currentUser.lawServiceArea;
     if(!service) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
     var types = service.split(',');
 
-    if(types.length <= 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
+    if(types.length == 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
 
-    caseModel.getCase({caseType: {$in: types}}, {sort: {rank: -1, createdAt: -1}}, function(err, result){
+    caseModel.getCase({caseType: {$in: types}, status:{$in: [config.caseStatus.online.key, config.caseStatus.bid.key] }}, {sort: {rank: -1, createdAt: -1}}, function(err, result){
         if(err) return next({rtn: config.errorCode.serviceError, message: err});
         return res.send({rtn: 0, message: '', data: result});
     });

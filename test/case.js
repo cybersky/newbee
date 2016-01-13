@@ -317,8 +317,10 @@ describe('let us start', function () {
         });
 
 
-        it('should delete the first one lawyer bid', function(done){
+        it('should delete the first one lawyer bid', function (done) {
             var ly = lyJar[0];
+
+            console.log('begin to delete', ly.bids.length, 'bids');
 
             async.each(ly.bids, function (bid, cb) {
 
@@ -331,47 +333,97 @@ describe('let us start', function () {
             }, done);
         });
 
+
+        it('should get zero bid cases since all deleted', function (done) {
+
+            var ly = lyJar[0];
+
+            async.waterfall([
+                function (cb) {
+                    request({url: testHost + '/va/ly/bids', jar: ly.jar}, assertBody(cb));
+                },
+                function (result, cb) {
+                    assert.equal(result.data.length, 0);
+                    ly.bids = result.data;
+                    cb();
+                }
+            ], done);
+
+        });
+
     });
 
     describe('let users target their lawyers', function () {
 
-        it('should get the cases for users', function (done) {
-            async.each(userJar, function(user, cb){
-                request({url:testHost+'/va/user/cases', jar:user.jar}, assertBody(function(err, result){
+        it('should refresh the cases for users', function (done) {
+            async.each(userJar, function (user, cb) {
+                request({url: testHost + '/va/user/cases', jar: user.jar}, assertBody(function (err, result) {
                     user.cases = result.data;
                     cb();
                 }));
             }, done);
         });
 
+        it('should remove cases for the first user', function(done){
+            var user = userJar[0];
 
-        it('should choose target lawyer for bids', function(done){
-            async.each(userJar, function(user, cb){
+            async.each(user.cases, function(c, cb){
+                console.log('delete case', c._id);
+                request({url:testHost + '/va/user/cases/'+ c._id, method:'delete', jar:user.jar}, assertBody(cb));
+            }, done);
+        });
 
-                async.each(ly.cases, function(c, cb){
-                    if(c.bids.length == 0){
+
+        it('should refresh the cases for first user again', function (done) {
+            var user = userJar[0];
+
+            request({url: testHost + '/va/user/cases', jar: user.jar}, assertBody(function (err, result) {
+                assert.equal(err, null);
+                user.cases = result.data;
+                console.log('refresh case', user.cases);
+                assert.equal(user.cases.length, 0);
+                done();
+            }));
+
+        });
+
+
+        it('should choose target lawyer for bids', function (done) {
+            async.each(userJar, function (user, cb) {
+
+                async.each(user.cases, function (c, cb) {
+                    if (c.bids.length == 0) {
                         console.log('case', c._id, 'no bids, skip');
                         return cb();
                     }
 
-                    var targetBid = c.bids[ _.random(0, c.bids.length-1) ];
+                    var targetBid = c.bids[_.random(0, c.bids.length - 1)];
+                    request({
+                        url: testHost + '/va/user/cases/' + targetBid.caseId + '/status',
+                        method:'post',
+                        body: {status:'target', bidId:targetBid._id},
+                        json: true,
+                        jar: user.jar
+                    }, assertBody(function (err, result) {
+                        assert.equal(err, null);
+                        user.targetCases = targetBid.case;
+                        cb();
+                    }));
 
+                }, cb);
 
-
-                });
-
-                request({url:testHost+'/va/user/cases', jar:user.jar}, assertBody(function(err, result){
-                    user.cases = result.data;
-                    cb();
-                }));
             }, done);
         });
+
     });
 
 
     describe('lawyers should accept the target and start process case', function () {
-        it('should', function (done) {
-            done();
+        it('should get the target case for lawyer', function (done) {
+
+
+
+
         });
     });
 
@@ -425,7 +477,7 @@ var getCaseComment = function () {
 var assertBody = function (cb) {
     return function (err, resp, body) {
 
-        if (err) return cb(err);
+        if (err) throw new Error(err);
         var result = body;
 
         if (typeof body == 'string') {
@@ -433,11 +485,11 @@ var assertBody = function (cb) {
                 result = JSON.parse(body);
             }
             catch (err) {
-                cb(new Error('response format error: ' + body));
+                throw new Error('response format error: ' + body);
             }
         }
         if (result.rtn != 0) {
-            cb(new Error('error api response: rtn:' + result.rtn + ' message:' + result.message));
+            throw new Error('error api response: rtn:' + result.rtn + ' message:' + result.message);
         }
         return cb(null, result);
     };
