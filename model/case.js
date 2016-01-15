@@ -11,7 +11,6 @@ var plugins	= require('./plugins');
 //案件表
 var CaseSchema = exports.CaseSchema = new Schema({
     raw:{type:String},//案件原始描述，未经过人工整理
-
     title: { type: String }, //案件标题
     description: { type: String }, //案件描述
     target:{type:String},//诉求描述

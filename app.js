@@ -66,7 +66,7 @@ app.use('/wp', wxPage);
 
 if( config.openTestAPI ){
     console.warn('application open test API');
-    app.use('/ts', require('./routes/backAPI'));
+    app.use('/ts', require('./routes/hackAPI'));
 }
 
 console.log('The Node.js version is', process.version);

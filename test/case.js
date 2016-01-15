@@ -13,8 +13,8 @@ var rp = require('request-promise');
 request = request.defaults({jar: true});
 var testHost = 'http://localhost:8080';
 
-var userCount = 5;
-var lawyerCount = 5;
+var userCount = 10;
+var lawyerCount = 10;
 var caseCount = 10;
 
 var userJar = [];
@@ -62,9 +62,13 @@ describe('let us start', function () {
 
         it('should create ' + userCount + ' users', function (done) {
             async.each(_.range(userCount), function (item, cb) {
-                var jar = request.jar();
-                userJar.push({jar: jar});
-                request({url: testHost + '/ts/givemeauser', jar: jar}, assertBody(cb));
+                var user = {jar: request.jar()};
+                userJar.push(user);
+                request({url: testHost + '/ts/givemeauser', jar: user.jar}, assertBody(function (err, body) {
+                    user.info = body.data;
+                    user.local = {};
+                    cb();
+                }));
             }, done)
         });
 
@@ -148,7 +152,7 @@ describe('let us start', function () {
                 var jar = request.jar();
                 request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function (err, body) {
                     if (err) throw new Error(err);
-                    lyJar.push({jar: jar, openId: body.data.openId, info: body.data});
+                    lyJar.push({jar: jar, openId: body.data.openId, info: body.data, local: {}});
                     cb();
                 }));
             }, done)
@@ -205,11 +209,11 @@ describe('let us start', function () {
                     console.warn('duplicated case found, total:', totalCount, 'union', caseUnion.length);
                 }
 
-                console.log('lawyer', ly.info.name, 'has cases', ly.cases.length);
-                console.log('case union count:', caseUnion.length, 'cases', caseUnion);
+                console.log('lawyer', ly.info.name, 'has',ly.cases.length,'cases');
+                console.log('case union count:', caseUnion.length, 'cases');
 
-                async.each(ly.cases, function (item, cb1) {
-                    var caseId = item._id;
+                async.each(ly.cases, function (userCase, cb1) {
+                    var caseId = userCase._id;
 
                     async.waterfall([
                         function (cb) {
@@ -225,8 +229,8 @@ describe('let us start', function () {
                                 return cb1();
                             }
 
-                            console.log('lawyer', ly.openId, 'bid case', caseId);
-                            var newPrice = item.price1 + _.random(-100, 100);
+                            console.log('lawyer', ly.info.name, 'begin bid case', caseId);
+                            var newPrice = userCase.price1 + _.random(-100, 100);
 
                             var option = {
                                 url: testHost + '/va/ly/' + caseId + '/bids',
@@ -253,9 +257,16 @@ describe('let us start', function () {
                                     throw new Error('bid not succeed');
                                 }
 
-                                ly.local = ly.local || {};
                                 ly.local.bidCases = ly.local.bidCases || [];
                                 ly.local.bidCases.push(caseId);
+
+                                var user = _.find(userJar, u => u.info.openId == userCase.userOpenId);
+
+                                if (user) {
+                                    console.log('user', user.info.name, '\s case', userCase._id, 'bidded by', ly.info.name);
+                                    user.local.bidCases = user.local.bidCases || new Set();
+                                    user.local.bidCases.add(caseId);
+                                }
 
                                 console.log('lawyer', ly.info.name, 'bid case', caseId, 'ok, bids count', bidList.length);
 
@@ -271,13 +282,36 @@ describe('let us start', function () {
 
         });
 
+        it('should get the bid cases for user', function (done) {
+
+            async.each(userJar, function (user, cb) {
+                if (!user.local || !user.local.bidCases || user.local.bidCases.length == 0) {
+                    console.log('user', user.info.name, 'have no bid cases, skip');
+                    return cb();
+                }
+
+                request({
+                    url: testHost + '/va/user/cases?status=bid',
+                    jar: user.jar
+                }, assertBody(function (err, result) {
+                    console.log('user', user.info.name, 'should have bidded case', user.local.bidCases);
+                    console.log('user', user.info.name, 'actually have case', _.pluck(result.data, '_id'));
+                    assert.equal(result.data.length, user.local.bidCases.size);
+
+                    cb();
+                }));
+
+            }, done);
+
+        });
+
 
         it('should get lawyers bid cases', function (done) {
             async.each(lyJar, function (ly, cb) {
 
                 async.waterfall([
                     function (cb) {
-                        request({url: testHost + '/va/ly/bids', jar: ly.jar}, assertBody(cb));
+                        request({url: testHost + '/va/ly/bids?status=wait', jar: ly.jar}, assertBody(cb));
                     },
                     function (list, cb) {
                         var caseIds1 = _.map(list.data, c => c.caseId);
@@ -340,7 +374,7 @@ describe('let us start', function () {
 
             async.waterfall([
                 function (cb) {
-                    request({url: testHost + '/va/ly/bids', jar: ly.jar}, assertBody(cb));
+                    request({url: testHost + '/va/ly/bids?status=wait', jar: ly.jar}, assertBody(cb));
                 },
                 function (result, cb) {
                     assert.equal(result.data.length, 0);
@@ -364,12 +398,12 @@ describe('let us start', function () {
             }, done);
         });
 
-        it('should remove cases for the first user', function(done){
+        it('should remove cases for the first user', function (done) {
             var user = userJar[0];
 
-            async.each(user.cases, function(c, cb){
+            async.each(user.cases, function (c, cb) {
                 console.log('delete case', c._id);
-                request({url:testHost + '/va/user/cases/'+ c._id, method:'delete', jar:user.jar}, assertBody(cb));
+                request({url: testHost + '/va/user/cases/' + c._id, method: 'delete', jar: user.jar}, assertBody(cb));
             }, done);
         });
 
@@ -377,10 +411,9 @@ describe('let us start', function () {
         it('should refresh the cases for first user again', function (done) {
             var user = userJar[0];
 
-            request({url: testHost + '/va/user/cases', jar: user.jar}, assertBody(function (err, result) {
+            request({url: testHost + '/va/user/cases?status=online', jar: user.jar}, assertBody(function (err, result) {
                 assert.equal(err, null);
                 user.cases = result.data;
-                console.log('refresh case', user.cases);
                 assert.equal(user.cases.length, 0);
                 done();
             }));
@@ -388,8 +421,10 @@ describe('let us start', function () {
         });
 
 
-        it('should choose target lawyer for bids', function (done) {
+        it('should let user choose target lawyer for bids', function (done) {
             async.each(userJar, function (user, cb) {
+
+                console.log('user', user.info.name, 'have', user.cases.length, 'cases');
 
                 async.each(user.cases, function (c, cb) {
                     if (c.bids.length == 0) {
@@ -400,13 +435,19 @@ describe('let us start', function () {
                     var targetBid = c.bids[_.random(0, c.bids.length - 1)];
                     request({
                         url: testHost + '/va/user/cases/' + targetBid.caseId + '/status',
-                        method:'post',
-                        body: {status:'target', bidId:targetBid._id},
+                        method: 'post',
+                        body: {status: 'target', bidId: targetBid._id},
                         json: true,
                         jar: user.jar
                     }, assertBody(function (err, result) {
-                        assert.equal(err, null);
-                        user.targetCases = targetBid.case;
+                        console.log('lawyer', targetBid.lawyerInfo.name, 'win bid case', targetBid.caseId);
+
+                        var ly = _.find(lyJar, ly => ly.info.openId == targetBid.lawyerOpenId);
+                        ly.local.bidWins = ly.local.bidWins || [];
+                        ly.local.bidWins.push(targetBid);
+
+                        user.local.targetCases = user.local.targetCases || [];
+                        user.local.targetCases.push(c._id);
                         cb();
                     }));
 
@@ -415,16 +456,188 @@ describe('let us start', function () {
             }, done);
         });
 
+
+        it('should get the win bids for lawyer', function (done) {
+
+            async.each(lyJar, function (ly, cb) {
+
+                if (!ly.local.bidWins || ly.local.bidWins.length == 0) {
+                    console.log('lawyer', ly.info.name, 'have no win bids, skip');
+                    return cb();
+                }
+
+                request({url: testHost + '/va/ly/bids?status=win', jar: ly.jar}, assertBody(function (err, body) {
+                    var bids = body.data;
+                    var bidIds = _.pluck(bids, '_id');
+                    var localBidIds = _.pluck(ly.local.bidWins, '_id');
+
+                    console.log('lawyer', ly.info.name, 'win', bids.length, 'bids');
+                    assert.equal(localBidIds.length, bidIds.length);
+
+                    ly.winBidCases = bids;
+
+                    cb();
+                }));
+
+            }, done);
+        });
+
+        it('should get the targeted cases for user', function (done) {
+
+            async.each(userJar, function (user, cb) {
+
+                if (!user.local.targetCases || user.local.targetCases.length == 0) {
+                    console.log('user', user.info.name, 'have no target cases, skip');
+                    return cb();
+                }
+
+                request({
+                    url: testHost + '/va/user/cases?status=target',
+                    jar: user.jar
+                }, assertBody(function (err, result) {
+
+                    console.log('user', user.info.name, 'should have target cases', user.local.targetCases);
+                    console.log('user', user.info.name, 'actually have target cases', _.pluck(result.data, '_id'));
+                    assert.equal(user.local.targetCases.length, result.data.length);
+                    cb();
+                }));
+
+            }, done);
+        });
+
+
     });
 
 
     describe('lawyers should accept the target and start process case', function () {
-        it('should get the target case for lawyer', function (done) {
 
+        it('should change the bid-win cases into process status for lawyer', function (done) {
 
+            async.each(lyJar, function (ly, cb) {
+                if (!ly.winBidCases || ly.winBidCases.length == 0) {
+                    console.log('lawyer', ly.info.name, 'have no win bids, skip');
+                    return cb();
+                }
 
+                async.each(ly.winBidCases, function (bid, cb) {
+
+                    request({
+                        url: testHost + '/va/ly/cases/' + bid.caseId + '/status',
+                        method: 'post',
+                        json: true,
+                        body: {status: 'process'},
+                        jar:ly.jar
+                    }, assertBody(function (err, result) {
+                        ly.local.processBids = ly.local.processBids || [];
+                        ly.local.processBids.push(bid);
+
+                        var user = _.find(userJar, u => u.info.openId == bid.case.userOpenId);
+                        user.local.processCases = user.local.processCases || [];
+                        user.local.processCases.push(bid.case);
+
+                        console.log('lawyer', ly.info.name, 'start process user', user.info.name,'on case', bid.caseId);
+                        cb();
+                    }));
+
+                }, cb);
+
+            }, done);
 
         });
+
+
+        it('should get user\'s process cases', function (done) {
+
+            async.each(userJar, function (user, cb) {
+
+                if (!user.local || !user.local.processCases || user.local.processCases.length == 0) {
+                    console.log('user', user.info.name, 'have no process cases, skip');
+                    return cb();
+                }
+
+                request({
+                    url: testHost + '/va/user/cases?status=process',
+                    jar: user.jar
+                }, assertBody(function (err, result) {
+
+                    assert.equal(user.local.processCases.length, result.data.length);
+                    console.log('user', user.info.name, 'have', result.data.length, 'processed cases');
+                    user.processCases = result.data;
+
+                    cb();
+                }));
+
+            }, done);
+
+        });
+
+
+        it('should close the cases after lawyer process', function(done){
+
+            async.each(userJar, function (user, cb) {
+
+                if (!user.local || !user.local.processCases || user.local.processCases.length == 0) {
+                    console.log('user', user.info.name, 'have no process cases, skip');
+                    return cb();
+                }
+
+                async.each(user.local.processCases, function(c, cb){
+
+                    var status = ['closeu', 'disputeu'][_.random(0, 1)];
+                    var body = {status:status};
+                    if(status == 'closeu') body.commentOnClose = 'this is the close comment, comment the lawyer service';
+                    if(status == 'disputeu') body.commentOnDispute = 'this is the dispute comment, dispute the lawyer service';
+
+                    request({
+                        url: testHost + '/va/user/cases/' + c._id + '/status',
+                        method:'post',
+                        json:true,
+                        body:body,
+                        jar: user.jar
+                    }, assertBody(function (err, result) {
+
+                        if(status == 'closeu'){
+                            user.local.closeCases = user.local.closeCases || new Set();
+                            user.local.closeCases.add(c._id);
+                        }else if(status == 'disputeu'){
+                            user.local.disputeCases = user.local.disputeCases || new Set();
+                            user.local.disputeCases.add(c._id);
+                        }
+
+                        cb();
+                    }));
+
+                }, cb);
+
+            }, done);
+
+        });
+
+
+        it('should confirm the closed cases', function(done) {
+
+
+            async.each(userJar, function (user, cb) {
+
+                if (!user.local || !user.local.closeCases || user.local.closeCases.length == 0) {
+                    console.log('user', user.info.name, 'have no close cases, skip');
+                    return cb();
+                }
+
+                request({
+                    url: testHost + '/va/user/cases?status=closeu',
+                    jar: user.jar
+                }, assertBody(function (err, result) {
+                    assert.equal(user.local.closeCases.length, result.data.length);
+                    user.closeCases = result.data;
+
+
+                }));
+
+            }, done);
+
+        });
+
     });
 
 

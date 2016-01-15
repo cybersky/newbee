@@ -195,12 +195,10 @@ exports.updateCaseStatusByLawyer = function (caseId, lawyerOpenId, status) {
     if ([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)) {
         return callback({rtn: config.errorCode.paramError, message: 'invalid status'});
     }
-
+    //it must be the target lawyer change the status
+    var query = { _id: ObjectID(caseId), 'target.lawyerOpenId': lawyerOpenId};
     var caseDoc = {status: status, updatedAt: new Date()};
-    exports.updateOneCaseByQuery({
-        _id: ObjectID(caseId),
-        'target.lawyerOpenId': lawyerOpenId
-    }, caseDoc, assertModifyOne(callback));
+    exports.updateOneCaseByQuery(query, caseDoc, assertModifyOne(callback));
 };
 
 
@@ -208,12 +206,18 @@ exports.cancelCaseByUser = function (caseId, userOpenId) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
-    var caseDoc = {status: config.caseStatus.cancel.key, updatedAt: new Date()};
-
-    exports.updateOneCaseByQuery({
+    var query = {
         _id: new ObjectID(caseId),
-        userOpenId: userOpenId
-    }, caseDoc, assertModifyOne(callback));
+        userOpenId: userOpenId,
+        status:{$in:[config.caseStatus.raw.key, config.caseStatus.online.key, config.caseStatus.bid.key, config.caseStatus.target.key ]}
+    };
+
+    var caseDoc = {
+        status: config.caseStatus.cancel.key,
+        updatedAt: new Date()
+    };
+
+    exports.updateOneCaseByQuery(query, caseDoc, assertModifyOne(callback));
 };
 
 
@@ -256,11 +260,22 @@ exports.getCaseByStatus = function (state, option) {
 };
 
 
-exports.getUserCases = function(userOpenId){
+exports.getUserCases = function (userOpenId, status) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
-    exports.getCase({userOpenId: userOpenId, status:{$ne:'cancel'}}, {sort: {createdAt: -1, updatedAt: -1}}, callback);
+    if(status && _.keys(config.caseStatus).indexOf(status) < 0)
+        return callback({rtn:config.errorCode.paramError, message:"invalid case status:"+status});
+
+    var queryDoc = {userOpenId: userOpenId};
+    if(status) queryDoc.status = status;
+
+    exports.getCase(queryDoc, {
+        sort: {
+            createdAt: -1,
+            updatedAt: -1
+        }
+    }, callback);
 };
 
 
@@ -305,7 +320,8 @@ exports.syncCaseBids = function (caseId) {
 
     async.waterfall([
         function (cb) {
-            bids.find({caseId: caseId, deleted: {$ne: true}}).sort({updatedAt: -1}).toArray(cb);
+            //TODO: if show the cancel bids???
+            bids.find({caseId: caseId, status: {$ne: config.bidStatus.cancel.key}}).sort({updatedAt: -1}).toArray(cb);
         },
         function (list, cb) {
             //TODO: should be assertModifyOne
@@ -371,15 +387,11 @@ exports.bidCase = function (caseId, bidDoc) {
 
     async.waterfall([
         function (cb) {
-            //cases.findOneAndUpdate({_id:new ObjectID(caseId)}, {$set:{status:config.caseStatus.bid.key}}, cb);
-            cases.findOne({_id: new ObjectID(caseId)}, cb);
+            var query = {_id:new ObjectID(caseId), status:{$in:[config.caseStatus.online.key, config.caseStatus.bid.key]}};
+            cases.findOneAndUpdate(query, {$set:{status:config.caseStatus.bid.key, updatedAt:new Date()}}, cb);
         },
-        function (userCase, cb) {
-            if (!userCase) return cb({rtn: config.errorCode.paramError, message: locale.noSuchCase + caseId});
-
-            if ([config.caseStatus.online.key, config.caseStatus.bid.key].indexOf(userCase.status) < 0) {
-                return cb({rtn: config.errorCode.paramError, message: '案件已经结束投标' + caseId});
-            }
+        function (result, cb) {
+            if (!result.value) return cb({rtn: config.errorCode.paramError, message: locale.noSuchCase + caseId});
 
             bids.findOne({caseId: caseId, lawyerOpenId: bidDoc.lawyerOpenId}, cb);
         },
@@ -387,6 +399,7 @@ exports.bidCase = function (caseId, bidDoc) {
             if (bid) return cb({rtn: config.errorCode.paramError, message: '此案您已经投标成功'});
 
             bidDoc.caseId = caseId;
+            bidDoc.status = config.bidStatus.wait.key;
             bidDoc.createdAt = new Date();
             bidDoc.updatedAt = new Date();
 
@@ -449,7 +462,7 @@ exports.deleteBid = function (bidId, openId) {
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
     var bids = mongo.bid();
-    var bidDoc = {updatedAt: new Date(), deleted: true};
+    var bidDoc = {updatedAt: new Date(), status: config.bidStatus.cancel.key};
     var bid;
 
     async.waterfall([
@@ -468,9 +481,12 @@ exports.deleteBid = function (bidId, openId) {
 
 };
 
-exports.getLawyerBidCases = function (openId) {
+exports.getLawyerBids = function (openId, status) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
+
+    if (status && [config.bidStatus.wait.key, config.bidStatus.win.key, config.bidStatus.fail.key, config.bidStatus.cancel.key].indexOf(status) < 0)
+        return callback({rtn: config.errorCode.paramError, message: 'error bid status:' + status});
 
     var bids = mongo.bid();
     var cases = mongo.case();
@@ -479,7 +495,9 @@ exports.getLawyerBidCases = function (openId) {
 
     async.waterfall([
         function (cb) {
-            bids.find({lawyerOpenId: openId, deleted: {$ne: true}}).sort({updatedAt: -1}).toArray(cb);
+            var query = {lawyerOpenId: openId};
+            if( status ) query.status = status;
+            bids.find(query).sort({updatedAt: -1}).toArray(cb);
         },
         function (bids, cb) {
             if (!bids || bids.length == 0) return callback(null, bids);
@@ -508,9 +526,15 @@ exports.targetCaseByUser = function (caseId, openId, bidId) {
 
     async.waterfall([
         function (cb) {
-            bids.findOne({_id: ObjectID(bidId), deleted: {$ne: true}}, cb);
+            var updateDoc = {
+                updatedAt: new Date(),
+                status: config.bidStatus.win.key
+            };
+
+            bids.findOneAndUpdate({_id: ObjectID(bidId), status: config.bidStatus.wait.key}, {$set:updateDoc}, cb);
         },
-        function (bid, cb) {
+        function (result, cb) {
+            var bid = result.value;
             if (!bid) return next({rtn: config.errorCode.paramError, message: locale.noSuchBid + bidId});
 
             var caseDoc = {
@@ -518,10 +542,15 @@ exports.targetCaseByUser = function (caseId, openId, bidId) {
                 updatedAt: new Date(),
                 status: config.caseStatus.target.key
             };
-
-            cases.updateOne({_id: ObjectID(caseId), userOpenId: openId}, {$set: caseDoc}, cb);
+            //update case status
+            cases.updateOne({_id: ObjectID(caseId), userOpenId: openId}, {$set: caseDoc}, assertModifyOne(cb));
+        },
+        function(cb){
+            var bidDoc = {updatedAt:new Date, status:config.bidStatus.fail.key};
+            //update all other bids
+            bids.updateMany({caseId:caseId, status:config.bidStatus.wait.key}, {$set:bidDoc}, cb);
         }
-    ], assertModifyOne(callback));
+    ], callback);
 
 };
 
@@ -565,25 +594,21 @@ exports.commentCase = function (caseId, comment, userInfo, userRole, to) {
 };
 
 
-/**
- * TODO: keep all the hack logic in one place, eg. backAPI.js
- * @param caseIds
- */
-
 exports.batchOnline = function (caseIds) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
+    if(caseIds.length == 0) return callback();
     var cases = mongo.case();
-    var caseObjectIds = _.map(caseIds, caseId => ObjectID(caseId));
 
-    //var ranks = [1, 2, 3, 4, 5];
-    cases.updateMany({_id: {$in: caseObjectIds}, status: 'raw'}, {
-        $set: {
-            status: 'online',
-            rank: _.sample(ranks)
-        }
-    }, assertModifyMany(callback, caseIds.length));
+    var batch = cases.initializeUnorderedBulkOp();
+    _.each(caseIds, function(c){
+        batch.find({_id:ObjectID(c.caseId)}).updateOne({$set:{status:config.caseStatus.online.key, rank:c.rank}});
+    });
+    batch.execute(function(err, result){
+        if(err) return callback(err);
+        callback(result.nModified == caseIds.length ? null : {rtn:config.errorCode.serviceError, message:'not modified ' + caseIds.length});
+    });
 };
 
 

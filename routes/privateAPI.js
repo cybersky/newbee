@@ -43,8 +43,8 @@ var bindUserMobile = function (req, res, next) {
         var user = mongo.db.collection('users');
 
         user.findAndModify({openId: openId}, [],
-                {$set: {mobile: mobile, name: name}},
-                {new: true, upsert: true},
+            {$set: {mobile: mobile, name: name}},
+            {new: true, upsert: true},
 
             function (err, result) {
                 if (err && err.code == '11000') {
@@ -69,13 +69,13 @@ var createCase = function (req, res, next) {
 
     async.waterfall([
         function (cb) {
-            if(userCase.lon && userCase.lat){
+            if (userCase.lon && userCase.lat) {
 
                 userCase.lon = Number(userCase.lon);
                 userCase.lat = Number(userCase.lat);
 
-                if(!isNaN(userCase.lon) && !isNaN(userCase.lat) ){
-                    return cb(null, {lon: userCase.lon, lat: userCase.lat });
+                if (!isNaN(userCase.lon) && !isNaN(userCase.lat)) {
+                    return cb(null, {lon: userCase.lon, lat: userCase.lat});
                 }
             }
             utils.getLocation(req.wxOpenId, 'user', cb);
@@ -95,15 +95,19 @@ var createCase = function (req, res, next) {
 
 var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
+    var status = req.query.status;
 
-    caseModel.getUserCases(openId, function (err, result) {
+    if(status && _.keys(config.caseStatus).indexOf(status) < 0)
+        return callback({rtn:config.errorCode.paramError, message:"invalid case status:"+status});
+
+    caseModel.getUserCases(openId, status, function (err, result) {
         if (err) return next(err);
         res.send({rtn: 0, data: result});
     });
 
 };
 
-var cancelCaseByUser = function(req, res, next){
+var cancelCaseByUser = function (req, res, next) {
     var openId = req.wxOpenId;
     var caseId = req.params['caseId'];
 
@@ -132,33 +136,44 @@ var updateCaseByUser = function (req, res, next) {
 };
 
 
-var updateCaseStatus = function(req, res, next){
+var updateCaseStatusByUser = function (req, res, next) {
     var openId = req.wxOpenId;
     var caseId = req.params['caseId'];
     var status = req.body.status;
 
-    switch (status){
-        case config.caseStatus.target.key:
-            var bidId = req.body.bidId;
+    var bidId = req.body.bidId;//if status==target
+    var commentOnClose = req.body.commentOnClose; //if status == closeu
+    var commentOnDispute = req.body.commentOnDispute; //if status == disputeu
 
-            caseModel.targetCaseByUser(caseId, openId, bidId, function(err){
-                if(err) return next(err);
+    switch (status) {
+        case config.caseStatus.target.key:
+
+            if(!bidId) return next({rtn:config.errorCode.paramError, message:'no bidId on target action'});
+
+            caseModel.targetCaseByUser(caseId, openId, bidId, function (err) {
+                if (err) return next(err);
                 res.send({rtn: 0});
                 notification.noticeStatus2Lawyer(caseId, config.caseStatus.target.key);
             });
             break;
         case config.caseStatus.closeu.key:
-            caseModel.updateOneCaseByUser(caseId, openId, {status:config.caseStatus.closeu.key}, function(err){
-                if(err) return next(err);
-                res.send({rtn:0});
+
+            if(!commentOnClose) return next({rtn:config.errorCode.paramError, message:'no comment on close'});
+
+            caseModel.updateOneCaseByUser(caseId, openId, {status: config.caseStatus.closeu.key, commentOnClose:commentOnClose}, function (err) {
+                if (err) return next(err);
+                res.send({rtn: 0});
                 notification.noticeStatus2Lawyer(caseId, config.caseStatus.closeu.key);
             });
             break;
 
         case config.caseStatus.disputeu.key:
-            caseModel.updateOneCaseByUser(caseId, openId, {status:config.caseStatus.disputeu.key}, function(err){
-                if(err) return next(err);
-                res.send({rtn:0});
+
+            if(!commentOnDispute) return next({rtn:config.errorCode.paramError, message:'no comment on dispute'});
+
+            caseModel.updateOneCaseByUser(caseId, openId, {status: config.caseStatus.disputeu.key, commentOnDispute:commentOnDispute}, function (err) {
+                if (err) return next(err);
+                res.send({rtn: 0});
 
                 notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
                 notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
@@ -172,29 +187,28 @@ var updateCaseStatus = function(req, res, next){
 };
 
 
-var commentCase = function(req, res, next){
+var commentCase = function (req, res, next) {
     var caseId = req.params['caseId'];
     var userInfo = req.currentUser;
     var userRole = req.userRole;
     var comment = req.body.comment;
     var to = req.body.to;//to openId
 
-    caseModel.commentCase(caseId, comment, userInfo, userRole, to, function(err, id){
-        if(err) return next(err);
-        res.send({rtn:0, data:{id:id}});
+    caseModel.commentCase(caseId, comment, userInfo, userRole, to, function (err, id) {
+        if (err) return next(err);
+        res.send({rtn: 0, data: {id: id}});
     });
 };
 
 
-
-var findLawyerCases = function (req, res, next) {
+var searchLawyerCases = function (req, res, next) {
     var sort = 'updated', page = 0, pageLength = 10, sortDoc = {}, caseType, serviceType;
 
-    if( req.query.caseType && _.pluck(config.userCaseType, 'name').indexOf(req.query.caseType) >= 0){
+    if (req.query.caseType && _.pluck(config.userCaseType, 'name').indexOf(req.query.caseType) >= 0) {
         caseType = req.query.caseType;
     }
 
-    if( req.query.serviceType && _.pluck(config.userServiceType, 'name').indexOf(req.query.serviceType) >= 0){
+    if (req.query.serviceType && _.pluck(config.userServiceType, 'name').indexOf(req.query.serviceType) >= 0) {
         serviceType = req.query.serviceType;
     }
 
@@ -202,12 +216,12 @@ var findLawyerCases = function (req, res, next) {
         sort = req.query.sort;
     }
 
-    if(req.query.sort == 'geo' ){
-        if(!req.query.lon || !req.query.lat) {
-            return next({rtn:config.errorCode.paramError, message:'无法获取您的位置'});
+    if (req.query.sort == 'geo') {
+        if (!req.query.lon || !req.query.lat) {
+            return next({rtn: config.errorCode.paramError, message: '无法获取您的位置'});
         }
-        if(isNaN(Number(req.query.lon)) || isNaN(Number(req.query.lat))){
-            return next({rtn:config.errorCode.paramError, message:'您的位置数据有误'});
+        if (isNaN(Number(req.query.lon)) || isNaN(Number(req.query.lat))) {
+            return next({rtn: config.errorCode.paramError, message: '您的位置数据有误'});
         }
     }
 
@@ -217,8 +231,8 @@ var findLawyerCases = function (req, res, next) {
 
     var query = {status: {$in: [config.caseStatus.online.key, config.caseStatus.bid.key]}};
 
-    if(caseType) query['caseType'] = caseType;
-    if(serviceType) query['serviceType'] = serviceType;
+    if (caseType) query['caseType'] = caseType;
+    if (serviceType) query['serviceType'] = serviceType;
 
     switch (sort) {
         case 'updated':
@@ -246,7 +260,7 @@ var findLawyerCases = function (req, res, next) {
     }
 
     caseModel.getCase(query, {sort: sortDoc, limit: pageLength, skip: page * pageLength}, function (err, docs) {
-        if(err) return next(err);
+        if (err) return next(err);
         res.send({rtn: 0, data: docs});
     });
 
@@ -254,12 +268,16 @@ var findLawyerCases = function (req, res, next) {
 };
 
 
-var getLawyerBidCases = function(req, res, next){
+var getLawyerBids = function(req, res, next){
     var openId = req.wxOpenId;
+    var status = req.query.status;
 
-    caseModel.getLawyerBidCases(openId, function(err, list){
-        if(err) return next(err);
-        res.send({rtn:0, data:list});
+    if (status && [config.bidStatus.wait.key, config.bidStatus.win.key, config.bidStatus.fail.key, config.bidStatus.cancel.key].indexOf(status) < 0)
+        return callback({rtn: config.errorCode.paramError, message: 'error bid status:' + status});
+
+    caseModel.getLawyerBids(openId, status, function (err, list) {
+        if (err) return next(err);
+        res.send({rtn: 0, data: list});
     });
 };
 
@@ -272,60 +290,60 @@ var createBid = function (req, res, next) {
     bidDoc.lawyerInfo = req.currentUser;
 
     caseModel.bidCase(caseId, bidDoc, function (err, id) {
-        if(err) return next(err);
+        if (err) return next(err);
         res.send({rtn: 0, data: {id: id}});
         notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 
 };
 
-var updateBid = function(req, res, next){
+var updateBid = function (req, res, next) {
     var bidId = req.params.bidId;
     var openId = req.wxOpenId;
     var bidDoc = _.pick(req.body, ['price1', 'price2', 'comment']);
 
-    caseModel.updateBid(bidId, bidDoc, openId, function(err, caseId){
-        if(err) return next(err);
-        res.send({rtn:0});
+    caseModel.updateBid(bidId, bidDoc, openId, function (err, caseId) {
+        if (err) return next(err);
+        res.send({rtn: 0});
         notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 };
 
-var deleteBid = function(req, res, next){
+var deleteBid = function (req, res, next) {
     var bidId = req.params.bidId;
     var openId = req.wxOpenId;
 
-    caseModel.deleteBid(bidId, openId, function(err, caseId){
-        if(err) return next(err);
-        res.send({rtn:0});
+    caseModel.deleteBid(bidId, openId, function (err, caseId) {
+        if (err) return next(err);
+        res.send({rtn: 0});
         notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
     });
 };
 
 
-var getOneCaseForLawyer = function(req, res, next){
+var getOneCaseForLawyer = function (req, res, next) {
     var caseId = req.params.caseId;
 
-    caseModel.getOneCase(caseId, function(err, value){
-        if(err) return next(err);
-        res.send({rtn:0, data:value});
+    caseModel.getOneCase(caseId, function (err, value) {
+        if (err) return next(err);
+        res.send({rtn: 0, data: value});
     });
 };
 
 
-var updateCaseByLawyer = function(req, res, next){
+var updateCaseStatusByLawyer = function (req, res, next) {
 
     var openId = req.wxOpenId;
     var caseId = req.params.caseId;
     var status = req.body.status;
 
-    if([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)){
-        return callback({rtn:config.errorCode.paramError, message:'invalid status'});
+    if ([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)) {
+        return callback({rtn: config.errorCode.paramError, message: 'invalid status'});
     }
 
-    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function(err){
-        if(err) return next(err);
-        res.send({rtn:0});
+    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function (err) {
+        if (err) return next(err);
+        res.send({rtn: 0});
 
         notification.noticeStatus2User(caseId, status);
     });
@@ -334,28 +352,31 @@ var updateCaseByLawyer = function(req, res, next){
 
 
 /*
-* get cases order by rank & recommending cases to lawyer
-* */
+ * get cases order by rank & recommending cases to lawyer
+ * */
 
-var suggestLawyerCases = function(req, res, next){
+var suggestLawyerCases = function (req, res, next) {
     var lawyer = req.currentUser;
-    if( !lawyer) return next({rtn: config.errorCode.paramError, message: '未找到律师数据'});
+    if (!lawyer) return next({rtn: config.errorCode.paramError, message: '未找到律师数据'});
 
     var service = req.currentUser.lawServiceArea;
-    if(!service) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
+    if (!service) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
     var types = service.split(',');
 
-    if(types.length == 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
+    if (types.length == 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
 
-    caseModel.getCase({caseType: {$in: types}, status:{$in: [config.caseStatus.online.key, config.caseStatus.bid.key] }}, {sort: {rank: -1, createdAt: -1}}, function(err, result){
-        if(err) return next({rtn: config.errorCode.serviceError, message: err});
+    caseModel.getCase({
+        caseType: {$in: types},
+        status: {$in: [config.caseStatus.online.key, config.caseStatus.bid.key]}
+    }, {sort: {rank: -1, createdAt: -1}}, function (err, result) {
+        if (err) return next({rtn: config.errorCode.serviceError, message: err});
         return res.send({rtn: 0, message: '', data: result});
     });
 };
 
 
 /**
-        Weixin Config API Below
+ Weixin Config API Below
  */
 
 
@@ -396,16 +417,16 @@ router.post('/user/cases/:caseId', updateCaseByUser);
 
 router.delete('/user/cases/:caseId', cancelCaseByUser);
 
-router.post('/user/cases/:caseId/status', updateCaseStatus);
+router.post('/user/cases/:caseId/status', updateCaseStatusByUser);
 
 router.post('/user/cases/:caseId/comments', auth.prepareLocalUser(config.optionsUser), commentCase);
 
 
 /************* For Weixin page Lawyer API ********************/
 
-router.get('/ly/cases', findLawyerCases);
+router.get('/ly/cases', searchLawyerCases);
 
-router.get('/ly/cases/suggest',auth.prepareLocalUser(config.optionsLawyer), suggestLawyerCases);
+router.get('/ly/cases/suggest', auth.prepareLocalUser(config.optionsLawyer), suggestLawyerCases);
 
 router.post('/ly/:caseId/bids', auth.prepareLocalUser(config.optionsLawyer), createBid);
 
@@ -415,9 +436,9 @@ router.post('/ly/:caseId/:bidId', updateBid);
 
 router.get('/ly/cases/:caseId', getOneCaseForLawyer);
 
-router.post('/ly/cases/:caseId/status', updateCaseByLawyer);
+router.post('/ly/cases/:caseId/status', updateCaseStatusByLawyer);
 
-router.get('/ly/bids', getLawyerBidCases);
+router.get('/ly/bids', getLawyerBids);
 
 router.post('/ly/cases/:caseId/comments', auth.prepareLocalUser(config.optionsLawyer), commentCase);
 

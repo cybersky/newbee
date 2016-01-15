@@ -162,6 +162,14 @@ exports.caseStatus = {
     reject:{key:'reject', desc:'案件不符合要求，被运营人员拒绝'}
 };
 
+exports.bidStatus = {
+    wait:{key:'wait', desc:'投标等待状态'},
+    win:{key:'win', desc:'成功被用户选中'},
+    fail:{key:'fail', desc:'失败，未被选中'},
+    cancel:{key:'cancel', desc:'撤标'}
+};
+
+
 exports.caseEvent = {
     change:{key:'change', desc:'案件的描述或者悬赏发生改变'},
     comment:{key:'comment', desc:'案件有人评论'}
