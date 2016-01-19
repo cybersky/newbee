@@ -23,23 +23,20 @@
                 <% }) %>
             </select>
 
-            <div class="ui-field-contain">
-                    <label for="caseDesc" class="ui-hidden-accessible">案件描述</label>
-                    <textarea cols="40" rows="8" name="caseDesc" id="caseDesc" placeholder="案件描述"></textarea>
+            <div class="ui-field-contain"><label for="caseDesc" class="ui-hidden-accessible">案件描述</label><textarea
+                        cols="40" rows="8" name="caseDesc" id="caseDesc" placeholder="请描述案件的详情"></textarea>
             </div>
-
-            <div class="ui-field-contain">
-                    <label for="caseTarget" class="ui-hidden-accessible">我的诉求</label>
-                    <textarea cols="40" rows="8" name="caseTarget" id="caseTarget" placeholder="我的诉求"></textarea>
+            <div class="ui-field-contain"><label for="caseTarget" class="ui-hidden-accessible">我的诉求</label><textarea
+                        cols="40" rows="8" name="caseTarget" id="caseTarget" placeholder="请输入您案件的诉求或要达到的目的"></textarea>
             </div>
-
             <div class="ui-field-contain">
                 <div data-role="tabs" id="tabs">
                     <p>悬赏方式</p>
 
                     <div data-role="navbar" id="priceType">
                         <ul>
-                            <li><a href="#priceone" data-ajax="false" class="ui-btn-active" data-price-type="1">按照金额</a></li>
+                            <li><a href="#priceone" data-ajax="false" class="ui-btn-active" data-price-type="1">按照金额</a>
+                            </li>
                             <li><a href="#pricetwo" data-ajax="false" data-price-type="2">按照比例</a></li>
                         </ul>
                           
@@ -48,13 +45,16 @@
                         <!-- <h3 class="ui-bar ui-bar-a ui-corner-all">Heading</h3> -->
                         <div class="ui-body ui-body-a ui-corner-all">
                             <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value="">
+
                             <p style="font-size: 0.8em;color: dimgrey">您可以通过悬赏一个固定的金额总数来悬赏招募律师</p>
                         </div>
                     </div>
                     <div id="pricetwo" class="ui-body-d ui-content">
                         <div class="ui-body ui-body-a ui-corner-all">
                             <label for="price2">悬赏比例(%)</label>
-                            <input type="range" name="price2" id="price2" value="0" min="0" max="100" data-highlight="true">
+                            <input type="range" name="price2" id="price2" value="0" min="0" max="100"
+                                   data-highlight="true">
+
                             <p style="font-size: 0.8em;color: dimgrey">
                                 一些案件可能追讨的金额有一个范围，比如一些债务纠纷案件，这时候您可以通过悬赏所追讨金额的一定比例来招募所需要的律师，追讨回的金额越多，律师所获取的报酬也越多。
                             </p>
@@ -67,7 +67,9 @@
             <input data-role="button" data-icon="check" type="submit" value="倾诉完毕，立即悬赏">
 
 
-            <a href="#popupBasic" data-rel="popup" class="ui-btn ui-corner-all ui-shadow ui-btn-inline" data-transition="pop">Basic Popup</a>
+            <a href="#popupBasic" data-rel="popup" class="ui-btn ui-corner-all ui-shadow ui-btn-inline"
+               data-transition="pop">Basic Popup</a>
+
             <div data-role="popup" id="popupBasic">
                 <p>This is a completely basic popup, no options set.</p>
             </div>
@@ -95,20 +97,22 @@
 
     <div data-role="content">
         <h1>悬赏成功！</h1>
+
         <p>
             您的案件已经成功创建，我们会有专业人员进行案件审核，我们会在不超过一个工作日的时间对你的案件做出审核结果，请保持手机畅通，以便工作人员与您联系。
         </p>
+
         <p>
             通过审核之后，您的案件会推送到我们签约的专业律师团队，律师会根据自身情况和案件复杂程度，还有您所悬赏的案件金额对您的案件竞价。
         </p>
+
         <p>
             您可以根据竞标情况选择最合适您的律师，我们通过竞标的方式保证您获得最质优价廉的法律服务。
         </p>
+
         <p>
             如果有律师对您的案件进行了投标，我们会在第一时间推送通知您，请耐心等待。
         </p>
-
-
 
 
         <div class="ui-grid-a">
@@ -170,12 +174,15 @@
 
     <div data-role="content">
         <h1>案件编号 903929382342</h1>
+
         <p>
             <span>2015-4-22</span>
         </p>
+
         <p>
             案件状态：审核中(请耐心等待上线)
         </p>
+
         <p>
             这里应该是一个案件描述，萨里的风景啊斯洛伐克就是大方；滤镜阿萨德离开房间撒地方了立刻将受到法律卡觉得舒服是邓丽君咖啡
         </p>

@@ -19,7 +19,7 @@ var caseCount = 10;
 
 var userJar = [];
 var lyJar = [];
-var caseIds = [];
+
 
 
 describe('let us start', function () {
@@ -75,11 +75,9 @@ describe('let us start', function () {
 
         it('should create <' + caseCount + ' case for each user', function (done) {
 
-            async.each(userJar, function (item, cb) {
-                //var count = _.random(1, caseCount);
-                count = caseCount;
-                item.caseCount = count;
-                createUserCase({jar: item.jar, count: count, caseIds: caseIds}, cb);
+            async.each(userJar, function (user, cb) {
+                user.caseCount = _.random(1, caseCount);
+                createUserCase(user, cb);
             }, done);
 
         });
@@ -139,6 +137,8 @@ describe('let us start', function () {
 
     describe('let operators make the cases online', function () {
         it('should change all cases to online status', function (done) {
+            var caseIdArray = _.map(userJar, user => user.caseIds);
+            var caseIds = _.union.apply(null, caseIdArray);
             var body = {caseIds: caseIds.join(',')};
             request({url: testHost + '/ts/online/cases', method: 'post', json: true, body: body}, assertBody(done));
         });
@@ -713,11 +713,11 @@ var assertBody = function (cb) {
 };
 
 
-var createUserCase = function (option, callback) {
+var createUserCase = function (user, callback) {
 
-    var cookieJar = option.jar;
-    var count = option.count;
-    var caseIds = option.caseIds;
+    var cookieJar = user.jar;
+    var count = user.caseCount;
+    user.caseIds = user.caseIds || [];
 
     async.eachLimit(_.range(count), 10, function (index, cb) {
         var caseInfo = {
@@ -739,7 +739,7 @@ var createUserCase = function (option, callback) {
         };
 
         request(option, assertBody(function (err, result) {
-            caseIds.push(result.data.id);
+            user.caseIds.push(result.data.id);
             setTimeout(cb, _.random(500, 1500));
         }));
 
