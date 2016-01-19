@@ -188,7 +188,7 @@ exports.updateOneCaseByUser = function (caseId, userOpenId, caseDoc) {
     }, caseDoc, assertModifyOne(callback));
 };
 
-exports.updateCaseStatusByLawyer = function (caseId, lawyerOpenId, status) {
+exports.updateCaseStatusByLawyer = function (caseId, lawyerOpenId, status, comment) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
@@ -198,6 +198,9 @@ exports.updateCaseStatusByLawyer = function (caseId, lawyerOpenId, status) {
     //it must be the target lawyer change the status
     var query = { _id: ObjectID(caseId), 'target.lawyerOpenId': lawyerOpenId};
     var caseDoc = {status: status, updatedAt: new Date()};
+
+    if(comment) caseDoc['commentOnStatus.'+status] = comment;
+
     exports.updateOneCaseByQuery(query, caseDoc, assertModifyOne(callback));
 };
 

@@ -9,24 +9,44 @@ var fs  = require('fs');
 var _ = require('lodash');
 var color = require('color');
 
+var lyJar = [];
+var lawyerCount = 5;
+var testHost = 'http://localhost:8080';
 
-request = request.defaults({jar:true});
-var jar = request.jar();
-describe('Retrieving recommendation data', function() {
-    describe('Hooking the cookie', function(){
-        it('Hooking cookie start ...', function(done){
-            var give = 'http://localhost:8080/ts/givemealawyer';
-            request({url: give,jar: jar}, assertBody(done));
+describe('test recommendation api', function() {
+
+    describe('prepare test lawyers', function(){
+
+        it('should give me ' + lawyerCount + ' lawyers', function (done) {
+            async.each(_.range(lawyerCount), function (item, cb) {
+                var jar = request.jar();
+                request({url: testHost + '/ts/givemealawyer', jar: jar}, assertBody(function (err, body) {
+                    if (err) throw new Error(err);
+                    lyJar.push({jar: jar, openId: body.data.openId, info: body.data, local: {}});
+                    cb();
+                }));
+            }, done)
+        });
+
+
+        it('should fetch lawyer recommendation cases', function(done){
+
+            async.each(lyJar, function(ly, cb){
+                request({url: testHost + '/va/ly/cases/suggest',jar: ly.jar}, assertBody(function(err, result){
+                    assert.equal(err,null);
+                    console.log('lawyer', ly.info.name, 'get',result.data.length,'recommendation cases');
+
+                    _.each(result.data, d => {
+                        console.log('case', d._id, 'rank', d.rank, 'caseType', d.caseType);
+                    });
+                    cb();
+                }));
+            }, done);
+
         });
     });
 
-    describe('Retrieving start ...', function(){
-        it('GO', function(done){
-            //TODO: retrieving recommendation data
-            var url = 'http://localhost:8080/va/ly/cases/suggest';
-            request({url: url, method: 'GET', jar: jar}, assertBody(done));
-        });
-    });
+
 });
 
 
@@ -46,15 +66,6 @@ var assertBody = function (cb) {
         }
         if (result.rtn != 0) {
             return cb(new Error('error api response: rtn:' + result.rtn + ' message:' + result.message));
-        }
-        console.log('\nResult status', result.rtn);
-        console.log('\n');
-        console.log('\nData body', result.data);
-
-        if(result.data.length > 0 && result.data[0].hasOwnProperty('rank')){
-            result.data.forEach(function(d){
-                console.log('SORT ORDER', d.rank);
-            });
         }
 
         return cb(null, result);

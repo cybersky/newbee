@@ -97,8 +97,8 @@ var getUserCases = function (req, res, next) {
     var openId = req.wxOpenId;
     var status = req.query.status;
 
-    if(status && _.keys(config.caseStatus).indexOf(status) < 0)
-        return callback({rtn:config.errorCode.paramError, message:"invalid case status:"+status});
+    if (status && _.keys(config.caseStatus).indexOf(status) < 0)
+        return callback({rtn: config.errorCode.paramError, message: "invalid case status:" + status});
 
     caseModel.getUserCases(openId, status, function (err, result) {
         if (err) return next(err);
@@ -142,13 +142,12 @@ var updateCaseStatusByUser = function (req, res, next) {
     var status = req.body.status;
 
     var bidId = req.body.bidId;//if status==target
-    var commentOnClose = req.body.commentOnClose; //if status == closeu
-    var commentOnDispute = req.body.commentOnDispute; //if status == disputeu
+    var comment = req.body.comment; //if status == closeu|disputeu
 
     switch (status) {
         case config.caseStatus.target.key:
 
-            if(!bidId) return next({rtn:config.errorCode.paramError, message:'no bidId on target action'});
+            if (!bidId) return next({rtn: config.errorCode.paramError, message: 'no bidId on target action'});
 
             caseModel.targetCaseByUser(caseId, openId, bidId, function (err) {
                 if (err) return next(err);
@@ -158,9 +157,11 @@ var updateCaseStatusByUser = function (req, res, next) {
             break;
         case config.caseStatus.closeu.key:
 
-            if(!commentOnClose) return next({rtn:config.errorCode.paramError, message:'no comment on close'});
+            if (!comment) return next({rtn: config.errorCode.paramError, message: 'no comment on close by user'});
 
-            caseModel.updateOneCaseByUser(caseId, openId, {status: config.caseStatus.closeu.key, commentOnClose:commentOnClose}, function (err) {
+            var caseUpdate = {status: config.caseStatus.closeu.key, ['commentOnStatus.' + status]: comment};
+
+            caseModel.updateOneCaseByUser(caseId, openId, caseUpdate, function (err) {
                 if (err) return next(err);
                 res.send({rtn: 0});
                 notification.noticeStatus2Lawyer(caseId, config.caseStatus.closeu.key);
@@ -169,9 +170,11 @@ var updateCaseStatusByUser = function (req, res, next) {
 
         case config.caseStatus.disputeu.key:
 
-            if(!commentOnDispute) return next({rtn:config.errorCode.paramError, message:'no comment on dispute'});
+            if (!comment) return next({rtn: config.errorCode.paramError, message: 'no comment on dispute by user'});
 
-            caseModel.updateOneCaseByUser(caseId, openId, {status: config.caseStatus.disputeu.key, commentOnDispute:commentOnDispute}, function (err) {
+            var caseUpdate = {status: config.caseStatus.disputeu.key, ['commentOnStatus.' + status]: comment};
+
+            caseModel.updateOneCaseByUser(caseId, openId, caseUpdate, function (err) {
                 if (err) return next(err);
                 res.send({rtn: 0});
 
@@ -180,6 +183,9 @@ var updateCaseStatusByUser = function (req, res, next) {
 
             });
             break;
+
+        default:
+            return res.send({rtn: config.errorCode.paramError, message: 'invalid status: ' + status});
 
     }
 
@@ -268,7 +274,7 @@ var searchLawyerCases = function (req, res, next) {
 };
 
 
-var getLawyerBids = function(req, res, next){
+var getLawyerBids = function (req, res, next) {
     var openId = req.wxOpenId;
     var status = req.query.status;
 
@@ -341,7 +347,13 @@ var updateCaseStatusByLawyer = function (req, res, next) {
         return callback({rtn: config.errorCode.paramError, message: 'invalid status'});
     }
 
-    caseModel.updateCaseStatusByLawyer(caseId, openId, status, function (err) {
+    var comment = req.body.comment;
+
+    if ([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)) {
+        return callback({rtn: config.errorCode.paramError, message: 'invalid status'});
+    }
+
+    caseModel.updateCaseStatusByLawyer(caseId, openId, status, comment, function (err) {
         if (err) return next(err);
         res.send({rtn: 0});
 
@@ -365,10 +377,13 @@ var suggestLawyerCases = function (req, res, next) {
 
     if (types.length == 0) return next({rtn: config.errorCode.paramError, message: '律师服务领域参数错误'});
 
+    var page = isNaN(Number(req.query.page)) ? Number(req.query.page) : 0;
+    var pageCount = 5;
+
     caseModel.getCase({
         caseType: {$in: types},
         status: {$in: [config.caseStatus.online.key, config.caseStatus.bid.key]}
-    }, {sort: {rank: -1, createdAt: -1}}, function (err, result) {
+    }, {sort: {rank: -1, updatedAt: -1}, limit: pageCount, skip: pageCount * page}, function (err, result) {
         if (err) return next({rtn: config.errorCode.serviceError, message: err});
         return res.send({rtn: 0, message: '', data: result});
     });

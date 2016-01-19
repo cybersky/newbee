@@ -46,7 +46,7 @@ var createTestUser = function(role){
                 "privilege": [],
                 "unionid": "op3Elt65DCYlvfpwiBk8zJJuwSXk"
             },
-            lawServiceArea: _.sample(config.userCaseType).name + ',' +_.sample(config.userCaseType).name,
+            lawServiceArea: _.sample(_.pluck(config.userCaseType, 'name'), _.random(1,3)).join(','),
             status: 'subscribe',
             "createdAt": new Date(),
             "updatedAt": new Date()

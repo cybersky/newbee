@@ -581,12 +581,12 @@ describe('let us start', function () {
                     return cb();
                 }
 
-                async.each(user.local.processCases, function(c, cb){
+                async.each(user.local.processCases, function(c, cb1){
 
                     var status = ['closeu', 'disputeu'][_.random(0, 1)];
-                    var body = {status:status};
-                    if(status == 'closeu') body.commentOnClose = 'this is the close comment, comment the lawyer service';
-                    if(status == 'disputeu') body.commentOnDispute = 'this is the dispute comment, dispute the lawyer service';
+                    var body = {status:status, comment:'this is the comment on '+status+', comment the lawyer service'};
+
+                    console.log('begin, user', user.info.name, status, 'case', c._id);
 
                     request({
                         url: testHost + '/va/user/cases/' + c._id + '/status',
@@ -596,6 +596,8 @@ describe('let us start', function () {
                         jar: user.jar
                     }, assertBody(function (err, result) {
 
+                        assert.equal(err, null);
+
                         if(status == 'closeu'){
                             user.local.closeCases = user.local.closeCases || new Set();
                             user.local.closeCases.add(c._id);
@@ -603,8 +605,9 @@ describe('let us start', function () {
                             user.local.disputeCases = user.local.disputeCases || new Set();
                             user.local.disputeCases.add(c._id);
                         }
+                        console.log('user', user.info.name, status, 'case', c._id);
 
-                        cb();
+                        cb1();
                     }));
 
                 }, cb);
@@ -616,22 +619,23 @@ describe('let us start', function () {
 
         it('should confirm the closed cases', function(done) {
 
-
             async.each(userJar, function (user, cb) {
 
                 if (!user.local || !user.local.closeCases || user.local.closeCases.length == 0) {
                     console.log('user', user.info.name, 'have no close cases, skip');
                     return cb();
                 }
+                console.log('begin user', user.info.name, 'get closed cases');
 
                 request({
                     url: testHost + '/va/user/cases?status=closeu',
                     jar: user.jar
                 }, assertBody(function (err, result) {
-                    assert.equal(user.local.closeCases.length, result.data.length);
+                    assert.equal(user.local.closeCases.size, result.data.length);
+
+                    console.log('user', user.info.name, 'have', user.local.closeCases.size,'closed cases');
                     user.closeCases = result.data;
-
-
+                    cb();
                 }));
 
             }, done);

@@ -157,8 +157,8 @@ exports.caseStatus = {
     process:{key:'process', desc:'案件开始受理案件，进展中'},
     disputeu:{key:'disputeu', desc:'用户发起纠纷状态'},
     disputel:{key:'disputel', desc:'律师发起纠纷状态'},
-    closeu:{key:'close', desc:'案件由用户关闭'},
-    closel:{key:'close', desc:'案件由律师关闭'},
+    closeu:{key:'closeu', desc:'案件由用户关闭'},
+    closel:{key:'closel', desc:'案件由律师关闭'},
     reject:{key:'reject', desc:'案件不符合要求，被运营人员拒绝'}
 };
 
