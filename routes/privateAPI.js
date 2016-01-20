@@ -406,13 +406,28 @@ var getJSSDKConfig = function (option) {
 
             //jssdkConfig.debug = true;
             jssdkConfig.jsApiList = [
+                //location
                 'openLocation',
                 'getLocation',
+                //image
                 'chooseImage',
                 'previewImage',
                 'uploadImage',
                 'downloadImage',
-                'getNetworkType'];
+                //newwork
+                'getNetworkType',
+                //voice
+                'startRecord',
+                'stopRecord',
+                'onVoiceRecordEnd',
+                'playVoice',
+                'pauseVoice',
+                'stopVoice',
+                'onVoicePlayEnd',
+                'uploadVoice',
+                'downloadVoice',
+                'translateVoice'
+            ];
 
             res.send({rtn: 0, data: {config: jssdkConfig}});
         });

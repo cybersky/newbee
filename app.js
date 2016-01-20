@@ -20,8 +20,6 @@ var wxService = require('./routes/wxService');
 var wxPage = require('./routes/wxPage');
 
 var vhost = require('vhost');
-
-
 var app = express();
 
 // view engine setup
@@ -46,7 +44,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser(config.cookieSecret));
 
 
-app.use(compression());
+app.use(compression({threshold:256}));
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: '30d'} ));
 
 

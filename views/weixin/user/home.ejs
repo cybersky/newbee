@@ -1,42 +1,36 @@
 <% include ../fragments/header.ejs %>
 
-<script>
-
-</script>
-
 <div data-role="page" id="page0">
 
     <div data-role="content">
         <form action="/va/user/cases" method="post" id="caseForm">
 
             <label for="caseType" class="ui-hidden-accessible">案件类型</label>
-            <select name="caseType" id="caseType">
+            <select name="caseType" id="caseType" v-model="caseType">
                 <% caseType.forEach(function(type){ %>
                 <option value="<%= type.name %>"><%= type.label %></option>
                 <% }) %>
             </select>
 
             <label for="serviceType" class="ui-hidden-accessible">服务类型</label>
-            <select name="serviceType" id="serviceType">
+            <select name="serviceType" id="serviceType"  v-model="serviceType">
                 <% serviceType.forEach(function(type){ %>
                 <option value="<%= type.name %>"><%= type.label %></option>
                 <% }) %>
             </select>
 
-            <div class="ui-field-contain"><label for="caseDesc" class="ui-hidden-accessible">案件描述</label><textarea
-                        cols="40" rows="8" name="caseDesc" id="caseDesc" placeholder="请描述案件的详情"></textarea>
+            <div class="ui-field-contain"><label for="caseDesc" class="ui-hidden-accessible">案件描述</label>
+                <textarea v-model="caseDesc" cols="40" rows="8" name="caseDesc" id="caseDesc" placeholder="请描述案件的详情"></textarea>
             </div>
-            <div class="ui-field-contain"><label for="caseTarget" class="ui-hidden-accessible">我的诉求</label><textarea
-                        cols="40" rows="8" name="caseTarget" id="caseTarget" placeholder="请输入您案件的诉求或要达到的目的"></textarea>
+            <div class="ui-field-contain"><label for="caseTarget" class="ui-hidden-accessible">我的诉求</label>
+                <textarea v-model="caseTarget" cols="40" rows="8" name="caseTarget" id="caseTarget" placeholder="请输入您案件的诉求或要达到的目的"></textarea>
             </div>
             <div class="ui-field-contain">
                 <div data-role="tabs" id="tabs">
                     <p>悬赏方式</p>
-
                     <div data-role="navbar" id="priceType">
                         <ul>
-                            <li><a href="#priceone" data-ajax="false" class="ui-btn-active" data-price-type="1">按照金额</a>
-                            </li>
+                            <li><a href="#priceone" data-ajax="false" class="ui-btn-active" data-price-type="1">按照金额</a></li>
                             <li><a href="#pricetwo" data-ajax="false" data-price-type="2">按照比例</a></li>
                         </ul>
                           
@@ -44,7 +38,7 @@
                     <div id="priceone" class="ui-body-d ui-content">
                         <!-- <h3 class="ui-bar ui-bar-a ui-corner-all">Heading</h3> -->
                         <div class="ui-body ui-body-a ui-corner-all">
-                            <input type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value="">
+                            <input v-model="price1" type="number" name="price1" id="price1" placeholder="在此输入赏金(元人民币)" value="">
 
                             <p style="font-size: 0.8em;color: dimgrey">您可以通过悬赏一个固定的金额总数来悬赏招募律师</p>
                         </div>
@@ -52,7 +46,7 @@
                     <div id="pricetwo" class="ui-body-d ui-content">
                         <div class="ui-body ui-body-a ui-corner-all">
                             <label for="price2">悬赏比例(%)</label>
-                            <input type="range" name="price2" id="price2" value="0" min="0" max="100"
+                            <input v-model="price2" type="range" name="price2" id="price2" value="0" min="0" max="100"
                                    data-highlight="true">
 
                             <p style="font-size: 0.8em;color: dimgrey">
@@ -62,9 +56,9 @@
                     </div>
                 </div>
             </div>
-            <label><input type="checkbox" name="reportLocation" id="reportLocation">上报地址以便律师找到我</label>
+            <label><input v-model="reportLocation" type="checkbox" name="reportLocation" id="reportLocation">上报地址以便律师找到我</label>
 
-            <input data-role="button" data-icon="check" type="submit" value="倾诉完毕，立即悬赏">
+            <input @click="submitCase" data-role="button" data-icon="check" type="submit" value="倾诉完毕，立即悬赏">
 
 
             <a href="#popupBasic" data-rel="popup" class="ui-btn ui-corner-all ui-shadow ui-btn-inline"
@@ -221,6 +215,4 @@
 
 </div>
 <!-- /page -->
-<script src="/js/home.js"></script>
-</body>
-</html>
+<% include ../fragments/footer.ejs %>
