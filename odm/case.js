@@ -366,6 +366,11 @@ exports.syncCaseComments = function (caseId) {
     ], callback);
 };
 
+exports.getOneBid = function(bidId, cb){
+    var bids = mongo.bid();
+    bids.findOne({_id:ObjectID(bidId)}, cb);
+};
+
 
 exports.bidCase = function (caseId, bidDoc) {
     var callback = arguments[arguments.length - 1];

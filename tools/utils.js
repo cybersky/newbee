@@ -19,6 +19,43 @@ exports.createURL = function (urlPattern, options) {
 };
 
 
+exports.sendTemplateMessage = function(options, toUser, templateId, detailUrl, data, callback){
+    if(typeof arguments[arguments.length-1] != 'function'){
+        throw new Error('invalid callback');
+    }
+
+    async.waterfall([
+        function(cb){
+            exports.getWXAccessToken(options, cb);
+        },
+        function(at, cb){
+            var url = 'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=' + at;
+
+            var body = {
+                "touser":toUser,
+                "template_id":templateId,
+                "url":detailUrl,
+                "data":data
+            };
+
+            request({url:url, method:'post', body:body, json:true}, cb);
+        },
+        function(resp, body, cb){
+            if(typeof body == 'string'){
+                try{
+                    body = JSON.parse(body);
+                }catch(e){
+                    return cb(new Error('invalid api response:'+body));
+                }
+            }
+            if(body.errcode) return cb(new Error(body.errmsg));
+            cb();
+        }
+
+    ], callback);
+};
+
+
 exports.getWXAPITicket = function (option, type, callback) {
 
     if(typeof arguments[arguments.length-1] != 'function'){

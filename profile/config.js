@@ -96,6 +96,96 @@ exports.optionsTest = {
     roleCollection:'testers'
 };
 
+
+exports.templateMessageOptions = {
+    user:{
+        caseStatusNotify:{
+            tempId:'nhK73jXlpJXCRhShkto6bpkwsUutgB1o4Po5_9vlSJo',
+            /*
+             标题:案件状态更新
+
+             {{first.DATA}}
+             案件编号：{{keyword1.DATA}}
+             案件状态：{{keyword2.DATA}}
+             {{remark.DATA}}
+             */
+        },
+        caseBidNotify:{
+            tempId:'lsTJD462IK8sIkLYlhZoEROEx_oFJgLdr_fIfYbpFBs',
+            /*
+             竞标提醒
+
+             {{first.DATA}}
+             时间：{{keyword1.DATA}}
+             竞标人：{{keyword2.DATA}}
+             投标金额：{{keyword3.DATA}}
+             {{remark.DATA}}
+
+             您好，你的需求有新的投标，请查看！
+             时间：2015年8月24日
+             竞标人：李先生
+             投标金额：￥50000
+             请点击查看详情！
+             */
+        }
+    },
+    lawyer:{
+        caseCancelNotify:{
+            tempId:'Eh3F9fyMqGsWjgco3WFauOrT-iBHB5ahScOCl2rZFdU',
+            /*
+             案件取消通知
+
+             {{first.DATA}}
+             案件编号：{{keyword1.DATA}}
+             取消理由：{{keyword2.DATA}}
+             取消时间：{{keyword3.DATA}}
+             {{remark.DATA}}
+
+             您的案件已取消
+             案件编号：7568
+             取消理由：重复提交
+             取消时间：2014年7月21日 18:36
+             请点击查看详情。
+             */
+        },
+        bidCompleteNofity:{
+            tempId:'Eh3F9fyMqGsWjgco3WFauOrT-iBHB5ahScOCl2rZFdU',
+            /*
+             案件竞标完成通知
+
+             {{first.DATA}}
+             案件编号：{{keyword1.DATA}}
+             完成时间：{{keyword2.DATA}}
+             参与律师数：{{keyword3.DATA}}
+             {{remark.DATA}}
+
+             您好，您的案件已完成竞标。
+             案件编号：1156
+             完成时间：2014年7月21日 18:36
+             参与律师数：6
+             请点击查看详情。
+             */
+        },
+        caseStatusNotify:{
+            tempId:'_2B-ePyRBWpS1-_HI6ajyaruu9c0ZBi_BEPeSdL3LPk',
+            /*
+            案件状态更新
+
+             {{first.DATA}}
+             案件编号：{{keyword1.DATA}}
+             案件状态：{{keyword2.DATA}}
+             {{remark.DATA}}
+
+             续展提醒
+             案件编号：201501000001
+             案件状态：待续展
+             北京百度在线网络科技有限公司有2个商标已进入续展期，详情请登录e商标网站消息中心查看。
+             */
+        }
+    }
+};
+
+
 exports.errorCode = {
 	unknownError:'100',
 	paramError:'101',
@@ -143,9 +233,11 @@ exports.pageSizeController = {cases: 4, lawyer: 5, operator: 5};
 
 exports.userServiceType = [
     {name:'xxfw', label:'线下实体服务'},
-    {name:'ffzx', label:'付费咨询'},
+    {name:'ffzx', label:'线下付费咨询'},
     {name:'mfzx', label:'免费咨询'}
 ];
+
+
 
 
 exports.caseStatus = {

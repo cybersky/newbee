@@ -298,7 +298,7 @@ var createBid = function (req, res, next) {
     caseModel.bidCase(caseId, bidDoc, function (err, id) {
         if (err) return next(err);
         res.send({rtn: 0, data: {id: id}});
-        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
+        notification.noticeBid2User(caseId, id, 'create');
     });
 
 };
@@ -311,7 +311,7 @@ var updateBid = function (req, res, next) {
     caseModel.updateBid(bidId, bidDoc, openId, function (err, caseId) {
         if (err) return next(err);
         res.send({rtn: 0});
-        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
+        notification.noticeBid2User(caseId, bidId, 'update');
     });
 };
 
@@ -322,7 +322,7 @@ var deleteBid = function (req, res, next) {
     caseModel.deleteBid(bidId, openId, function (err, caseId) {
         if (err) return next(err);
         res.send({rtn: 0});
-        notification.noticeStatus2User(caseId, config.caseStatus.bid.key);
+        notification.noticeBid2User(caseId, bidId, 'delete');
     });
 };
 
@@ -349,15 +349,11 @@ var updateCaseStatusByLawyer = function (req, res, next) {
 
     var comment = req.body.comment;
 
-    if ([config.caseStatus.process.key, config.caseStatus.closel.key, config.caseStatus.disputel.key].indexOf(status)) {
-        return callback({rtn: config.errorCode.paramError, message: 'invalid status'});
-    }
-
     caseModel.updateCaseStatusByLawyer(caseId, openId, status, comment, function (err) {
         if (err) return next(err);
         res.send({rtn: 0});
 
-        notification.noticeStatus2User(caseId, status);
+        notification.noticeStatus2User(caseId, openId, status);
     });
 
 };
