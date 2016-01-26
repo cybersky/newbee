@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var config = require('../profile/config');
+var async = require('async');
 
 var uri = config.getMongoUri();
 mongoose.connect(uri, function(err){
@@ -83,4 +84,23 @@ exports.bid = function(){
 
 exports.comment = function(){
     return newbeeDB.collection('comments');
+};
+
+
+exports.getIncId = function(name, callback){
+    var ids = newbeeDB.collection('ids');
+
+    async.waterfall([
+        function(cb){
+            ids.findOneAndUpdate({colName:name}, {$inc:{id:1}}, {upsert:false, returnOriginal:false}, cb);
+        },
+        function(result, cb){
+            if(result.value) return callback(null, result.value.id);
+            ids.findOneAndUpdate({colName:name}, {$setOnInsert:{id:1000}}, {upsert:true, returnOriginal:false}, cb);
+        },
+        function(result, cb){
+            if(result.value) return callback(null, result.value.id);
+        }
+    ], callback);
+
 };

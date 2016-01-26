@@ -114,7 +114,12 @@ exports.createCase = function (userCase) {
      callback(err, result);
      }
      */
-    caseCollection.insertOne(userCase, assertInsertOne(callback));
+    mongo.getIncId('case', function(err, sid){
+        if( err ) return callback(err);
+        userCase.sid = sid;
+        caseCollection.insertOne(userCase, assertInsertOne(callback));
+    });
+
 };
 
 exports.updateOneCaseByQuery = function (query, caseDoc) {
@@ -205,7 +210,7 @@ exports.updateCaseStatusByLawyer = function (caseId, lawyerOpenId, status, comme
 };
 
 
-exports.cancelCaseByUser = function (caseId, userOpenId) {
+exports.cancelCaseByUser = function (caseId, userOpenId, caseUpdate) {
     var callback = arguments[arguments.length - 1];
     if (typeof(callback) != 'function') throw new Error('callback should be function.');
 
@@ -215,12 +220,9 @@ exports.cancelCaseByUser = function (caseId, userOpenId) {
         status:{$in:[config.caseStatus.raw.key, config.caseStatus.online.key, config.caseStatus.bid.key, config.caseStatus.target.key ]}
     };
 
-    var caseDoc = {
-        status: config.caseStatus.cancel.key,
-        updatedAt: new Date()
-    };
+    caseUpdate.updatedAt = new Date();
 
-    exports.updateOneCaseByQuery(query, caseDoc, assertModifyOne(callback));
+    exports.updateOneCaseByQuery(query, caseUpdate, assertModifyOne(callback));
 };
 
 
@@ -392,6 +394,7 @@ exports.bidCase = function (caseId, bidDoc) {
     var bids = mongo.bid();
 
     var bidId;
+    var theCase;
 
     async.waterfall([
         function (cb) {
@@ -400,13 +403,15 @@ exports.bidCase = function (caseId, bidDoc) {
         },
         function (result, cb) {
             if (!result.value) return cb({rtn: config.errorCode.paramError, message: locale.noSuchCase + caseId});
-
+            theCase = result.value;
             bids.findOne({caseId: caseId, lawyerOpenId: bidDoc.lawyerOpenId}, cb);
         },
         function (bid, cb) {
             if (bid) return cb({rtn: config.errorCode.paramError, message: '此案您已经投标成功'});
 
             bidDoc.caseId = caseId;
+            bidDoc.caseSid = theCase.sid;
+            bidDoc.userOpenId = theCase.userOpenId;
             bidDoc.status = config.bidStatus.wait.key;
             bidDoc.createdAt = new Date();
             bidDoc.updatedAt = new Date();

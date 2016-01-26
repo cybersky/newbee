@@ -107,18 +107,6 @@ var getUserCases = function (req, res, next) {
 
 };
 
-var cancelCaseByUser = function (req, res, next) {
-    var openId = req.wxOpenId;
-    var caseId = req.params['caseId'];
-
-    caseModel.cancelCaseByUser(caseId, openId, function (err) {
-        if (err) return next(err);
-        res.send({rtn: 0});
-
-        notification.noticeStatus2Lawyer(caseId, config.caseStatus.cancel.key);
-    });
-};
-
 var updateCaseByUser = function (req, res, next) {
 
     var openId = req.wxOpenId;
@@ -152,19 +140,30 @@ var updateCaseStatusByUser = function (req, res, next) {
             caseModel.targetCaseByUser(caseId, openId, bidId, function (err) {
                 if (err) return next(err);
                 res.send({rtn: 0});
-                notification.noticeStatus2Lawyer(caseId, config.caseStatus.target.key);
+                notification.noticeStatus2Lawyer(caseId, status);
             });
             break;
+        case config.caseStatus.cancel.key:
+            if (!comment) return next({rtn: config.errorCode.paramError, message: 'no comment on close by user'});
+
+            var caseUpdate = {status: status, ['commentOnStatus.' + status]: comment};
+
+            caseModel.cancelCaseByUser(caseId, openId, caseUpdate, function(err){
+                if(err) return next(err);
+                res.send({rtn:0});
+                notification.noticeStatus2Lawyer(caseId, status);
+            });
+
         case config.caseStatus.closeu.key:
 
             if (!comment) return next({rtn: config.errorCode.paramError, message: 'no comment on close by user'});
 
-            var caseUpdate = {status: config.caseStatus.closeu.key, ['commentOnStatus.' + status]: comment};
+            var caseUpdate = {status: status, ['commentOnStatus.' + status]: comment};
 
             caseModel.updateOneCaseByUser(caseId, openId, caseUpdate, function (err) {
                 if (err) return next(err);
                 res.send({rtn: 0});
-                notification.noticeStatus2Lawyer(caseId, config.caseStatus.closeu.key);
+                notification.noticeStatus2Lawyer(caseId, status);
             });
             break;
 
@@ -172,15 +171,13 @@ var updateCaseStatusByUser = function (req, res, next) {
 
             if (!comment) return next({rtn: config.errorCode.paramError, message: 'no comment on dispute by user'});
 
-            var caseUpdate = {status: config.caseStatus.disputeu.key, ['commentOnStatus.' + status]: comment};
+            var caseUpdate = {status: status, ['commentOnStatus.' + status]: comment};
 
             caseModel.updateOneCaseByUser(caseId, openId, caseUpdate, function (err) {
                 if (err) return next(err);
                 res.send({rtn: 0});
 
-                notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
-                notification.noticeStatus2Lawyer(caseId, config.caseStatus.disputeu.key);
-
+                notification.noticeStatus2Lawyer(caseId, status);
             });
             break;
 
@@ -440,8 +437,6 @@ router.post('/user/cases', auth.prepareLocalUser(config.optionsUser), createCase
 router.get('/user/cases', getUserCases);
 
 router.post('/user/cases/:caseId', updateCaseByUser);
-
-router.delete('/user/cases/:caseId', cancelCaseByUser);
 
 router.post('/user/cases/:caseId/status', updateCaseStatusByUser);
 
